@@ -1,9 +1,21 @@
 __precompile__()
 
+"""
+    AbstractPhylo package
+
+The `AbstractPhylo` package provides a standard abstract interface to
+phylogenetic trees, by defining `AbstractNode`, `AbstractBranch` and
+`AbstractTree` supertypes, and methods to interface to them. It also
+provides (through the `AbstractPhylo.API` submodule) methods to
+(re)define to write your own phylogenetic type in a way that will
+interact cleanly with other phylogenetic packages.
+"""
 module AbstractPhylo
 
 """
-The AbstractPhylo.API submodule should be `importall`ed if you want to
+    AbstractPhylo.API submodule
+
+The `AbstractPhylo.API` submodule should be `import[all]`ed if you want to
 create a new phylogeny, node or branch subtype. Otherwise it can be
 ignored.
 """
