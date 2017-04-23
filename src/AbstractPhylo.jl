@@ -23,11 +23,12 @@ module API
 include("API.jl")
 export AbstractNode, AbstractBranch, AbstractTree
 # AbstractTree methods
-export _addbranch!, _deletebranch!, branch!
+export _addbranch!, _deletebranch!, _branch!
 export _addnode!, _addnodes!, _deletenode!
 export _getnodenames, _hasnode, _getnode
 export _getbranchnames, _hasbranch, _getbranch
 export _hasrootheight, _getrootheight, _setrootheight!
+export _nodetype, _branchtype, _extractnode, _extractbranch
 export _validate
 
 # AbstractNode methods
@@ -37,7 +38,10 @@ export _hasheight, _getheight, _setheight!
 
 # AbstractBranch methods
 export _getsource, _gettarget, _getlength
-export _changesource!, _changetarget!
+export _setsource!, _settarget!
+
+# Label names
+export _newnodelabel, _newbranchlabel
 
 end
 
