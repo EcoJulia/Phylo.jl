@@ -60,4 +60,7 @@ export hasheight, getheight, setheight!
 export getsource, gettarget, getlength
 export changesource!, changetarget!
 
+include("Iterators.jl")
+export NodeIterator, BranchIterator
+
 end # module
