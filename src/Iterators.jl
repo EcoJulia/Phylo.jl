@@ -69,13 +69,13 @@ function iteratoreltype(ni::Type{NodeIterator})
     return HasEltype()
 end
 
-function eltype(ni::NodeIterator)
-    return _nodetype(ni.tree)
+function eltype{T <: AbstractTree}(ni::NodeIterator{T})
+    return _nodetype(T)
 end
 
 function length(ni::NodeIterator)
     if isnull(ni.filterfn)
-        return length(getnodes(ni.tree))
+        return length(_getnodes(ni.tree))
     end
     
     len = 0
@@ -157,13 +157,13 @@ function iteratoreltype(bi::Type{BranchIterator})
     return HasEltype()
 end
 
-function eltype(bi::BranchIterator)
-    return _branchtype(bi.tree)
+function eltype{T <: AbstractTree}(bi::BranchIterator{T})
+    return _branchtype(T)
 end
 
 function length(bi::BranchIterator)
     if isnull(bi.filterfn)
-        return length(getbranches(bi.tree))
+        return length(_getbranches(bi.tree))
     end
     
     len = 0

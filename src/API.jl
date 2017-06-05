@@ -1,7 +1,7 @@
 using Compat
 
 @compat abstract type AbstractNode end
-@compat abstract type AbstractInfo end
+@compat abstract type AbstractBranch end
 @compat abstract type AbstractTree{NodeLabel, BranchLabel} end
 
 function _newlabel{Label <: Integer}(ids::Vector{Label}, _)
@@ -9,9 +9,9 @@ function _newlabel{Label <: Integer}(ids::Vector{Label}, _)
 end
 
 function _newlabel(names::Vector{String}, prefix)
-    names = Compat.Iterators.filter(n -> length(n) > length(prefix) &&
-                                    n[1:length(prefix)]==prefix,
-                                    names)
+    names = collect(Compat.Iterators.filter(n -> length(n) > length(prefix) &&
+                                            n[1:length(prefix)]==prefix,
+                                            names))
     start = length(names) + 1
     name = prefix * "$start"
     while (name ∈ names)
@@ -53,7 +53,9 @@ function _newbranchlabel(tree::AbstractTree)
 end
 
 """
-    _addbranch!(tree::AbstractTree, branchname)
+    _addbranch!(tree::AbstractTree, source, target;
+                length::Float64 = NaN,
+                branchname = _newbranchlabel(tree))
 
 Must be implemented for any AbstractTree subtype.
 """
@@ -67,11 +69,20 @@ Must be implemented for any AbstractTree subtype.
 function _deletebranch! end
 
 """
-    _branch!(tree::AbstractTree, nodename, branchname)
+    _branch!(tree::AbstractTree, source, length::Float64;
+             nodename = _newnodelabel(tree),
+             branchname = _newbranchlabel(tree))
 
-Must be implemented for any AbstractTree subtype.
+
 """
-function _branch! end
+function _branch!(tree::AbstractTree, source,
+                  length::Float64 = NaN;
+                  nodename = _newnodelabel(tree),
+                  branchname = _newbranchlabel(tree))
+    target = _addnode!(tree, nodename)
+    _addbranch!(tree, source, target, length, branchname)
+    return target
+end
 
 """
     _newnodelabel(tree::AbstractTree)
@@ -89,6 +100,13 @@ end
 Must be implemented for any AbstractTree subtype.
 """
 function _getnodenames end
+
+"""
+    _getnodes(tree::AbstractTree)
+
+Must be implemented for any AbstractTree subtype.
+"""
+function _getnodes end
 
 """
     _addnode!(tree::AbstractTree, nodename)
@@ -110,7 +128,7 @@ function _addnodes!(tree::AbstractTree, nodenames::AbstractVector)
 end
 
 function _addnodes!(tree::AbstractTree, count::Integer)
-    return map(name -> _addnode!(tree), 1:count)
+    return map(name -> addnode!(tree), 1:count)
 end
 
 """
@@ -140,6 +158,13 @@ function _getnode end
 Must be implemented for any AbstractTree subtype.
 """
 function _getbranchnames end
+
+"""
+    _getbranches(tree::AbstractTree)
+
+Must be implemented for any AbstractTree subtype.
+"""
+function _getbranches end
 
 """
     _hasbranch(tree::AbstractTree, branchname)
@@ -199,7 +224,7 @@ end
 
 
 """
-_isleaf(node::AbstractNode) = _outdegree(node) == 0# && _hasinbound(node)
+_isleaf(node::AbstractNode) = _outdegree(node) == 0 && _hasinbound(node)
 
 """
     _isroot(node::AbstractNode)
@@ -230,11 +255,27 @@ _isunattached(node::AbstractNode) = _outdegree(node) == 0 && !_hasinbound(node)
 _indegree(node::AbstractNode) = _hasinbound(node) ? 1 : 0
 
 """
+    _hasinboundspace(node::AbstractNode)
+
+
+"""
+_hasinboundspace(node::AbstractNode) = !_hasinbound(node)
+
+"""
     _outdegree(node::AbstractNode)
 
 Must be implemented for any AbstractNode subtype.
 """
 function _outdegree end
+
+"""
+    _hasoutboundspace(node::AbstractNode)
+
+
+"""
+function _hasoutboundspace(node::AbstractNode)
+    return _outdegree < 2
+end
 
 """
     _hasinbound(node::AbstractNode)
@@ -244,44 +285,44 @@ Must be implemented for any AbstractNode subtype.
 function _hasinbound end
 
 """
-    _getinbound
+    _getinbound(node::AbstractNode)
 
 Must be implemented for any AbstractNode subtype.
 """
 function _getinbound end
 
 """
-    _getoutbounds
+    _getoutbounds(node::AbstractNode)
 
 Must be implemented for any AbstractNode subtype.
 """
 function _getoutbounds end
 
 """
-    _hasheight(::AbstractNode)
+    _hasheight(tree::AbstractTree, nodename)
 
 
 """
-function _hasheight(::AbstractNode)
+function _hasheight(::AbstractTree, _)
     return false
 end
 
 """
-    _getheight(::AbstractNode)
+    _getheight(tree::AbstractTree, nodename)
 
 
 """
-function _getheight(::AbstractNode)
+function _getheight(::AbstractTree, _)
     throw(NullException())
     return NaN
 end
 
 """
-    _setheight!(::AbstractNode, value)
+    _setheight!(::AbstractTree, nodename, value)
 
 
 """
-function _setheight!(::AbstractNode, value)
+function _setheight!(::AbstractTree, _, value)
     throw(NullException())
     return value
 end
@@ -321,4 +362,3 @@ function _setsource! end
 Must be implemented for any AbstractBranch subtype.
 """
 function _settarget! end
-

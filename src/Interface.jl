@@ -1,5 +1,5 @@
 using Compat
-using AbstractPhylo.API
+using Phylo.API
 
 # AbstractTree methods
 """
@@ -8,8 +8,17 @@ using AbstractPhylo.API
 
 
 """
-function addbranch!(tree::AbstractTree, branchname = _newbranchlabel(tree))
-    return _addbranch!(tree, branchname)
+function addbranch!(tree::AbstractTree, source, target, length::Float64;
+                    branchname = _newbranchlabel(tree))
+    _hasnode(tree, source) && hasoutboundspace(tree, source) ||
+        error("Tree does not have an available source node called $source")
+    _hasnode(tree, target) && !hasinbound(tree, target) ||
+        error("Tree does not have an available target node called $target")
+    target != source || error("Branch must connect different nodes")
+    _hasbranch(tree, branchname) &&
+        error("Tree already has a branch called $branchname")
+    
+    return _addbranch!(tree, source, target, length, branchname)
 end
 
 """
@@ -18,6 +27,8 @@ end
 
 """
 function deletebranch!(tree::AbstractTree, branchname)
+    _hasbranch(tree, branchname) ||
+        error("Tree does not have a branch called $branchname")
     return _deletebranch!(tree, branchname)
 end
 
@@ -28,10 +39,18 @@ end
 
 
 """
-function branch!(tree::AbstractTree,
+function branch!(tree::AbstractTree, source, length::Float64 = NaN;
                  nodename = _newnodelabel(tree),
                  branchname = _newbranchlabel(tree))
-    return _branch!(tree, nodename, branchname)
+    _hasnode(tree, source) ||
+        error("Node $source not present in tree")
+    !_hasnode(tree, nodename) ||
+        error("Node $nodename already present in tree")
+    _hasoutboundspace(_getnode(tree, source)) ||
+        error("Node $source has no space to add branches")
+    
+    return _branch!(tree, source, length,
+                    nodename = nodename, branchname = branchname)
 end
 
 """
@@ -40,7 +59,7 @@ end
 
 
 """
-function addnode!(tree::AbstractTree, nodename = _newnodelabel(tree))
+function addnode!(tree::AbstractTree; nodename = _newnodelabel(tree))
     return _addnode!(tree, nodename)
 end
 
@@ -108,39 +127,41 @@ function getbranchnames(tree::AbstractTree)
 end
 
 """
-    hasbranch(tree::AbstractTree, nodename)
+    hasbranch(tree::AbstractTree, branchname)
 
 
 """
-function hasbranch(tree::AbstractTree, nodename)
-    return _hasbranch(tree, nodename)
+function hasbranch(tree::AbstractTree, branchname)
+    return _hasbranch(tree, branchname)
 end
 
 """
-    getbranch(tree::AbstractTree, nodename)
+    getbranch(tree::AbstractTree, branchname)
 
 
 """
-function getbranch(tree::AbstractTree, nodename)
-    return _getbranch(tree, nodename)
+function getbranch(tree::AbstractTree, branchname)
+    _hasbranch(tree, branchname) ||
+        error("Branch $branchname does not exist")
+    return _getbranch(tree, branchname)
 end
 
 """
-    hasrootheight
+    hasrootheight(tree::AbstractTree)
 
 
 """
 function hasrootheight(tree::AbstractTree)
-
+    return _hasrootheight(tree)
 end
 
 """
-    getrootheight
+    getrootheight(tree::AbstractTree)
 
 
 """
 function getrootheight(tree::AbstractTree)
-
+    return _getrootheight(tree)
 end
 
 """
@@ -157,45 +178,45 @@ end
 
 
 """
-function validate(tree::AbstractTree)
-    nodes = getnodes(tree)
-    branches = getbranches(tree)
+function validate{NL, BL}(tree::AbstractTree{NL, BL})
+    nodes = _getnodes(tree)
+    branches = _getbranches(tree)
     if !isempty(nodes) || !isempty(branches)
         # We need to validate the connections
         if Set(mapreduce(_getinbound, push!, BL[],
-                         Compat.Iterators.filter(_hasinbound, values(nodes)))) !=
+                         NodeIterator(tree, _hasinbound))) !=
                              Set(keys(branches))
             warn("Inbound branches must exactly match Branch labels")
             return false
         end
         
-        if Set(mapreduce(_getoutbounds, append!, BL[], values(nodes))) !=
+        if Set(mapreduce(_getoutbounds, append!, BL[], NodeIterator(tree))) !=
             Set(keys(branches))
             warn("Node outbound branches must exactly match Branch labels")
             return false
         end
         
-        if !(mapreduce(_getsource, push!, NL[], values(branches)) ⊆
+        if !(mapreduce(_getsource, push!, NL[], BranchIterator(tree)) ⊆
              Set(keys(nodes)))
             warn("Branch sources must be node labels")
             return false
         end
 
-        if !(mapreduce(_gettarget, push!, NL[], values(branches)) ⊆
+        if !(mapreduce(_gettarget, push!, NL[], BranchIterator(tree)) ⊆
              Set(keys(nodes)))
             warn("Branch targets must be node labels")
             return false
         end
 
-        if length(findroots(tree) ∪ findunattacheds(tree)) == 0
-            warn("This tree has no roots")
-            return false
-        end
+#        if length(findroots(tree) ∪ findunattacheds(tree)) == 0
+#            warn("This tree has no roots")
+#            return false
+#        end
 
-        if length(findleaves(tree) ∪ findunattacheds(tree)) == 0
-            warn("This tree has no leaves")
-            return false
-        end
+#        if length(findleaves(tree) ∪ findunattacheds(tree)) == 0
+#            warn("This tree has no leaves")
+#            return false
+#        end
     end
     
     return _validate(tree)
@@ -300,6 +321,54 @@ function outdegree(tree::AbstractTree, nodename)
 end
 
 """
+    hasoutboundspace(node::AbstractNode)
+    hasoutboundspace(tree::AbstractTree, nodename)
+
+
+"""
+function hasoutboundspace end
+
+function hasoutboundspace(node::AbstractNode)
+    return _hasoutboundspace(node)
+end
+
+function hasoutboundspace(tree::AbstractTree, nodename)
+    return _hasoutboundspace(_getnode(tree, nodename))
+end
+
+"""
+    hasinbound(node::AbstractNode)
+    hasinbound(tree::AbstractTree, nodename)
+
+
+"""
+function hasinbound end
+
+function hasinbound(node::AbstractNode)
+    return _hasinbound(node)
+end
+
+function hasinbound(tree::AbstractTree, nodename)
+    return _hasinbound(_getnode(tree, nodename))
+end
+
+"""
+    hasinboundspace(node::AbstractNode)
+    hasinboundspace(tree::AbstractTree, nodename)
+
+
+"""
+function hasinboundspace end
+
+function hasinboundspace(node::AbstractNode)
+    return _hasinboundspace(node)
+end
+
+function hasinboundspace(tree::AbstractTree, nodename)
+    return _hasinboundspace(_getnode(tree, nodename))
+end
+
+"""
     getinbound(node::AbstractNode)
     getinbound(tree::AbstractTree, nodename)
 
@@ -359,7 +428,7 @@ end
 
 """
 function setheight!(tree::AbstractTree, nodename, height)
-    return _setheight(tree, nodename, height)
+    return _setheight!(tree, nodename, height)
 end
 
 
@@ -447,4 +516,3 @@ function changetarget!(tree::AbstractTree, branchname, target)
     _setinbound!(tree, target, branchname)
     return branchname
 end
-
