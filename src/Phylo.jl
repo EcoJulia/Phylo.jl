@@ -1,21 +1,22 @@
 __precompile__()
 
 """
-    AbstractPhylo package
+    Phylo package
 
-The `AbstractPhylo` package provides a standard abstract interface to
+The `Phylo` package provides a standard abstract interface to
 phylogenetic trees, by defining `AbstractNode`, `AbstractBranch` and
 `AbstractTree` supertypes, and methods to interface to them. It also
-provides (through the `AbstractPhylo.API` submodule) methods to
+provides (through the `Phylo.API` submodule) methods to
 (re)define to write your own phylogenetic type in a way that will
-interact cleanly with other phylogenetic packages.
+interact cleanly with other phylogenetic packages. Finally, it provides
+a simple phylogenetics type.
 """
-module AbstractPhylo
+module Phylo
 
 """
-    AbstractPhylo.API submodule
+    Phylo.API submodule
 
-The `AbstractPhylo.API` submodule should be `import[all]`ed if you want to
+The `Phylo.API` submodule should be `import[all]`ed if you want to
 create a new phylogeny, node or branch subtype. Otherwise it can be
 ignored.
 """
@@ -68,9 +69,11 @@ export hasheight, getheight, setheight!
 export getsource, gettarget, getlength
 export changesource!, changetarget!
 
+# Iterator methods expanded
 include("Iterators.jl")
 export NodeIterator, BranchIterator
 
+# Display methods expanded
 include("show.jl")
 
 end # module

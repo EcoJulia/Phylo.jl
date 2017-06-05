@@ -1,4 +1,4 @@
-using AbstractPhylo.API
+using Phylo.API
 
 import Base.start, Base.next, Base.done
 import Base.iteratorsize, Base.iteratoreltype, Base.eltype, Base.length
