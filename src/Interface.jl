@@ -516,3 +516,57 @@ function changetarget!(tree::AbstractTree, branchname, target)
     _setinbound!(tree, target, branchname)
     return branchname
 end
+
+"""
+    getleafrecords(::AbstractTree)
+
+retrieve the Dict containing the leaf records of the tree.
+"""
+function getleafrecords(tree::AbstractTree)
+    return _getleafrecords(tree)
+end
+
+"""
+    getleafrecord(::AbstractTree, label)
+
+retrieve the leaf record for a leaf of the tree.
+"""
+function getleafrecord(tree::AbstractTree, label)
+    return _getleafrecord(tree, label)
+end
+
+"""
+    setleafrecord(::AbstractTree, label, value)
+
+Set the leaf record for a leaf of the tree.
+"""
+function setleafrecord!(tree::AbstractTree, label, value)
+    return _setleafrecord!(tree, label, value)
+end
+
+"""
+    getnoderecords(::AbstractTree)
+
+retrieve the Dict containing the node records of the tree.
+"""
+function getnoderecords(tree::AbstractTree)
+    return _getnoderecords(tree)
+end
+
+"""
+    getnoderecord(::AbstractTree, label)
+
+retrieve the node record for a leaf of the tree.
+"""
+function getnoderecord(tree::AbstractTree, label)
+    return _getnoderecord(tree, label)
+end
+
+"""
+    setnoderecord(::AbstractTree, label, value)
+
+Set the node record for a node of the tree.
+"""
+function setnoderecord!(tree::AbstractTree, label, value)
+    return _setnoderecord!(tree, label, value)
+end
