@@ -1,19 +1,29 @@
-# Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
+
+notifications:
+  recipients:
+    - git@richardreeve.net
+  email:
+    on_success: change
+    on_failure: always
+
 os:
   - linux
   - osx
+  
 julia:
-  - release
-  - nightly
+  - 0.5
+  - 0.6
+  
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-#script:
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("AbstractPhylo"); Pkg.test("AbstractPhylo"; coverage=true)'
+
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo"; coverage=true)'
+
 after_success:
   # push coverage results to Coveralls
-  - julia -e 'cd(Pkg.dir("AbstractPhylo")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia -e 'cd(Pkg.dir("Phylo")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
-  - julia -e 'cd(Pkg.dir("AbstractPhylo")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'cd(Pkg.dir("Phylo")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
