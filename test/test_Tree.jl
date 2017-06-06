@@ -17,7 +17,7 @@ using Base.Test
     @test !validate(nt)
     addbranch!(nt, r, "Human", 5.0)
     addbranch!(nt, r, n, 3.0)
-    @test maximum(distance(nt)) ≈ 10.0
+    @test maximum(distances(nt)) ≈ 10.0
     @test validate(nt)
 end
 
