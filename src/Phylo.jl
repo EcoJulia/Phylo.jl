@@ -87,7 +87,7 @@ export NodeTree, NamedTree,
     hasrootheight, getrootheight, setrootheight!, clearrootheight!, getrootdistance
 
 
-include("distance.jl")
+include("lengths.jl")
 export treehistory, treepath, distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
