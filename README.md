@@ -1,6 +1,6 @@
-# Diversity
+# Phylo
 
-*Package for measuring and partitioning diversity*
+*Package for creating and manipulating phylogenies*
 
 | **Documentation**                               | **PackageEvaluator**            | **Build Status of master**                                                    |
 |:-----------------------------------------------:|:-------------------------------:|:-------------------------------------------------------------------:|
@@ -10,8 +10,6 @@
 ## Install
 
 *Phylo* is not yet in `METADATA` so has to be installed via `Pkg.clone("https://github.com/richardreeve/Phylo.jl.git")`.
-
-# Phylo
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest
