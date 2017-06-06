@@ -1,9 +1,5 @@
+using Phylo
 using Compat
-
-@compat abstract type AbstractNode end
-@compat abstract type AbstractBranch end
-@compat abstract type AbstractTree{NodeLabel, BranchLabel} end
-@compat abstract type AbstractInfo end
 
 function _newlabel{Label <: Integer}(ids::Vector{Label}, _)
     return isempty(ids) ? 1 : maximum(ids) + 1

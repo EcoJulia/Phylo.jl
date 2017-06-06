@@ -13,6 +13,13 @@ a simple phylogenetics type.
 """
 module Phylo
 
+using Compat
+@compat abstract type AbstractNode end
+@compat abstract type AbstractBranch end
+@compat abstract type AbstractTree{NodeLabel, BranchLabel} end
+@compat abstract type AbstractInfo end
+export AbstractNode, AbstractBranch, AbstractTree, AbstractInfo
+
 """
     Phylo.API submodule
 
@@ -22,7 +29,6 @@ ignored.
 """
 module API
 include("API.jl")
-export AbstractNode, AbstractBranch, AbstractTree, AbstractInfo
 # AbstractTree methods
 export _addbranch!, _deletebranch!, _branch!
 export _addnode!, _addnodes!, _deletenode!
