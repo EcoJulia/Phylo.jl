@@ -5,6 +5,8 @@ using Base.Test
 
 @testset "NamedTree()" begin
     nt = NamedTree(["Dog", "Cat", "Human"])
+    @test isnull(noderoute(nt, "Dog", "Cat"))
+    @test isnull(branchroute(nt, "Dog", "Human"))
     @test validate(nt)
     n = addnode!(nt)
     @test !validate(nt)
@@ -19,6 +21,7 @@ using Base.Test
     addbranch!(nt, r, n, 3.0)
     @test maximum(distances(nt)) ≈ 10.0
     @test validate(nt)
+    @test get(noderoute(nt, "Human", "Dog")) == ["Human", "Node 2", "Node 1", "Dog"]
 end
 
 @testset "NodeTree()" begin

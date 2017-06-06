@@ -94,7 +94,8 @@ export NodeTree, NamedTree,
 
 
 include("lengths.jl")
-export treehistory, treepath, distance, distances, heighttoroot, heightstoroot
+export branchhistory, branchroute, nodehistory, noderoute
+export distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
 include("Iterators.jl")

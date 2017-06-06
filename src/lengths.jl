@@ -1,35 +1,66 @@
-function _historyandroot{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+function _treehistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
     branches = BL[]
+    nodes = NL[node]
     while hasinbound(tree, node)
         inbound = getinbound(tree, node)
         branches = push!(branches, inbound)
         node = getsource(tree, inbound)
+        nodes = push!(nodes, node)
     end
-    return branches, node
+    return branches, nodes
 end
 
 """
-    treehistory(tree::AbstractTree, node)
+    branchhistory(tree::AbstractTree, node)
 
 Find the branch route between a node on a tree and its root
 """
-function treehistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
-    return _historyandroot(tree, node)[1]
+function branchhistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+    return _treehistory(tree, node)[1]
 end
 
 """
-    treepath(tree::AbstractTree, node1, node2)
+    nodehistory(tree::AbstractTree, node)
+
+Find the node route between a node on a tree and its root
+"""
+function nodehistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+    return _treehistory(tree, node)[2]
+end
+
+"""
+    branchroute(tree::AbstractTree, node1, node2)
 
 Find the branch route between two nodes on a tree
 """
-function treepath{NL, BL}(tree::AbstractTree{NL, BL}, node1::NL, node2::NL)
-    branches1, root1 = _historyandroot(tree, node1)
-    branches2, root2 = _historyandroot(tree, node2)
-    root1 == root2 ||
+function branchroute{NL, BL}(tree::AbstractTree{NL, BL}, node1::NL, node2::NL)
+    branches1, nodes1 = _treehistory(tree, node1)
+    branches2, nodes2 = _treehistory(tree, node2)
+    nodes1[end] == nodes2[end] ||
         return Nullable{Vector{BL}}()
     common = branches1 ∩ branches2
     return Nullable(append!(filter(b -> b ∉ common, branches1),
                             filter(b -> b ∉ common, reverse(branches2))))
+end
+
+"""
+    noderoute(tree::AbstractTree, node1, node2)
+
+Find the node route between two nodes on a tree
+"""
+function noderoute{NL, BL}(tree::AbstractTree{NL, BL}, node1::NL, node2::NL)
+    branches1, nodes1 = _treehistory(tree, node1)
+    branches2, nodes2 = _treehistory(tree, node2)
+    nodes1[end] == nodes2[end] ||
+        return Nullable{Vector{NL}}()
+    common = nodes1[end]
+    while min(length(nodes1), length(nodes2)) > 0 && nodes1[end] == nodes2[end]
+        common = nodes1[end]
+        pop!(nodes1)
+        pop!(nodes2)
+    end
+    push!(nodes1, common)
+    return Nullable(append!(nodes1, reverse(nodes2)))
 end
 
 """
@@ -38,7 +69,7 @@ end
 Distance between two nodes on a tree
 """
 function distance(tree::AbstractTree, node1, node2)
-    branches = treepath(tree, node1, node2)
+    branches = branchroute(tree, node1, node2)
     return isnull(branches) ? Inf :
         mapreduce(branch -> getlength(tree, branch), +, 0.0, get(branches))
 end
@@ -60,7 +91,7 @@ Height of a node of the tree above the root
 """
 function heighttoroot(tree::AbstractTree, node)
     return mapreduce(branch -> getlength(tree, branch), +, 0.0,
-                     treehistory(tree, node))
+                     branchhistory(tree, node))
 end
 
 """
