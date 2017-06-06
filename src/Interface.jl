@@ -1,6 +1,9 @@
 using Compat
 using Phylo.API
 
+getnodes(tree::AbstractTree) = _getnodes(tree)
+getbranches(tree::AbstractTree) = _getbranches(tree)
+
 # AbstractTree methods
 """
     addbranch!(tree::AbstractTree)
@@ -207,16 +210,6 @@ function validate{NL, BL}(tree::AbstractTree{NL, BL})
             warn("Branch targets must be node labels")
             return false
         end
-
-#        if length(findroots(tree) ∪ findunattacheds(tree)) == 0
-#            warn("This tree has no roots")
-#            return false
-#        end
-
-#        if length(findleaves(tree) ∪ findunattacheds(tree)) == 0
-#            warn("This tree has no leaves")
-#            return false
-#        end
     end
     
     return _validate(tree)
@@ -515,6 +508,16 @@ function changetarget!(tree::AbstractTree, branchname, target)
     _deleteinbound!(tree, oldtarget, branchname)
     _setinbound!(tree, target, branchname)
     return branchname
+end
+
+
+"""
+    getleafnames(::AbstractTree)
+
+retrieve the leaf names from the tree.
+"""
+function getleafnames(tree::AbstractTree)
+    return collect(_getleafnames(tree))
 end
 
 """
