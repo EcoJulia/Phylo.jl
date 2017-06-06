@@ -55,8 +55,8 @@ include("Interface.jl")
 # AbstractTree methods
 export addbranch!, deletebranch!, branch!
 export addnode!, addnodes!, deletenode!
-export getnodenames, hasnode, getnode
-export getbranchnames, hasbranch, getbranch
+export getnodenames, hasnode, getnode, getnodes
+export getbranchnames, hasbranch, getbranch, getbranches
 export hasrootheight, getrootheight, setrootheight!
 export hasparent, getparent, getancestors
 export haschildren, getchildren, getdescendants
@@ -65,11 +65,30 @@ export validate
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
+export getleafnames
+export getleafrecord, setleafrecord!, getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
 export getsource, gettarget, getlength
 export changesource!, changetarget!
+
+include("Info.jl")
+export LeafInfo
+
+include("Branch.jl")
+export Branch
+
+include("Node.jl")
+export BinaryNode
+
+include("Tree.jl")
+export NodeTree, NamedTree,
+    hasrootheight, getrootheight, setrootheight!, clearrootheight!, getrootdistance
+
+
+include("distance.jl")
+export treehistory, treepath, distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
 include("Iterators.jl")
