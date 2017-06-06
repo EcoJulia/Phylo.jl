@@ -83,10 +83,57 @@ function show{B <: AbstractBranch}(io::IO, object::B)
     print(io, "[node $source]-->[$(_getlength(object)) length branch]-->[node $target]")   
 end  
 
+function show{BT, B <: AbstractBranch}(io::IO, p::Pair{BT, B})
+    NT = typeof(_getsource(p[2]))
+    source = NT <: Number ? "$(_getsource(p[2]))" : "\"$(_getsource(p[2]))\""
+    target = NT <: Number ? "$(_gettarget(p[2]))" : "\"$(_gettarget(p[2]))\""
+    branch = BT <: Number ? "$(p[1])" : "\"$(p[1])\""
+    print(io, "[node $source]-->[$(_getlength(p[2])) length branch $branch]-->[node $target]")
+end
+
+function show(io::IO, object::AbstractTree)
+    print(io, "Phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches")
+end
+
 function showall(io::IO, object::AbstractTree)
     print(io, object)
     print(io, "Nodes:\n") 
     print(io, _getnodes(object))
     print(io, "Branches:\n") 
     print(io, _getbranches(object))
+end
+
+
+
+
+function show(io::IO, object::NamedTree)
+    if get(io, :compact, false)
+        print(io, "NamedTree phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafrecords(object))) leaves) and $(length(_getbranches(object))) branches")
+    else
+        print(io, "NamedTree phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches\n") 
+        print(io, "Leaf names:\n")
+        print(io, keys(getleafrecords(object)))
+    end
+end
+
+function show{ND}(io::IO, object::NodeTree{ND})
+    if get(io, :compact, false)
+        print(io, "$(string(typeof(object))) phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafrecords(object))) leaves) and $(length(_getbranches(object))) branches")
+    else
+        print(io, "$(string(typeof(object))) phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches\n") 
+        print(io, "Leaf names:\n")
+        print(io, keys(getleafrecords(object)))
+    end
+end
+
+function showall{ND}(io::IO, object::NodeTree{ND})
+    print(io, object)
+    print(io, "\nNodes:\n") 
+    print(io, _getnodes(object))
+    print(io, "\nBranches:\n") 
+    print(io, _getbranches(object))
+    if ND != Void
+        print(io, "\nNodeData:\n") 
+        print(io, getnoderecords(object))
+    end
 end
