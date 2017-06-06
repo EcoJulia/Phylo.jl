@@ -92,7 +92,7 @@ export treehistory, treepath, distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
 include("Iterators.jl")
-export NodeIterator, BranchIterator
+export NodeIterator, NodeNameIterator, BranchIterator
 
 # Display methods expanded
 include("show.jl")

@@ -91,6 +91,97 @@ function length(ni::NodeIterator)
     return len
 end
 
+immutable NodeNameIterator{T <: AbstractTree}
+    tree::T
+    filterfn::Nullable{Function}
+end
+
+NodeNameIterator{T <: AbstractTree}(tree::T) =
+    NodeNameIterator{T}(tree, Nullable{Function}())
+
+NodeNameIterator{T <: AbstractTree}(tree::T, filterfn::Function) =
+    NodeNameIterator{T}(tree, Nullable{Function}(filterfn))
+
+function start(ni::NodeNameIterator)
+    nodes = getnodes(ni.tree)
+    state = start(nodes)
+    
+    if isnull(ni.filterfn) || done(nodes, state)
+        return state
+    end
+
+    fn = get(ni.filterfn)
+    val, after = next(nodes, state)
+    while !fn(_extractnode(val))
+        state = after
+        if done(nodes, state)
+            return state
+        end
+        val, after = next(nodes, state)
+    end
+    
+    return state
+end
+
+function next(ni::NodeNameIterator, state)
+    nodes = getnodes(ni.tree)
+    val, state = next(nodes, state)
+    node = _extractnode(val)
+    name = _extractnodename(val)
+    
+    if isnull(ni.filterfn) || done(ni, state)
+        return name, state
+    end
+
+    fn = get(ni.filterfn)
+    val, after = next(nodes, state)
+    while !fn(_extractnode(val))
+        state = after
+        if done(nodes, state)
+            return name, state
+        end
+        val, after = next(nodes, state)
+    end
+    
+    return name, state
+end
+
+function done(ni::NodeNameIterator, state)
+    return done(getnodes(ni.tree), state)
+end
+
+function iteratorsize(ni::Type{NodeNameIterator})
+    return HasLength()
+end
+
+function iteratoreltype(ni::Type{NodeNameIterator})
+    return HasEltype()
+end
+
+function eltype{T <: AbstractTree}(ni::NodeNameIterator{T})
+    return keytype(_getnodes(ni.tree))
+end
+
+function length(ni::NodeNameIterator)
+    nodes = _getnodes(ni.tree)
+    if isnull(ni.filterfn)
+        return length(nodes)
+    end
+    
+    len = 0
+    state = start(nodes)
+    fn = get(ni.filterfn)
+    while !done(nodes, state)
+        val, state = next(nodes, state)
+        if fn(_extractnode(val))
+            len += 1
+        end
+    end
+    
+    return len
+end
+
+
 immutable BranchIterator{T <: AbstractTree}
     tree::T
     filterfn::Nullable{Function}
@@ -162,19 +253,6 @@ function eltype{T <: AbstractTree}(bi::BranchIterator{T})
 end
 
 function length(bi::BranchIterator)
-    if isnull(bi.filterfn)
-        return length(_getbranches(bi.tree))
-    end
-    
-    len = 0
-    state = start(bi)
-    fn = get(bi.filterfn)
-    while !done(bi, state)
-        val, state = next(bi, state)
-        if fn(_extractbranch(val))
-            len += 1
-        end
-    end
-    
-    return len
+    return isnull(bi.filterfn) ? length(_getbranches(bi.tree)) :
+        mapreduce(val -> fn(_extractbranch(val)) ? 1 : 0, +, 0, bi)
 end
