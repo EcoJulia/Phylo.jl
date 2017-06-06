@@ -3,6 +3,7 @@ using Compat
 @compat abstract type AbstractNode end
 @compat abstract type AbstractBranch end
 @compat abstract type AbstractTree{NodeLabel, BranchLabel} end
+@compat abstract type AbstractInfo end
 
 function _newlabel{Label <: Integer}(ids::Vector{Label}, _)
     return isempty(ids) ? 1 : maximum(ids) + 1
@@ -29,6 +30,10 @@ function _extractnode{L, N <: AbstractNode}(pair::Pair{L, N})
     return pair[2]
 end
 
+function _extractnodename{L, N <: AbstractNode}(pair::Pair{L, N})
+    return pair[1]
+end
+
 function _nodetype end
 
 function _extractbranch{B <: AbstractBranch}(branch::B)
@@ -37,6 +42,10 @@ end
 
 function _extractbranch{L, B <: AbstractBranch}(pair::Pair{L, B})
     return pair[2]
+end
+
+function _extractbranchname{L, B <: AbstractBranch}(pair::Pair{L, B})
+    return pair[1]
 end
 
 function _branchtype end
@@ -224,14 +233,14 @@ end
 
 
 """
-_isleaf(node::AbstractNode) = _outdegree(node) == 0 && _hasinbound(node)
+_isleaf(node::AbstractNode) = _outdegree(node) == 0
 
 """
     _isroot(node::AbstractNode)
 
 
 """
-_isroot(node::AbstractNode) = !_hasinbound(node) && _outdegree(node) > 0
+_isroot(node::AbstractNode) = !_hasinbound(node)
 
 """
     _isinternal(node::AbstractNode)

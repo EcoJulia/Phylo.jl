@@ -22,14 +22,16 @@ ignored.
 """
 module API
 include("API.jl")
-export AbstractNode, AbstractBranch, AbstractTree
+export AbstractNode, AbstractBranch, AbstractTree, AbstractInfo
 # AbstractTree methods
 export _addbranch!, _deletebranch!, _branch!
 export _addnode!, _addnodes!, _deletenode!
 export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!
-export _nodetype, _branchtype, _extractnode, _extractbranch
+export _nodetype, _branchtype
+export _extractnode, _extractbranch
+export _extractnodename, _extractbranchname
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
