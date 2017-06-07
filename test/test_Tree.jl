@@ -4,7 +4,8 @@ using Phylo
 using Base.Test
 
 @testset "NamedTree()" begin
-    nt = NamedTree(["Dog", "Cat", "Human"])
+    species = ["Dog", "Cat", "Human"]
+    nt = NamedTree(species)
     @test isnull(noderoute(nt, "Dog", "Cat"))
     @test isnull(branchroute(nt, "Dog", "Human"))
     @test validate(nt)
@@ -22,6 +23,12 @@ using Base.Test
     @test maximum(distances(nt)) ≈ 10.0
     @test validate(nt)
     @test get(noderoute(nt, "Human", "Dog")) == ["Human", "Node 2", "Node 1", "Dog"]
+    nu = Nonultrametric(10)
+    @test validate(rand(nu))
+    @test Set(getleafnames(rand(nu))) == Set(getleafnames(rand(nu)))
+    t = rand(Nonultrametric(species))
+    @test validate(t)
+    @test Set(getleafnames(t)) == Set(species)
 end
 
 @testset "NodeTree()" begin
