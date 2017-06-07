@@ -6,8 +6,8 @@ getbranches(tree::AbstractTree) = _getbranches(tree)
 
 # AbstractTree methods
 """
-    addbranch!(tree::AbstractTree)
-    addbranch!(tree::AbstractTree, branchname)
+    addbranch!(tree::AbstractTree, source, target, length::Float64;
+               branchname = _newbranchlabel(tree))
 
 
 """
