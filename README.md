@@ -21,7 +21,7 @@
 [travis-url]: https://travis-ci.org/richardreeve/Phylo.jl?branch=master
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/github/richardreeve/Phylo.jl?svg=true&branch=master
-[appveyor-url]: https://ci.appveyor.com/project/richardreeve/diversity-jl/branch/master
+[appveyor-url]: https://ci.appveyor.com/project/richardreeve/phylo-jl/branch/master
 
 [coveralls-img]: https://img.shields.io/coveralls/richardreeve/Phylo.jl.svg
 [coveralls-url]: https://coveralls.io/r/richardreeve/Phylo.jl?branch=master
