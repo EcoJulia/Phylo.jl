@@ -2,15 +2,15 @@
 
 *Package for creating and manipulating phylogenies*
 
-| **Documentation**                               | **PackageEvaluator**            | **Build Status of master**                                                    |
-|:-----------------------------------------------:|:-------------------------------:|:-------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.5-img]][pkg-0.5-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
-| [![][docs-latest-img]][docs-latest-url]         | [![][pkg-0.6-img]][pkg-0.6-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| **PackageEvaluator**            | **Build Status of master**                                                    |
+|:------------------------:|:-------------------------------------------------------------------:|
+| [![][pkg-0.5-img]][pkg-0.5-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
+| ![][pkg-0.6-img]][pkg-0.6-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
- [Diversity](diversity-url) package to calculate phylogenetic
- diversity (currently in the [phylogenetics](phylogenetics-url)
+ [Diversity][diversity-url] package to calculate phylogenetic
+ diversity (currently in the [phylogenetics][phylogenetics-url]
  branch). Both are currently under development and under development,
  so please [raise an issue][issues-url] if you find any problems.
  Currently the package can be used to generate random trees using
@@ -29,7 +29,7 @@ String["tip 4","tip 1","tip 2","tip 3","tip 5"]
 ```
 
 The main purpose of this package is to provide a framework for
-phylogenetics to use in our [Diversity](diversity-url) package, and
+phylogenetics to use in our [Diversity][diversity-url] package, and
 will be adapted as appropriate until both are functioning as required.
 
 ## Install
