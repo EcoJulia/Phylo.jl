@@ -11,18 +11,19 @@ using Base.Test
     @test validate(nt)
     n = addnode!(nt)
     @test !validate(nt)
-    addbranch!(nt, n, "Dog", 2.0)
-    addbranch!(nt, n, "Cat", 2.0)
+    b1 = addbranch!(nt, n, "Dog", 2.0)
+    b2 = addbranch!(nt, n, "Cat", 2.0)
     @test_throws ErrorException addbranch!(nt, n, "Human", 2.0)
     @test validate(nt)
     r = addnode!(nt)
     @test_throws ErrorException addbranch!(nt, r, "Potato", 2.0)
     @test !validate(nt)
-    addbranch!(nt, r, "Human", 5.0)
-    addbranch!(nt, r, n, 3.0)
+    b3 = addbranch!(nt, r, "Human", 5.0)
+    b4 = addbranch!(nt, r, n, 3.0)
     @test maximum(distances(nt)) ≈ 10.0
     @test validate(nt)
-    @test get(noderoute(nt, "Human", "Dog")) == ["Human", "Node 2", "Node 1", "Dog"]
+    @test get(noderoute(nt, "Human", "Dog")) == ["Human", r, n, "Dog"]
+    @test get(branchroute(nt, "Human", "Dog")) == [b3, b4, b1]
     nu = Nonultrametric(10)
     @test validate(rand(nu))
     @test Set(getleafnames(rand(nu))) == Set(getleafnames(rand(nu)))
