@@ -101,6 +101,10 @@ export distance, distances, heighttoroot, heightstoroot
 include("Iterators.jl")
 export NodeIterator, NodeNameIterator, BranchIterator
 
+# Random tree generator
+include("rand.jl")
+export Nonultrametric
+
 # Display methods expanded
 include("show.jl")
 
