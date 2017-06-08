@@ -116,7 +116,7 @@ function show(io::IO, object::NamedTree)
     end
 end
 
-function show{ND}(io::IO, object::NodeTree{ND})
+function show(io::IO, object::BinaryTree)
     if get(io, :compact, false)
         print(io, "$(string(typeof(object))) phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafrecords(object))) leaves) and $(length(_getbranches(object))) branches")
     else
@@ -126,7 +126,7 @@ function show{ND}(io::IO, object::NodeTree{ND})
     end
 end
 
-function showall{ND}(io::IO, object::NodeTree{ND})
+function showall{LI, ND}(io::IO, object::BinaryTree{LI, ND})
     print(io, object)
     print(io, "\nNodes:\n") 
     print(io, _getnodes(object))

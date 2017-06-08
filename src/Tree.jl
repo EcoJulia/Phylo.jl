@@ -1,11 +1,11 @@
 importall Phylo.API
 
 """
-    NodeTree
+    BinaryTree
 
 Binary phylogenetic tree object with known leaves and per node data
 """
-type NodeTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
+type BinaryTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
     nodes::Dict{String, BinaryNode{Int}}
     branches::Dict{Int, Branch{String}}
     leafrecords::Dict{String, LI}
@@ -13,7 +13,7 @@ type NodeTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
     rootheight::Nullable{Float64}
 end
 
-function NodeTree{LI, ND}(lt::NodeTree{LI, ND}; copyinfo=true, empty=true)
+function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
@@ -27,11 +27,11 @@ function NodeTree{LI, ND}(lt::NodeTree{LI, ND}; copyinfo=true, empty=true)
         noderecords = deepcopy(getnoderecords(lt))
         branches = deepcopy(getbranches(lt))
     end
-    return NodeTree{LI, ND}(nodes, branches, leafrecords, noderecords,
+    return BinaryTree{LI, ND}(nodes, branches, leafrecords, noderecords,
                             lt.rootheight)
 end
 
-function NodeTree(leaves::AbstractVector{String};
+function BinaryTree(leaves::AbstractVector{String};
                   rootheight::Nullable{Float64} = Nullable{Float64}(),
                   leaftype::Type = LeafInfo,
                   nodetype::Type = Void)
@@ -40,11 +40,11 @@ function NodeTree(leaves::AbstractVector{String};
     nodes = Dict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
     leafrecords = Dict(map(leaf -> leaf => leaftype(), leaves))
     noderecords = Dict(map(leaf -> leaf => nodetype(), leaves))
-    return NodeTree{leaftype, nodetype}(nodes, Dict{Int, Branch{String}}(),
+    return BinaryTree{leaftype, nodetype}(nodes, Dict{Int, Branch{String}}(),
                                         leafrecords, noderecords, rootheight)
 end
 
-function NodeTree(numleaves::Int;
+function BinaryTree(numleaves::Int;
                   rootheight::Nullable{Float64} = Nullable{Float64}(),
                   leaftype::Type = LeafInfo,
                   nodetype::Type = Void)
@@ -54,45 +54,45 @@ function NodeTree(numleaves::Int;
     nodes = Dict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
     leafrecords = Dict(map(leaf -> leaf => leaftype(), leaves))
     noderecords = Dict(map(leaf -> leaf => nodetype(), leaves))
-    return NodeTree{leaftype, nodetype}(nodes, Dict{Int, Branch{String}}(),
+    return BinaryTree{leaftype, nodetype}(nodes, Dict{Int, Branch{String}}(),
                                         leafrecords, noderecords, rootheight)
 end
 
-function _nodetype{LI, ND}(::Type{NodeTree{LI, ND}})
+function _nodetype{LI, ND}(::Type{BinaryTree{LI, ND}})
     return BinaryNode{Int}
 end
 
-function _branchtype{LI, ND}(::Type{NodeTree{LI, ND}})
+function _branchtype{LI, ND}(::Type{BinaryTree{LI, ND}})
     return Branch{String}
 end
 
-function _getnodes(nt::NodeTree)
+function _getnodes(nt::BinaryTree)
     return nt.nodes
 end
 
-function _getbranches(nt::NodeTree)
+function _getbranches(nt::BinaryTree)
     return nt.branches
 end
 
-function _getleafnames(nt::NodeTree)
+function _getleafnames(nt::BinaryTree)
     return keys(nt.leafrecords)
 end
 
-function _getleafrecords(nt::NodeTree)
+function _getleafrecords(nt::BinaryTree)
     return nt.leafrecords
 end
 
-function _getnoderecords(nt::NodeTree)
+function _getnoderecords(nt::BinaryTree)
     return nt.noderecords
 end
 
-function _addnode!{LI, NR}(tree::NodeTree{LI, NR}, nodename)
+function _addnode!{LI, NR}(tree::BinaryTree{LI, NR}, nodename)
     _setnode!(tree, nodename, BinaryNode{Int}())
     setnoderecord!(tree, nodename, NR())
     return nodename
 end
 
-function _deletenode!(tree::NodeTree, nodename)
+function _deletenode!(tree::BinaryTree, nodename)
     node = getnode(tree, nodename)
     if _hasinbound(node)
         deletebranch!(tree, _getinbound(node))
@@ -105,7 +105,7 @@ function _deletenode!(tree::NodeTree, nodename)
     return nodename
 end
 
-function _validate(tree::NodeTree)
+function _validate(tree::BinaryTree)
     if Set(NodeNameIterator(tree, isleaf)) != Set(getleafnames(tree))
         warn("Leaf records do not match actual leaves of tree")
         return false
@@ -132,20 +132,20 @@ function _validate(tree::NodeTree)
     return true
 end
 
-function _hasrootheight(tree::NodeTree)
+function _hasrootheight(tree::BinaryTree)
     return !isnull(tree.rootheight)
 end
 
-function _getrootheight(tree::NodeTree)
+function _getrootheight(tree::BinaryTree)
     return get(tree.rootheight)
 end
 
-function _setrootheight!(tree::NodeTree, height::Float64)
+function _setrootheight!(tree::BinaryTree, height::Float64)
     tree.rootheight = height
     return height
 end
 
-function _clearrootheight!(tree::NodeTree)
+function _clearrootheight!(tree::BinaryTree)
     tree.rootheight = Nullable{Float64}()
 end
 
@@ -154,10 +154,10 @@ end
 
 Binary phylogenetic tree object with known leaves
 """
-const NamedTree = NodeTree{LeafInfo, Void}
+const NamedTree = BinaryTree{LeafInfo, Void}
 
-NamedTree(leaves::AbstractVector{String}) = NodeTree(leaves)
-NamedTree(numleaves::Int) = NodeTree(numleaves)
+NamedTree(leaves::AbstractVector{String}) = BinaryTree(leaves)
+NamedTree(numleaves::Int) = BinaryTree(numleaves)
 
 
 
@@ -250,23 +250,23 @@ end
 
 Clears the tree's root height record.
 """
-function clearrootheight!(tree::NodeTree)
+function clearrootheight!(tree::BinaryTree)
     _clearrootheight!(tree)
 end
 
-function _getnode(tree::NodeTree, label)
+function _getnode(tree::BinaryTree, label)
     return _getnodes(tree)[label]
 end
 
-function _getbranch(tree::NodeTree, label)
+function _getbranch(tree::BinaryTree, label)
     return _getbranches(tree)[label]
 end
 
-function _setnode!(tree::NodeTree, label, node)
+function _setnode!(tree::BinaryTree, label, node)
     return _getnodes(tree)[label] = node
 end
 
-function _setbranch!(tree::NodeTree, label, branch)
+function _setbranch!(tree::BinaryTree, label, branch)
     _hasbranch(tree, label) &&
         error("Branch $label already exists")
     return _getbranches(tree)[label] = branch
@@ -275,15 +275,15 @@ end
 # Interfaces to an info
 # ---------------------
 
-function _hasheight(tree::NodeTree, label)
+function _hasheight(tree::BinaryTree, label)
     return _hasheight(getleafrecord(tree, label))
 end
 
-function _getheight(tree::NodeTree, label)
+function _getheight(tree::BinaryTree, label)
     return _getheight(getleafrecord(tree, label))
 end
 
-function _setheight!(tree::NodeTree, label, height::Float64)
+function _setheight!(tree::BinaryTree, label, height::Float64)
     ai = getleafrecord(tree, label)
     _setheight!(ai, height)
     setleafrecord!(tree, label, ai)

@@ -32,8 +32,8 @@ using Base.Test
     @test Set(getleafnames(t)) == Set(species)
 end
 
-@testset "NodeTree()" begin
-    nt = NodeTree(["Dog", "Cat", "Human"], nodetype=Vector{Float64})
+@testset "BinaryTree()" begin
+    nt = BinaryTree(["Dog", "Cat", "Human"], nodetype=Vector{Float64})
     @test validate(nt)
     n = addnode!(nt)
     @test Set(getleafnames(nt)) == Set(["Dog", "Cat", "Human"])
@@ -49,7 +49,7 @@ end
     setnoderecord!(nt, "Dog", [1.0])
     @test getnoderecord(nt, "Dog")[1] ≈ 1.0
     @test length(getnoderecord(nt, "Cat")) == 0
-    nt2 = NodeTree(nt)
+    nt2 = BinaryTree(nt)
     @test length(getnoderecord(nt2, "Dog")) == 0
     @test Set(getleafnames(nt2)) == Set(["Dog", "Cat", "Human"])
     setheight!(nt, "Dog", 4.0)
