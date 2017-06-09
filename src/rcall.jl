@@ -57,5 +57,5 @@ function sexp(tree::NamedTree)
     robj = RObject(tor)
     robj = rcall(Symbol("attr<-"), robj, "order", "cladewise")
     robj = rcall(Symbol("class<-"), robj, "phylo")
-    return robj
+    return robj.p
 end
