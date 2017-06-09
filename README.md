@@ -11,10 +11,12 @@
  functionality for generating phylogenetic trees to feed into our
  [Diversity][diversity-url] package to calculate phylogenetic
  diversity (currently in the [phylogenetics][phylogenetics-url]
- branch). Both are currently under development and under development,
- so please [raise an issue][issues-url] if you find any problems.
- Currently the package can be used to generate random trees using
- `rand()`:
+ branch). Both are currently under development, so please
+ [raise an issue][issues-url] if you find any problems. Currently the
+ package can be used to make trees manually, and to generate random
+ trees using the framework from `Distributions`. For instance, to
+ construct a sampler for 5 tip non-ultrametric trees, and then
+ generate a random tree of that type:
 
 ```julia
 julia> using Phylo
@@ -30,7 +32,9 @@ String["tip 4","tip 1","tip 2","tip 3","tip 5"]
 
 The main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity][diversity-url] package, and
-will be adapted as appropriate until both are functioning as required.
+they will both be adapted as appropriate until both are functioning as
+required - see richardreeve/Diversity.jl#18.
+
 However, the other important feature that it holds is to allow an
 interface to R, allowing any existing R functionality to be carried
 out on julia trees, and trees to be read from disk and written using R
