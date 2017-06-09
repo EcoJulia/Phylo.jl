@@ -87,7 +87,7 @@ R> all.equal(rt, rt2)
 ```
 
 For the time being the code will only work with rooted binary trees
-with named tips and branch lengths. If there's [demand](issues-url)
+with named tips and branch lengths. If there's [demand][issues-url]
 for other types of trees, I'll look into it, but this is all I
 currently need.
 
