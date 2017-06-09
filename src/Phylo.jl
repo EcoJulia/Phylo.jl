@@ -89,9 +89,9 @@ include("Node.jl")
 export BinaryNode
 
 include("Tree.jl")
-export BinaryTree, NamedTree,
-    hasrootheight, getrootheight, setrootheight!, clearrootheight!, getrootdistance
-
+export BinaryTree, NamedTree
+export hasrootheight, getrootheight, setrootheight!, clearrootheight!
+export getrootdistance
 
 include("lengths.jl")
 export branchhistory, branchroute, nodehistory, noderoute
