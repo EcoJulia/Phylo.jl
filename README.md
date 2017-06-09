@@ -32,7 +32,9 @@ The main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity][diversity-url] package, and
 will be adapted as appropriate until both are functioning as required.
 However, the other important feature that it holds is to allow an
-interface to R. This is not built into the package as it will make
+interface to R, allowing any existing R functionality to be carried
+out on julia trees, and trees to be read from disk and written using R
+helper functions. This is not built into the package as it will make
 RCall (and R) a dependency, which I wanted to avoid. Instead, for now,
 if you want to use the R interface you need to do it manually, as
 below:
@@ -45,7 +47,12 @@ julia> cd(Pkg.dir("Phylo", "src"))
 julia> include("rcall.jl")
 
 R> library(ape)
+```
 
+You can then translate back and forth using `NamedTree` contructors on
+R `phylo` objects, and `RObject` constructors on julia `NamedTree` types:
+
+```julia
 julia> rt = rcall(:rtree, 10)
 RCall.RObject{RCall.VecSxp}
 
@@ -71,13 +78,18 @@ Tip labels:
 
 Rooted; includes branch lengths.
 
-julia> @rput rt
+julia> @rput rt;
 
-julia> @rput rt2
+julia> @rput rt2;
 
 R> all.equal(rt, rt2)
 [1] TRUE
 ```
+
+For the time being the code will only work with rooted binary trees
+with named tips and branch lengths. If there's [demand](issues-url)
+for other types of trees, I'll look into it, but this is all I
+currently need.
 
 ## Install
 
