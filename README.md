@@ -32,9 +32,10 @@ The main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity][diversity-url] package, and
 will be adapted as appropriate until both are functioning as required.
 However, the other important feature that it holds is to allow an
-interface to R. This is not built in by default as it will make RCall
-(and R) a dependency, which I wanted to avoid. Instead if you want to
-use the R interface, you need to do it manually, as below:
+interface to R. This is not built into the package as it will make
+RCall (and R) a dependency, which I wanted to avoid. Instead, for now,
+if you want to use the R interface you need to do it manually, as
+below:
 
 ```julia
 julia> using RCall
@@ -70,8 +71,12 @@ Tip labels:
 
 Rooted; includes branch lengths.
 
-julia> rcopy(rcall(Symbol("all.equal"), rt, rt2))
-true
+julia> @rput rt
+
+julia> @rput rt2
+
+R> all.equal(rt, rt2)
+[1] TRUE
 ```
 
 ## Install
