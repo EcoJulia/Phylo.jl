@@ -31,6 +31,48 @@ String["tip 4","tip 1","tip 2","tip 3","tip 5"]
 The main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity][diversity-url] package, and
 will be adapted as appropriate until both are functioning as required.
+However, the other important feature that it holds is to allow an
+interface to R. This is not built in by default as it will make RCall
+(and R) a dependency, which I wanted to avoid. Instead if you want to
+use the R interface, you need to do it manually, as below:
+
+```julia
+julia> using RCall
+
+julia> cd(Pkg.dir("Phylo", "src"))
+
+julia> include("rcall.jl")
+
+R> library(ape)
+
+julia> rt = rcall(:rtree, 10)
+RCall.RObject{RCall.VecSxp}
+
+Phylogenetic tree with 10 tips and 9 internal nodes.
+
+Tip labels:
+	t10, t8, t1, t2, t6, t5, ...
+
+Rooted; includes branch lengths.
+
+julia> jt = NamedTree(rt)
+NamedTree phylogenetic tree with 19 nodes and 18 branches
+Leaf names:
+String["t10", "t8", "t1", "t2", "t6", "t5", "t3", "t4", "t7", "t9"]
+
+julia> rt2 = RObject(jt)
+RCall.RObject{RCall.VecSxp}
+
+Phylogenetic tree with 10 tips and 9 internal nodes.
+
+Tip labels:
+	t10, t8, t1, t2, t6, t5, ...
+
+Rooted; includes branch lengths.
+
+julia> rcopy(rcall(Symbol("all.equal"), rt, rt2))
+true
+```
 
 ## Install
 
