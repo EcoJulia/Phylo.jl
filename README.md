@@ -72,8 +72,11 @@ NamedTree phylogenetic tree with 19 nodes and 18 branches
 Leaf names:
 String["t10", "t8", "t1", "t2", "t6", "t5", "t3", "t4", "t7", "t9"]
 
-julia> rt2 = RObject(jt)
-RCall.RObject{RCall.VecSxp}
+julia> @rput rt;
+
+julia> @rput jt; # Automatically translates jt back to R
+
+R> jt
 
 Phylogenetic tree with 10 tips and 9 internal nodes.
 
@@ -82,11 +85,7 @@ Tip labels:
 
 Rooted; includes branch lengths.
 
-julia> @rput rt;
-
-julia> @rput rt2;
-
-R> all.equal(rt, rt2)
+R> all.equal(rt, jt) # check no damage in translations
 [1] TRUE
 ```
 
