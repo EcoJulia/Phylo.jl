@@ -32,8 +32,8 @@ String["tip 4","tip 1","tip 2","tip 3","tip 5"]
 
 The main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity][diversity-url] package, and
-they will both be adapted as appropriate until both are functioning as
-required - see richardreeve/Diversity.jl#18.
+they will [both](https://github.com/richardreeve/Diversity.jl/pull/18)
+be adapted as appropriate until both are functioning as required.
 
 However, the other important feature that it holds is to allow an
 interface to R, allowing any existing R functionality to be carried
