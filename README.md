@@ -54,7 +54,8 @@ R> library(ape)
 ```
 
 You can then translate back and forth using `NamedTree` contructors on
-R `phylo` objects, and `RObject` constructors on julia `NamedTree` types:
+R `phylo` objects, and `RObject` constructors on julia `NamedTree`
+types to keep them in Julia or `@rput` to move the object into R:
 
 ```julia
 julia> rt = rcall(:rtree, 10)
