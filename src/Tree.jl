@@ -1,3 +1,4 @@
+using DataStructures
 importall Phylo.API
 
 """
@@ -6,10 +7,10 @@ importall Phylo.API
 Binary phylogenetic tree object with known leaves and per node data
 """
 type BinaryTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
-    nodes::Dict{String, BinaryNode{Int}}
+    nodes::OrderedDict{String, BinaryNode{Int}}
     branches::Dict{Int, Branch{String}}
-    leafrecords::Dict{String, LI}
-    noderecords::Dict{String, ND}
+    leafrecords::OrderedDict{String, LI}
+    noderecords::OrderedDict{String, ND}
     rootheight::Nullable{Float64}
 end
 
@@ -19,9 +20,9 @@ function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
     # Leaf records may be conserved across trees, as could be invariant?
     leafrecords = copyinfo ? deepcopy(getleafrecords(lt)) : getleafrecords(lt)
     if empty # Empty out everything else
-        nodes = Dict(map(leaf -> leaf => BinaryNode{Int}(), leafnames))
-        branches = Dict{Int, Branch{String}}()
-        noderecords = Dict(map(leaf -> leaf => ND(), leafnames))
+        nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leafnames))
+        branches = OrderedDict{Int, Branch{String}}()
+        noderecords = OrderedDict(map(leaf -> leaf => ND(), leafnames))
     else # Make copies of everything
         nodes = deepcopy(nodes)
         noderecords = deepcopy(getnoderecords(lt))
@@ -32,15 +33,15 @@ function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
 end
 
 function BinaryTree(leaves::AbstractVector{String};
-                  rootheight::Nullable{Float64} = Nullable{Float64}(),
-                  leaftype::Type = LeafInfo,
-                  nodetype::Type = Void)
+                    rootheight::Nullable{Float64} = Nullable{Float64}(),
+                    leaftype::Type = LeafInfo,
+                    nodetype::Type = Void)
     leaftype <: AbstractInfo ||
         error("Leaf information structure is not an subtype of AbstractInfo")
-    nodes = Dict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafrecords = Dict(map(leaf -> leaf => leaftype(), leaves))
-    noderecords = Dict(map(leaf -> leaf => nodetype(), leaves))
-    return BinaryTree{leaftype, nodetype}(nodes, Dict{Int, Branch{String}}(),
+    nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
+    leafrecords = OrderedDict(map(leaf -> leaf => leaftype(), leaves))
+    noderecords = OrderedDict(map(leaf -> leaf => nodetype(), leaves))
+    return BinaryTree{leaftype, nodetype}(nodes, OrderedDict{Int, Branch{String}}(),
                                         leafrecords, noderecords, rootheight)
 end
 
@@ -51,10 +52,10 @@ function BinaryTree(numleaves::Int;
     leaftype <: AbstractInfo ||
         error("Leaf information structure is not an subtype of AbstractInfo")
     leaves = map(num -> "Leaf $num", 1:numleaves)
-    nodes = Dict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafrecords = Dict(map(leaf -> leaf => leaftype(), leaves))
-    noderecords = Dict(map(leaf -> leaf => nodetype(), leaves))
-    return BinaryTree{leaftype, nodetype}(nodes, Dict{Int, Branch{String}}(),
+    nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
+    leafrecords = OrderedDict(map(leaf -> leaf => leaftype(), leaves))
+    noderecords = OrderedDict(map(leaf -> leaf => nodetype(), leaves))
+    return BinaryTree{leaftype, nodetype}(nodes, OrderedDict{Int, Branch{String}}(),
                                         leafrecords, noderecords, rootheight)
 end
 
@@ -213,12 +214,12 @@ end
 
 #  - _getleafrecords()
 function _getleafrecords(tree::AbstractTree)
-    return Dict(map(leaf -> leaf=>nothing,
+    return OrderedDict(map(leaf -> leaf=>nothing,
                     findleaves(tree) ∪ findunattacheds(tree)))
 end
 #  - _getleafnames()
 function _getleafnames(tree::AbstractTree)
-    return keys(Dict(map(leaf -> leaf=>nothing,
+    return keys(OrderedDict(map(leaf -> leaf=>nothing,
                          findleaves(tree) ∪ findunattacheds(tree))))
 end
 #  - _getleafrecord()
@@ -232,7 +233,7 @@ function _setleafrecord!(tree::AbstractTree, label, value)
 end
 #  - _getnoderecords()
 function _getnoderecords(tree::AbstractTree)
-    return Dict(map(node -> node=>nothing, keys(_getnodes(tree))))
+    return OrderedDict(map(node -> node=>nothing, keys(_getnodes(tree))))
 end
 #  - _getnoderecord()
 function _getnoderecord(tree::AbstractTree, label)
