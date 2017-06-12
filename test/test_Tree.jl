@@ -24,12 +24,6 @@ using Base.Test
     @test validate(nt)
     @test get(noderoute(nt, "Human", "Dog")) == ["Human", r, n, "Dog"]
     @test get(branchroute(nt, "Human", "Dog")) == [b3, b4, b1]
-    nu = Nonultrametric(10)
-    @test validate(rand(nu))
-    @test Set(getleafnames(rand(nu))) == Set(getleafnames(rand(nu)))
-    t = rand(Nonultrametric(species))
-    @test validate(t)
-    @test Set(getleafnames(t)) == Set(species)
 end
 
 @testset "BinaryTree()" begin
