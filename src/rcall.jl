@@ -1,3 +1,4 @@
+using Phylo
 using RCall
 using RCall: protect, unprotect
 
@@ -38,11 +39,16 @@ function sexp(tree::NamedTree)
     validate(tree) || warn("Tree does not internally validate")
 
     tipnames = collect(NodeNameIterator(tree, isleaf))
-    nontips = collect(NodeNameIterator(tree, n -> !isleaf(n)))
+    root = collect(NodeNameIterator(tree, isroot))
+    if (length(root) != 1)
+        error("Can't currently translate tree with > 1 roots")
+    end
+    nontips = collect(NodeNameIterator(tree, isinternal))
     tor = Dict{Symbol, Any}()
-    tor[:Nnode] = length(nontips)
+    tor[:Nnode] = length(nontips) + length(root)
     tor[Symbol("tip.label")] = tipnames
     nodes = copy(tipnames)
+    push!(nodes, root[1])
     append!(nodes, nontips)
     bi = BranchIterator(tree)
     lengths = Vector{Float64}(length(bi))
