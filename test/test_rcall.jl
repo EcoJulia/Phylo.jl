@@ -5,8 +5,8 @@ using Phylo
 Rinstalled = false
 try
     using RCall
+    include(Pkg.dir("Phylo", "src/rcall.jl"))
     Rinstalled = true
-    include("../src/rcall.jl")
 catch
     warn("R not installed, skipping RCall testing")
 end
