@@ -56,7 +56,7 @@ function sexp(tree::NamedTree)
     tor[:edge] = edges
     tor[Symbol("edge.length")] = lengths
     sobj = protect(sexp(tor))
-    setattrib!(sobj, :order, sexp("cladewise"))
+    #setattrib!(sobj, :order, sexp("cladewise"))
     setclass!(sobj, sexp("phylo"))
     unprotect(1)
     return sobj
