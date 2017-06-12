@@ -1,4 +1,5 @@
 using RCall
+using RCall: protect, unprotect
 
 import Base.convert
 
@@ -54,8 +55,9 @@ function sexp(tree::NamedTree)
     end
     tor[:edge] = edges
     tor[Symbol("edge.length")] = lengths
-    robj = RObject(tor)
-    robj = rcall(Symbol("attr<-"), robj, "order", "cladewise")
-    robj = rcall(Symbol("class<-"), robj, "phylo")
-    return robj.p
+    sobj = protect(sexp(tor))
+    setattrib!(sobj, :order, sexp("cladewise"))
+    setclass!(sobj, sexp("phylo"))
+    unprotect(1)
+    return sobj
 end
