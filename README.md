@@ -26,7 +26,7 @@ julia> nu = Nonultrametric(5);
 julia> rand(nu)
 NamedTree phylogenetic tree with 9 nodes and 8 branches
 Leaf names:
-String["tip 4","tip 1","tip 2","tip 3","tip 5"]
+String["tip 1", "tip 2", "tip 3", "tip 4", "tip 5"]
 
 ```
 
