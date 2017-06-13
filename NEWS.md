@@ -1,3 +1,4 @@
+  - Use new RClass interface to RCall to provide automatic @rget conversion
 - v0.1.1
   - R <-> Julia interface
   - OrderedDict means tips remain in order originally presented
