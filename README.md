@@ -10,8 +10,8 @@
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
  [Diversity][diversity-url] package to calculate phylogenetic
- diversity (currently in the [phylogenetics][phylogenetics-url]
- branch). Both are currently under development, so please
+ diversity (currently on master, accessible via `Pkg.checkout()`,
+ but not released). Both are currently under development, so please
  [raise an issue][issues-url] if you find any problems. Currently the
  package can be used to make trees manually, and to generate random
  trees using the framework from `Distributions`. For instance, to
@@ -128,4 +128,3 @@ currently need.
 
 [issues-url]: https://github.com/richardreeve/Phylo.jl/issues
 [diversity-url]: https://github.com/richardreeve/Diversity.jl/
-[phylogenetics-url]: https://github.com/richardreeve/Diversity.jl/tree/phylogenetics
