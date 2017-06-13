@@ -46,9 +46,7 @@ below:
 ```julia
 julia> using RCall
 
-julia> cd(Pkg.dir("Phylo", "src"))
-
-julia> include("rcall.jl")
+julia> include(joinpath(Pkg.dir("Phylo"), "src", "rcall.jl"));
 
 R> library(ape)
 ```
