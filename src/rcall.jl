@@ -1,6 +1,6 @@
 using Phylo
 using RCall
-using RCall: protect, unprotect
+using RCall: protect, unprotect, rcall_p, RClass
 
 import Base.convert
 
@@ -68,13 +68,18 @@ function sexp(tree::NamedTree)
     return sobj
 end
 
+import Base.eltype
+
 eltype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = Phylo
+
+import RCall.rcopy
+
 function rcopy(::Type{RClass{:phylo}}, s::Ptr{VecSxp})
     if !rcopy(rcall_p(Symbol("is.rooted"), s))
         error("Cannot currently translate unrooted trees")
     end
 
-    dict = convert(Dict{Symbol, Any}, rt)
+    dict = convert(Dict{Symbol, Any}, RObject(s))
     nodes = dict[Symbol("tip.label")]
     tree = NamedTree(nodes)
     edges = dict[:edge]
