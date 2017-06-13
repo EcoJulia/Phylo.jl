@@ -1,20 +1,19 @@
 using Phylo
 using RCall
-using RCall: protect, unprotect, rcall_p, RClass
+using RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
 
-import Base.convert
+import RCall.rcopy
 
-function convert{T <: AbstractTree}(::Type{T}, rt::RObject{VecSxp})
-    if !RCall.isObject(rt) || RCall.isS4(rt) ||
-        rcopy(rcall(:class, rt)) != "phylo"
+function rcopy{T <: AbstractTree}(::Type{T}, rt::Ptr{VecSxp})
+    if !isObject(rt) || isS4(rt) || rcopy(rcall_p(:class, rt)) != "phylo"
         error("Object is not of S3 phylo class, aborting")
     end
 
-    if !rcopy(rcall(Symbol("is.rooted"), rt))
+    if !rcopy(rcall_p(Symbol("is.rooted"), rt))
         error("Cannot currently translate unrooted trees")
     end
 
-    dict = convert(Dict{Symbol, Any}, rt)
+    dict = rcopy(Dict{Symbol, Any}, rt)
     nodes = dict[Symbol("tip.label")]
     tree = NamedTree(nodes)
     edges = dict[:edge]
@@ -31,6 +30,10 @@ function convert{T <: AbstractTree}(::Type{T}, rt::RObject{VecSxp})
 
     validate(tree) || warn("Tree does not internally validate")
     return tree
+end
+
+function rcopy(::Type{RClass{:phylo}}, s::Ptr{VecSxp})
+    rcopy(NamedTree, s)
 end
 
 import RCall.sexp
@@ -66,34 +69,4 @@ function sexp(tree::NamedTree)
     setclass!(sobj, sexp("phylo"))
     unprotect(1)
     return sobj
-end
-
-import Base.eltype
-
-eltype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = Phylo
-
-import RCall.rcopy
-
-function rcopy(::Type{RClass{:phylo}}, s::Ptr{VecSxp})
-    if !rcopy(rcall_p(Symbol("is.rooted"), s))
-        error("Cannot currently translate unrooted trees")
-    end
-
-    dict = convert(Dict{Symbol, Any}, RObject(s))
-    nodes = dict[Symbol("tip.label")]
-    tree = NamedTree(nodes)
-    edges = dict[:edge]
-    nnode = dict[:Nnode]
-    lengths = dict[Symbol("edge.length")]
-    nontips = nnode
-    append!(nodes, addnodes!(tree, nontips))
-    
-    for edge in 1:size(edges, 1)
-        addbranch!(tree,
-                   nodes[edges[edge, 1]], nodes[edges[edge, 2]],
-                   lengths[edge])
-    end
-
-    validate(tree) || warn("Tree does not internally validate")
-    return tree
 end
