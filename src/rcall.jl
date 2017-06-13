@@ -32,9 +32,9 @@ function rcopy{T <: AbstractTree}(::Type{T}, rt::Ptr{VecSxp})
     return tree
 end
 
-function rcopy(::Type{RClass{:phylo}}, s::Ptr{VecSxp})
-    rcopy(NamedTree, s)
-end
+import RCall.rcopytype
+
+rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = NamedTree
 
 import RCall.sexp
 
