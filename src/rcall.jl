@@ -67,3 +67,28 @@ function sexp(tree::NamedTree)
     unprotect(1)
     return sobj
 end
+
+eltype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = Phylo
+function rcopy(::Type{RClass{:phylo}}, s::Ptr{VecSxp})
+    if !rcopy(rcall_p(Symbol("is.rooted"), s))
+        error("Cannot currently translate unrooted trees")
+    end
+
+    dict = convert(Dict{Symbol, Any}, rt)
+    nodes = dict[Symbol("tip.label")]
+    tree = NamedTree(nodes)
+    edges = dict[:edge]
+    nnode = dict[:Nnode]
+    lengths = dict[Symbol("edge.length")]
+    nontips = nnode
+    append!(nodes, addnodes!(tree, nontips))
+    
+    for edge in 1:size(edges, 1)
+        addbranch!(tree,
+                   nodes[edges[edge, 1]], nodes[edges[edge, 2]],
+                   lengths[edge])
+    end
+
+    validate(tree) || warn("Tree does not internally validate")
+    return tree
+end
