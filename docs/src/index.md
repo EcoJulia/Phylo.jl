@@ -2,11 +2,6 @@
 
 *Package for creating and manipulating phylogenies*
 
-| **Documentation**                               | **PackageEvaluator**            | **Build Status of master**                                                    |
-|:-----------------------------------------------:|:------------------------:|:-------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.5-img]][pkg-0.5-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
-| [![][docs-latest-img]][docs-latest-url]         | [![][pkg-0.6-img]][pkg-0.6-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
-
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
  [Diversity][diversity-url] package to calculate phylogenetic
@@ -27,7 +22,6 @@ julia> rand(nu)
 NamedTree phylogenetic tree with 9 nodes and 8 branches
 Leaf names:
 String["tip 1", "tip 2", "tip 3", "tip 4", "tip 5"]
-
 ```
 
 The main purpose of this package is to provide a framework for
@@ -88,37 +82,16 @@ R> all.equal(rt, jt) # check no damage in translations
 [1] TRUE
 ```
 
-For the time being the code will only work with rooted binary trees
-with named tips and branch lengths. If there's [demand][issues-url]
-for other types of trees, I'll look into it, but this is all I
-currently need.
-
-## Install
-
-*Phylo* is in `METADATA` so can be installed via `Pkg.add("Phylo")`.
-
-[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest
-
-[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-stable-url]: https://richardreeve.github.io/Phylo.jl/stable
-
-[travis-img]: https://travis-ci.org/richardreeve/Phylo.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/richardreeve/Phylo.jl?branch=master
-
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/richardreeve/Phylo.jl?svg=true&branch=master
-[appveyor-url]: https://ci.appveyor.com/project/richardreeve/phylo-jl/branch/master
-
-[coveralls-img]: https://img.shields.io/coveralls/richardreeve/Phylo.jl.svg
-[coveralls-url]: https://coveralls.io/r/richardreeve/Phylo.jl?branch=master
-
-[codecov-img]: https://codecov.io/gh/richardreeve/Phylo.jl/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/richardreeve/Phylo.jl
-
-[pkg-0.5-img]: http://pkg.julialang.org/badges/Phylo_0.5.svg
-[pkg-0.5-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.5
-[pkg-0.6-img]: http://pkg.julialang.org/badges/Phylo_0.6.svg
-[pkg-0.6-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.6
-
 [issues-url]: https://github.com/richardreeve/Phylo.jl/issues
 [diversity-url]: https://github.com/richardreeve/Diversity.jl/
+
+```@contents
+```
+
+```@autodocs
+Modules = [Phylo]
+Private = false
+```
+
+```@index
+```
