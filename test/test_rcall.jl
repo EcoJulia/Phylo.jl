@@ -7,6 +7,8 @@ Rinstalled = false
 module addmacros
 macro rput(x) end
 macro rget(x) end
+
+export @rput, @rget
 end
 
 # Only run R on macs
@@ -22,7 +24,7 @@ try
     Rinstalled = true
 catch
     warn("R not installed, skipping RCall testing")
-    using TestRCall_ape.addmacros: rput, rget
+    using TestRCall_ape.addmacros
 end
 
 if Rinstalled
