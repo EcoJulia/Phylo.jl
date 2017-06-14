@@ -3,12 +3,20 @@ using Base.Test
 
 using Phylo
 Rinstalled = false
+
+module addmacros
+macro rput(x) end
+macro rget(x) end
+end
+
 try
     using RCall
+    error("hello")
     include(joinpath(dirname(dirname(@__FILE__)), "src", "rcall.jl"))
     Rinstalled = true
 catch
     warn("R not installed, skipping RCall testing")
+    using TestRCall_ape.addmacros
 end
 
 if Rinstalled
