@@ -10,7 +10,7 @@ notifications:
 os:
   - linux
   - osx
-  
+
 julia:
   - 0.5
   - 0.6
@@ -35,7 +35,7 @@ before_install:
 
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo"; coverage=true)'
+  - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo"; coverage=true)'
 
 after_success:
   - julia -e 'cd(Pkg.dir("Diversity", "test")); include("coverage.jl")'
