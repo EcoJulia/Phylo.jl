@@ -11,8 +11,8 @@ macro rget(x) end
 export @rput, @rget
 end
 
-# Only run R on macs
-skipR = !is_apple()
+# Only run R on unix (macs and linux)
+skipR = !is_unix()
 
 # Environment variable to avoid boring R package builds
 skipRinstall = haskey(ENV, "SKIP_R_INSTALL") && ENV["SKIP_R_INSTALL"] == "1"
@@ -38,11 +38,7 @@ if Rinstalled
             reval("library(ape)");
         else
             rcall(Symbol(".libPaths"), libdir);
-            rcall(Symbol("install.packages"),
-                  ["devtools", "ggplot2", "ape",
-                   "phangorn", "tidyr", "tibble", "phytools",
-                   "reshape2", "ggthemes"],
-                  lib=libdir, repos="http://cran.r-project.org");
+            reval("install.packages(c(\"devtools\", \"ggplot2\", \"ape\", \"plyr\", \"phangorn\", \"tidyr\", \"tibble\", \"phytools\", \"reshape2\", \"ggthemes\"), lib=\"$libdir\", repos=\"http://cran.r-project.org\", type=\"binary\")");
             reval("library(ape, lib.loc=c(\"$libdir\", .libPaths()))");
         end
 
