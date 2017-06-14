@@ -22,7 +22,7 @@ try
     Rinstalled = true
 catch
     warn("R not installed, skipping RCall testing")
-    using TestRCall_ape.addmacros
+    using TestRCall_ape.addmacros: rput, rget
 end
 
 if Rinstalled
