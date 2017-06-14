@@ -38,7 +38,7 @@ if Rinstalled
             reval("library(ape)");
         else
             rcall(Symbol(".libPaths"), libdir);
-            reval("install.packages(c(\"devtools\", \"ggplot2\", \"ape\", \"plyr\", \"phangorn\", \"tidyr\", \"tibble\", \"phytools\", \"reshape2\", \"ggthemes\"), lib=\"$libdir\", repos=\"http://cran.r-project.org\", type=\"binary\")");
+            reval("install.packages(c(\"devtools\", \"ggplot2\", \"ape\", \"plyr\", \"phangorn\", \"tidyr\", \"tibble\", \"phytools\", \"reshape2\", \"ggthemes\"), lib=\"$libdir\", repos=\"http://cran.r-project.org\", type=\"source\")");
             reval("library(ape, lib.loc=c(\"$libdir\", .libPaths()))");
         end
 
