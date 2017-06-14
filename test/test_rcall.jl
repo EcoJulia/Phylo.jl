@@ -11,7 +11,6 @@ end
 
 try
     using RCall
-    error("hello")
     include(joinpath(dirname(dirname(@__FILE__)), "src", "rcall.jl"))
     Rinstalled = true
 catch
