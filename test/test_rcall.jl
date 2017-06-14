@@ -5,7 +5,7 @@ using Phylo
 Rinstalled = false
 try
     using RCall
-    include(joinpath(dirname(dirname(@__FILE__)), "src/rcall.jl"))
+    include(joinpath(dirname(dirname(@__FILE__)), "src", "rcall.jl"))
     Rinstalled = true
 catch
     warn("R not installed, skipping RCall testing")
