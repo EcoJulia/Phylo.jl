@@ -5,7 +5,7 @@ using Phylo
 Rinstalled = false
 try
     using RCall
-    include(joinpath(dirname(dirname(@__FILE__)), "src/rcall.jl"))
+    include(joinpath(dirname(dirname(@__FILE__)), "src", "rcall.jl"))
     Rinstalled = true
 catch
     warn("R not installed, skipping RCall testing")
@@ -42,6 +42,13 @@ if Rinstalled
                 @test jl == rl
                 rt2 = RObject(jt)
                 @test rcopy(rcall(Symbol("all.equal"), rt, rt2))
+                @rput jt
+                reval("jt2=jt");
+                @rget jt2
+                jt3=jt2;
+                @rput jt3
+                @rput rt
+                @test rcopy(rcall(Symbol("all.equal"), rt, jt3))
             end
             
             @testset "Testing with julia rand(Nonultrametric($i))" for i in 5:5:50
