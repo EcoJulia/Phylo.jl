@@ -9,7 +9,14 @@ macro rput(x) end
 macro rget(x) end
 end
 
+# Only run R on macs
+skipR = !is_apple()
+
+# Environment variable to avoid boring R package builds
+skipRinstall = haskey(ENV, "SKIP_R_INSTALL") && ENV["SKIP_R_INSTALL"] == "1"
+
 try
+    skipR && error("Skipping R testing...")
     using RCall
     include(joinpath(dirname(dirname(@__FILE__)), "src", "rcall.jl"))
     Rinstalled = true
@@ -23,9 +30,7 @@ if Rinstalled
     libdir = mktempdir();
 
     # Only run R on macs
-    if is_apple()
-        # Environment variable to avoid boring R package builds
-        skipRinstall = haskey(ENV, "SKIP_R_INSTALL") && ENV["SKIP_R_INSTALL"] == "1"
+    if !skipR
         # Skip the (slow!) R package installation step
         if skipRinstall
             reval("library(ape)");
