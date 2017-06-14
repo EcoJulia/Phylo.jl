@@ -1,7 +1,7 @@
 using Documenter
 using Phylo
 
-makedocs(modules = [Phylo],
+makedocs(modules = [Phylo, Phylo.API],
          clean   = false)
 
 deploydocs(deps = Deps.pip("pygments",
