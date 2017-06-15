@@ -1,20 +1,19 @@
 using Phylo
 using RCall
-using RCall: protect, unprotect
+using RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
 
-import Base.convert
+import RCall.rcopy
 
-function convert{T <: AbstractTree}(::Type{T}, rt::RObject{VecSxp})
-    if !RCall.isObject(rt) || RCall.isS4(rt) ||
-        rcopy(rcall(:class, rt)) != "phylo"
+function rcopy{T <: AbstractTree}(::Type{T}, rt::Ptr{VecSxp})
+    if !isObject(rt) || isS4(rt) || rcopy(rcall_p(:class, rt)) != "phylo"
         error("Object is not of S3 phylo class, aborting")
     end
 
-    if !rcopy(rcall(Symbol("is.rooted"), rt))
+    if !rcopy(rcall_p(Symbol("is.rooted"), rt))
         error("Cannot currently translate unrooted trees")
     end
 
-    dict = convert(Dict{Symbol, Any}, rt)
+    dict = rcopy(Dict{Symbol, Any}, rt)
     nodes = dict[Symbol("tip.label")]
     tree = NamedTree(nodes)
     edges = dict[:edge]
@@ -32,6 +31,10 @@ function convert{T <: AbstractTree}(::Type{T}, rt::RObject{VecSxp})
     validate(tree) || warn("Tree does not internally validate")
     return tree
 end
+
+import RCall.rcopytype
+
+rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = NamedTree
 
 import RCall.sexp
 
