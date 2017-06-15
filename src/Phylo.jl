@@ -103,7 +103,7 @@ export NodeIterator, NodeNameIterator, BranchIterator
 
 # Random tree generator
 include("rand.jl")
-export Nonultrametric
+export Nonultrametric, Ultrametric
 
 # Display methods expanded
 include("show.jl")
