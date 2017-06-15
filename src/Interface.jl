@@ -408,10 +408,9 @@ end
 
 
 """
-function getheight end
-
 function getheight(tree::AbstractTree, nodename)
-    return _getheight(tree, nodename)
+    return _hasheight(tree, nodename) ? _getheight(tree, nodename) :
+        mapreduce(b -> getlength(tree, b), +, 0.0, branchhistory(tree, nodename))
 end
 
 """
