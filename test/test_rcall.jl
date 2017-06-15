@@ -11,11 +11,11 @@ macro rget(x) end
 export @rput, @rget
 end
 
-# Only run R on unix (macs and linux)
-skipR = !is_unix()
-
 # Environment variable to avoid boring R package builds
-skipRinstall = haskey(ENV, "SKIP_R_INSTALL") && ENV["SKIP_R_INSTALL"] == "1"
+hasRinstall = haskey(ENV, "SKIP_R_INSTALL") && ENV["SKIP_R_INSTALL"] == "1"
+
+# Only run R on linux or on our machines
+skipR = !is_linux() && !hasRinstall
 
 try
     skipR && error("Skipping R testing...")
@@ -34,7 +34,7 @@ if Rinstalled
     # Only run R on macs
     if !skipR
         # Skip the (slow!) R package installation step
-        if skipRinstall
+        if hasRinstall
             reval("library(ape)");
         else
             rcall(Symbol(".libPaths"), libdir);
