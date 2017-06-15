@@ -38,6 +38,7 @@ export _hasrootheight, _getrootheight, _setrootheight!
 export _nodetype, _branchtype
 export _extractnode, _extractbranch
 export _extractnodename, _extractbranchname
+export _getleafinfo, _setleafinfo!, _getnoderecord, _setnoderecord!
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
@@ -72,7 +73,7 @@ export validate
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export getleafnames
-export getleafrecord, setleafrecord!, getnoderecord, setnoderecord!
+export getleafinfo, setleafinfo!, getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods

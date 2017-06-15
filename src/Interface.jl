@@ -519,39 +519,21 @@ function getleafnames(tree::AbstractTree)
 end
 
 """
-    getleafrecords(::AbstractTree)
+    getleafinfo(::AbstractTree, label)
 
-retrieve the Dict containing the leaf records of the tree.
+retrieve the leaf info for a leaf of the tree.
 """
-function getleafrecords(tree::AbstractTree)
-    return _getleafrecords(tree)
+function getleafinfo(tree::AbstractTree, label)
+    return _getleafinfo(tree, label)
 end
 
 """
-    getleafrecord(::AbstractTree, label)
+    setleafinfo!(::AbstractTree, label, value)
 
-retrieve the leaf record for a leaf of the tree.
+Set the leaf info for a leaf of the tree.
 """
-function getleafrecord(tree::AbstractTree, label)
-    return _getleafrecord(tree, label)
-end
-
-"""
-    setleafrecord(::AbstractTree, label, value)
-
-Set the leaf record for a leaf of the tree.
-"""
-function setleafrecord!(tree::AbstractTree, label, value)
-    return _setleafrecord!(tree, label, value)
-end
-
-"""
-    getnoderecords(::AbstractTree)
-
-retrieve the Dict containing the node records of the tree.
-"""
-function getnoderecords(tree::AbstractTree)
-    return _getnoderecords(tree)
+function setleafinfo!(tree::AbstractTree, label, value)
+    return _setleafinfo!(tree, label, value)
 end
 
 """

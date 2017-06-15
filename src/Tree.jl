@@ -9,7 +9,7 @@ Binary phylogenetic tree object with known leaves and per node data
 type BinaryTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
     nodes::OrderedDict{String, BinaryNode{Int}}
     branches::Dict{Int, Branch{String}}
-    leafrecords::OrderedDict{String, LI}
+    leafinfos::OrderedDict{String, LI}
     noderecords::OrderedDict{String, ND}
     rootheight::Nullable{Float64}
 end
@@ -18,17 +18,17 @@ function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
-    leafrecords = copyinfo ? deepcopy(getleafrecords(lt)) : getleafrecords(lt)
+    leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos
     if empty # Empty out everything else
         nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leafnames))
         branches = OrderedDict{Int, Branch{String}}()
         noderecords = OrderedDict(map(leaf -> leaf => ND(), leafnames))
     else # Make copies of everything
         nodes = deepcopy(nodes)
-        noderecords = deepcopy(getnoderecords(lt))
+        noderecords = deepcopy(lt.noderecords)
         branches = deepcopy(getbranches(lt))
     end
-    return BinaryTree{LI, ND}(nodes, branches, leafrecords, noderecords,
+    return BinaryTree{LI, ND}(nodes, branches, leafinfos, noderecords,
                             lt.rootheight)
 end
 
@@ -39,10 +39,10 @@ function BinaryTree(leaves::AbstractVector{String};
     leaftype <: AbstractInfo ||
         error("Leaf information structure is not an subtype of AbstractInfo")
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafrecords = OrderedDict(map(leaf -> leaf => leaftype(), leaves))
+    leafinfos = OrderedDict(map(leaf -> leaf => leaftype(), leaves))
     noderecords = OrderedDict(map(leaf -> leaf => nodetype(), leaves))
     return BinaryTree{leaftype, nodetype}(nodes, OrderedDict{Int, Branch{String}}(),
-                                        leafrecords, noderecords, rootheight)
+                                        leafinfos, noderecords, rootheight)
 end
 
 function BinaryTree(numleaves::Int;
@@ -53,10 +53,10 @@ function BinaryTree(numleaves::Int;
         error("Leaf information structure is not an subtype of AbstractInfo")
     leaves = map(num -> "Leaf $num", 1:numleaves)
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafrecords = OrderedDict(map(leaf -> leaf => leaftype(), leaves))
+    leafinfos = OrderedDict(map(leaf -> leaf => leaftype(), leaves))
     noderecords = OrderedDict(map(leaf -> leaf => nodetype(), leaves))
     return BinaryTree{leaftype, nodetype}(nodes, OrderedDict{Int, Branch{String}}(),
-                                        leafrecords, noderecords, rootheight)
+                                        leafinfos, noderecords, rootheight)
 end
 
 function _nodetype{LI, ND}(::Type{BinaryTree{LI, ND}})
@@ -76,15 +76,23 @@ function _getbranches(nt::BinaryTree)
 end
 
 function _getleafnames(nt::BinaryTree)
-    return keys(nt.leafrecords)
+    return keys(nt.leafinfos)
 end
 
-function _getleafrecords(nt::BinaryTree)
-    return nt.leafrecords
+function _getleafinfo(nt::BinaryTree, leaf)
+    return nt.leafinfos[leaf]
 end
 
-function _getnoderecords(nt::BinaryTree)
-    return nt.noderecords
+function _setleafinfo!(nt::BinaryTree, leaf, value)
+    nt.leafinfos[leaf] = value
+end
+
+function _getnoderecord(nt::BinaryTree, nodename)
+    return nt.noderecords[nodename]
+end
+
+function _setnoderecord!(nt::BinaryTree, nodename, value)
+    nt.noderecords[nodename] = value
 end
 
 function _addnode!{LI, NR}(tree::BinaryTree{LI, NR}, nodename)
@@ -102,17 +110,17 @@ function _deletenode!(tree::BinaryTree, nodename)
         deletebranch!(tree, n)
     end
     delete!(_getnodes(tree), nodename)
-    delete!(_getnoderecords(tree), nodename)    
+    delete!(tree.noderecords, nodename)    
     return nodename
 end
 
 function _validate(tree::BinaryTree)
     if Set(NodeNameIterator(tree, isleaf)) != Set(getleafnames(tree))
-        warn("Leaf records do not match actual leaves of tree")
+        warn("Leaf names do not match actual leaves of tree")
         return false
     end
     
-    if Set(keys(_getnoderecords(tree))) != Set(keys(getnodes(tree)))
+    if Set(keys(tree.noderecords)) != Set(keys(getnodes(tree)))
         warn("Leaf records do not match node records of tree")
         return false
     end
@@ -211,39 +219,11 @@ function _deletenode!(tree::AbstractTree, label)
 end
 
 
-#  - _getleafrecords()
-function _getleafrecords(tree::AbstractTree)
-    return OrderedDict(map(leaf -> leaf=>nothing,
-                    findleaves(tree) ∪ findunattacheds(tree)))
-end
 #  - _getleafnames()
 function _getleafnames(tree::AbstractTree)
     return keys(OrderedDict(map(leaf -> leaf=>nothing,
                          findleaves(tree) ∪ findunattacheds(tree))))
 end
-#  - _getleafrecord()
-function _getleafrecord(tree::AbstractTree, label)
-    return _getleafrecords(tree)[label]
-end
-#  - _setleafrecord()
-function _setleafrecord!(tree::AbstractTree, label, value)
-    _getleafrecords(tree)[label] = value
-    return value
-end
-#  - _getnoderecords()
-function _getnoderecords(tree::AbstractTree)
-    return OrderedDict(map(node -> node=>nothing, keys(_getnodes(tree))))
-end
-#  - _getnoderecord()
-function _getnoderecord(tree::AbstractTree, label)
-    return _getnoderecords(tree)[label]
-end
-#  - _setnoderecord!()
-function _setnoderecord!(tree::AbstractTree, label, value)
-    _getnoderecords(tree)[label] = value
-    return value
-end
-
 
 """
     clearrootheight(::AbstractTree)
@@ -276,16 +256,16 @@ end
 # ---------------------
 
 function _hasheight(tree::BinaryTree, label)
-    return _hasheight(getleafrecord(tree, label))
+    return _hasheight(getleafinfo(tree, label))
 end
 
 function _getheight(tree::BinaryTree, label)
-    return _getheight(getleafrecord(tree, label))
+    return _getheight(getleafinfo(tree, label))
 end
 
 function _setheight!(tree::BinaryTree, label, height::Float64)
-    ai = getleafrecord(tree, label)
+    ai = getleafinfo(tree, label)
     _setheight!(ai, height)
-    setleafrecord!(tree, label, ai)
+    setleafinfo!(tree, label, ai)
     return height
 end
