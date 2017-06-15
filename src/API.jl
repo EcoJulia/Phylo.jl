@@ -116,7 +116,7 @@ function _addnode! end
 
 """
     _addnodes!(tree::AbstractTree, nodenames::AbstractVector)
-    _addnodes!(tree::AbstractTree, count::Integer)
+    _addnodes!(tree:AbstractTree, count::Integer)
 
 
 """
