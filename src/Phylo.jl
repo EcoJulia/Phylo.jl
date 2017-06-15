@@ -93,7 +93,7 @@ export BinaryTree, NamedTree
 export hasrootheight, getrootheight, setrootheight!, clearrootheight!
 export getrootdistance
 
-include("lengths.jl")
+include("routes.jl")
 export branchhistory, branchroute, nodehistory, noderoute
 export distance, distances, heighttoroot, heightstoroot
 

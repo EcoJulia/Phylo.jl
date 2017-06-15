@@ -6,12 +6,12 @@ getbranches(tree::AbstractTree) = _getbranches(tree)
 
 # AbstractTree methods
 """
-    addbranch!(tree::AbstractTree, source, target, length::Float64;
+    addbranch!(tree::AbstractTree, source, target[, length::Float64];
                branchname = _newbranchlabel(tree))
 
-
+Add a branch from `source` to `target` on `tree`.
 """
-function addbranch!(tree::AbstractTree, source, target, length::Float64;
+function addbranch!(tree::AbstractTree, source, target, length::Float64 = NaN;
                     branchname = _newbranchlabel(tree))
     _hasnode(tree, source) && hasoutboundspace(tree, source) ||
         error("Tree does not have an available source node called $source")
@@ -27,7 +27,7 @@ end
 """
     deletebranch!(tree::AbstractTree, branchname)
 
-
+Delete the branch `branchname` from `tree`.
 """
 function deletebranch!(tree::AbstractTree, branchname)
     _hasbranch(tree, branchname) ||
@@ -36,24 +36,23 @@ function deletebranch!(tree::AbstractTree, branchname)
 end
 
 """
-    branch!(tree::AbstractTree)
-    branch!(tree::AbstractTree, nodename)
-    branch!(tree::AbstractTree, nodename, branchname)
+    branch!(tree::AbstractTree, source[, length])
+    branch!(tree::AbstractTree, source[, length]; target)
+    branch!(tree::AbstractTree, source[, length]; target, branchname)
 
-
+Branch from a source node `source` and create a target node `target`.
 """
 function branch!(tree::AbstractTree, source, length::Float64 = NaN;
-                 nodename = _newnodelabel(tree),
+                 target = _newnodelabel(tree),
                  branchname = _newbranchlabel(tree))
     _hasnode(tree, source) ||
         error("Node $source not present in tree")
-    !_hasnode(tree, nodename) ||
-        error("Node $nodename already present in tree")
+    !_hasnode(tree, target) ||
+        error("Node $target already present in tree")
     _hasoutboundspace(_getnode(tree, source)) ||
         error("Node $source has no space to add branches")
     
-    return _branch!(tree, source, length,
-                    nodename = nodename, branchname = branchname)
+    return _branch!(tree, source, length, target, branchname)
 end
 
 """
@@ -62,7 +61,7 @@ end
 
 
 """
-function addnode!(tree::AbstractTree; nodename = _newnodelabel(tree))
+function addnode!(tree::AbstractTree, nodename = _newnodelabel(tree))
     return _addnode!(tree, nodename)
 end
 

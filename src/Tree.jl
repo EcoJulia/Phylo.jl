@@ -172,8 +172,7 @@ _hasnode(tree::AbstractTree, label) = haskey(_getnodes(tree), label)
 #  - _hasbranch()
 _hasbranch(tree::AbstractTree, label) = haskey(_getbranches(tree), label)
 #  - _addbranch!()
-function _addbranch!(tree::AbstractTree, source, target,
-                     length::Float64, label)
+function _addbranch!(tree::AbstractTree, source, target, length::Float64, label)
     # Add the new branch
     _setbranch!(tree, label, Branch(source, target, length))
     
@@ -189,11 +188,11 @@ function _deletebranch!(tree::AbstractTree, label)
     # Find the branch
     branch = _getbranch(tree, label)
     # Remove branch reference from its source node
-    _deleteoutbound!(_getsource(branch), label)
+    _deleteoutbound!(_getnode(tree, _getsource(branch)), label)
     # Remove branch reference from its target node
-    _deleteinbound!(_gettarget(branch), label)
+    _deleteinbound!(_getnode(tree, _gettarget(branch)), label)
     # Remove branch itself
-    delete!(_getbranches(tree), branch)
+    delete!(_getbranches(tree), label)
     # Return the branch label
     return label
 end

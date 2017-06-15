@@ -74,18 +74,12 @@ Must be implemented for any AbstractTree subtype.
 function _deletebranch! end
 
 """
-    _branch!(tree::AbstractTree, source, length::Float64;
-             nodename = _newnodelabel(tree),
-             branchname = _newbranchlabel(tree))
+    _branch!(tree::AbstractTree, source, length::Float64, target, branchname)
 
 
 """
-function _branch!(tree::AbstractTree, source,
-                  length::Float64 = NaN;
-                  nodename = _newnodelabel(tree),
-                  branchname = _newbranchlabel(tree))
-    target = _addnode!(tree, nodename)
-    _addbranch!(tree, source, target, length, branchname)
+function _branch!(tree::AbstractTree, source, length::Float64, target, branchname)
+    _addbranch!(tree, source, _addnode!(tree, target), length, branchname)
     return target
 end
 

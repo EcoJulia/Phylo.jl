@@ -53,7 +53,7 @@ end
 function _deleteinbound!{T}(node::BinaryNode{T}, inbound::T)
     _hasinbound(node) ||
         error("Node has no inbound connection")
-    get(node.inbound) != inbound ||
+    get(node.inbound) == inbound ||
         error("BinaryNode has no inbound connection from branch $inbound")
     node.inbound = Nullable{T}()
 end
@@ -74,9 +74,9 @@ function _addoutbound!{T}(node::BinaryNode{T}, outbound::T)
 end
 
 function _deleteoutbound!{T}(node::BinaryNode{T}, outbound::T)
-    node.outbounds[1] == outbound ?
+    !isnull(node.outbounds[1]) && get(node.outbounds[1]) == outbound ?
         node.outbounds = (node.outbounds[2], Nullable{T}()) :
-        (node.outbounds[2] == outbound ?
+        (!isnull(node.outbounds[2]) && get(node.outbounds[2]) == outbound ?
          node.outbounds = (node.outbounds[1], Nullable{T}()) :
          error("BinaryNode does not have outbound connection to branch $outbound"))
 end
