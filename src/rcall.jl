@@ -38,7 +38,7 @@ rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = NamedTree
 
 import RCall.sexp
 
-function sexp(tree::NamedTree)
+function sexp(tree::AbstractTree)
     validate(tree) || warn("Tree does not internally validate")
 
     tipnames = collect(NodeNameIterator(tree, isleaf))
