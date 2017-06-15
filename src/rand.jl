@@ -59,6 +59,20 @@ function rand{T, RNG}(t::Nonultrametric{T, RNG})
     return tree
 end
 
+function rand{LI, ND, RNG}(t::Nonultrametric{BinaryTree{LI, ND}, RNG})
+    t.n >= 2 || error("A tree must have at least 2 tips")
+    tree = BinaryTree(t.tiplabels, leaftype=LI, nodetype=ND)
+    roots = NodeNameIterator(tree, isroot)
+    while length(roots) > 1
+        children = sample(collect(roots), 2, replace=false)
+        parent = addnode!(tree)
+        addbranch!(tree, parent, children[1], rand(t.rng))
+        addbranch!(tree, parent, children[2], rand(t.rng))
+        roots = NodeNameIterator(tree, isroot)
+    end
+    return tree
+end
+
 """
     Ultrametric{T <: AbstractTree,
                 RNG <: Sampleable}(n::Int,
@@ -99,6 +113,28 @@ Ultrametric{T}(tiplabels::Vector{String}, treetype::Type{T} = NamedTree) =
 function rand{T, RNG}(t::Ultrametric{T, RNG})
     t.n >= 2 || error("A tree must have at least 2 tips")
     tree = T(t.tiplabels)
+    roots = NodeNameIterator(tree, isroot)
+    depth = zero(rand(t.rng))
+    leaves = getleafnames(tree)
+    while length(roots) > 1
+        tocoalesce = collect(roots)
+        coalescers = sample(tocoalesce, 2, replace=false)
+        parent = addnode!(tree)
+        depth += rand(t.rng) * 2.0 / length(tocoalesce)
+        c1 = filter(x -> coalescers[1] ∈ nodehistory(tree, x), leaves)
+        d1 = map(x -> getheight(tree, x), c1)
+        c2 = filter(x -> coalescers[2] ∈ nodehistory(tree, x), leaves)
+        d2 = map(x -> getheight(tree, x), c2)
+        addbranch!(tree, parent, coalescers[1], depth - d1[1])
+        addbranch!(tree, parent, coalescers[2], depth - d2[1])
+        roots = NodeNameIterator(tree, isroot)
+    end
+    return tree
+end
+
+function rand{LI, ND, RNG}(t::Ultrametric{BinaryTree{LI, ND}, RNG})
+    t.n >= 2 || error("A tree must have at least 2 tips")
+    tree = BinaryTree(t.tiplabels, leaftype=LI, nodetype=ND)
     roots = NodeNameIterator(tree, isroot)
     depth = zero(rand(t.rng))
     leaves = getleafnames(tree)
