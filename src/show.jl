@@ -108,21 +108,21 @@ end
 
 function show(io::IO, object::NamedTree)
     if get(io, :compact, false)
-        print(io, "NamedTree phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafrecords(object))) leaves) and $(length(_getbranches(object))) branches")
+        print(io, "NamedTree phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafnames(object))) leaves) and $(length(_getbranches(object))) branches")
     else
         print(io, "NamedTree phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches\n") 
         print(io, "Leaf names:\n")
-        print(io, keys(getleafrecords(object)))
+        print(io, getleafnames(object))
     end
 end
 
 function show(io::IO, object::BinaryTree)
     if get(io, :compact, false)
-        print(io, "$(string(typeof(object))) phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafrecords(object))) leaves) and $(length(_getbranches(object))) branches")
+        print(io, "$(string(typeof(object))) phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafnames(object))) leaves) and $(length(_getbranches(object))) branches")
     else
         print(io, "$(string(typeof(object))) phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches\n") 
         print(io, "Leaf names:\n")
-        print(io, keys(getleafrecords(object)))
+        print(io, getleafnames(object))
     end
 end
 
