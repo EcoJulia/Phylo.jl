@@ -1,4 +1,4 @@
-function _treehistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+function _treepast{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
     branches = BL[]
     nodes = NL[node]
     while hasinbound(tree, node)
@@ -10,13 +10,28 @@ function _treehistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
     return branches, nodes
 end
 
+function _treefuture{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+    branches = BL[]
+    nodestoprocess = NL[node]
+    nodesprocessed = NL[]
+    while !isempty(nodestoprocess)
+        nextnode = pop!(nodestoprocess)
+        push!(nodesprocessed, nextnode)
+        outbounds = getoutbounds(tree, nextnode)
+        append!(branches, outbounds)
+        children = map(branch -> gettarget(tree, branch), outbounds)
+        append!(nodestoprocess, children)
+    end
+    return branches, nodesprocessed
+end
+
 """
     branchhistory(tree::AbstractTree, node)
 
 Find the branch route between a node on a tree and its root
 """
 function branchhistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
-    return _treehistory(tree, node)[1]
+    return _treepast(tree, node)[1]
 end
 
 """
@@ -25,7 +40,7 @@ end
 Find the node route between a node on a tree and its root
 """
 function nodehistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
-    return _treehistory(tree, node)[2]
+    return _treepast(tree, node)[2]
 end
 
 """
@@ -34,8 +49,8 @@ end
 Find the branch route between two nodes on a tree
 """
 function branchroute{NL, BL}(tree::AbstractTree{NL, BL}, node1::NL, node2::NL)
-    branches1, nodes1 = _treehistory(tree, node1)
-    branches2, nodes2 = _treehistory(tree, node2)
+    branches1, nodes1 = _treepast(tree, node1)
+    branches2, nodes2 = _treepast(tree, node2)
     nodes1[end] == nodes2[end] ||
         return Nullable{Vector{BL}}()
     common = branches1 ∩ branches2
@@ -49,8 +64,8 @@ end
 Find the node route between two nodes on a tree
 """
 function noderoute{NL, BL}(tree::AbstractTree{NL, BL}, node1::NL, node2::NL)
-    branches1, nodes1 = _treehistory(tree, node1)
-    branches2, nodes2 = _treehistory(tree, node2)
+    branches1, nodes1 = _treepast(tree, node1)
+    branches2, nodes2 = _treepast(tree, node2)
     nodes1[end] == nodes2[end] ||
         return Nullable{Vector{NL}}()
     common = nodes1[end]
