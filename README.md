@@ -14,7 +14,7 @@
  not released). `Phylo` is currently in *alpha*, and is missing
  critical functionality, so please [raise an issue][issues-url]
  if/when you find problems or missing functionality - don't assume
- that I know`! Currently the package can be used to make trees
+ that I know! Currently the package can be used to make trees
  manually, and to generate random trees using the framework from
  `Distributions`. For instance, to construct a sampler for 5 tip
  non-ultrametric trees, and then generate a random tree of that type:
