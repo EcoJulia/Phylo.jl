@@ -377,6 +377,24 @@ function getinbound(tree::AbstractTree, nodename)
 end
 
 """
+    getparent(tree::AbstractTree, nodename)
+
+Return the name of the parent node for this node.
+"""
+function getparent(tree::AbstractTree, nodename)
+    return getsource(tree, getinbound(tree, nodename))
+end
+
+"""
+    getancestors(tree::AbstractTree, nodename)
+
+Return the name of all of the nodes that are ancestral to this node.
+"""
+function getancestors(tree::AbstractTree, nodename)
+    return _treepast(tree, nodename)[2][2:end]
+end
+
+"""
     getoutbounds(node::AbstractNode)
     getoutbounds(tree::AbstractTree, nodename)
 
@@ -393,8 +411,25 @@ function getoutbounds(tree::AbstractTree, nodename)
 end
 
 """
-    hasheight(tree::AbstractTree, nodename)
+    getchildren(tree::AbstractTree, nodename)
 
+Return the name(s) of the child node(s) for this node.
+"""
+function getchildren(tree::AbstractTree, nodename)
+    return map(branch -> gettarget(tree, branch), getoutbounds(tree, nodename))
+end
+
+"""
+    getdescendants(tree::AbstractTree, nodename)
+
+Return the names of all of the nodes that descend from this node.
+"""
+function getdescendants(tree::AbstractTree, nodename)
+    return _treefuture(tree, nodename)[2][2:end]
+end
+
+"""
+    hasheight(tree::AbstractTree, nodename)
 
 Does the node have a height defined?
 """
