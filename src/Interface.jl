@@ -316,7 +316,7 @@ end
     hasoutboundspace(node::AbstractNode)
     hasoutboundspace(tree::AbstractTree, nodename)
 
-
+Does the node have space for an[other] outbound connection?
 """
 function hasoutboundspace end
 
@@ -332,7 +332,7 @@ end
     hasinbound(node::AbstractNode)
     hasinbound(tree::AbstractTree, nodename)
 
-
+Does the node have an inbound connection?
 """
 function hasinbound end
 
@@ -348,7 +348,7 @@ end
     hasinboundspace(node::AbstractNode)
     hasinboundspace(tree::AbstractTree, nodename)
 
-
+Does the node have space for an inbound connection?
 """
 function hasinboundspace end
 
@@ -364,7 +364,7 @@ end
     getinbound(node::AbstractNode)
     getinbound(tree::AbstractTree, nodename)
 
-
+return the name of the inbound branch to this node.
 """
 function getinbound end
 
@@ -380,7 +380,7 @@ end
     getoutbounds(node::AbstractNode)
     getoutbounds(tree::AbstractTree, nodename)
 
-
+Return the names of the outbound branches from this node.
 """
 function getoutbounds end
 
@@ -396,6 +396,7 @@ end
     hasheight(tree::AbstractTree, nodename)
 
 
+Does the node have a height defined?
 """
 function hasheight end
 
@@ -406,7 +407,7 @@ end
 """
     getheight(tree::AbstractTree, nodename)
 
-
+Return the height of the node.
 """
 function getheight(tree::AbstractTree, nodename)
     return _hasheight(tree, nodename) ? _getheight(tree, nodename) :
@@ -416,7 +417,7 @@ end
 """
     setheight!(tree::AbstractTree, nodename, height)
 
-
+Set the height of the node.
 """
 function setheight!(tree::AbstractTree, nodename, height)
     return _setheight!(tree, nodename, height)
@@ -428,7 +429,7 @@ end
     getsource(branch::AbstractBranch)
     getsource(tree::AbstractTree, branchname)
 
-
+Return the source node for this branch.
 """
 function getsource end
 
@@ -444,7 +445,7 @@ end
     gettarget(branch::AbstractBranch)
     gettarget(tree::AbstractTree, branchname)
 
-
+Return the target node for this branch.
 """
 function gettarget end
 
@@ -460,7 +461,7 @@ end
     getlength(branch::AbstractBranch)
     getlength(tree::AbstractTree, branchname)
 
-
+Return the length of this branch.
 """
 function getlength end
 
@@ -475,7 +476,7 @@ end
 """
     changesource!(tree::AbstractTree, branchname, source)
 
-
+Change the source node for this branch.
 """
 function changesource!(tree::AbstractTree, branchname, source)
     _hasbranch(tree, branchname) ||
@@ -493,7 +494,7 @@ end
 """
     changetarget!(tree::AbstractTree, branchname, target)
 
-
+Change the target node for this node.
 """
 function changetarget!(tree::AbstractTree, branchname, target)
     _hasbranch(tree, branchname) ||
@@ -512,7 +513,7 @@ end
 """
     getleafnames(::AbstractTree)
 
-retrieve the leaf names from the tree.
+Retrieve the leaf names from the tree.
 """
 function getleafnames(tree::AbstractTree)
     return collect(_getleafnames(tree))
