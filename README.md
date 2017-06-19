@@ -43,7 +43,7 @@ a fully(?)-functional interface to R, allowing any existing R library
 functions to be carried out on julia trees, and trees to be read from
 disk and written using R helper functions. Naturally the medium-term
 plan is to fill in as many of these gaps as possible in Julia, and as
-aresult this R interface is not built into the package as it will make
+a result this R interface is not built into the package as it will make
 RCall (and R) a dependency, which I wanted to avoid. Instead, if you
 want to use the R interface you need to do it manually, as below:
 
