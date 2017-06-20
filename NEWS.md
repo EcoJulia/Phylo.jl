@@ -1,4 +1,12 @@
-  - Use new RClass interface to RCall to provide automatic @rget conversion
+- v0.1.3
+  - show() now working for trees again
+  - Now provides implementation of getparent(), getancestors(), getchildren(), getdescendants()
+  - update docs
+- v0.1.2
+  - @rput and @rget now work with new RCall RClass interface
+  - Can generate random ultrametric trees (using Ultrametric)
+  - Can translate and generate BinaryTrees of any kind where data types have default constructors, not just NamedTrees
+  - various bugfixes in interfaces
 - v0.1.1
   - R <-> Julia interface
   - OrderedDict means tips remain in order originally presented
