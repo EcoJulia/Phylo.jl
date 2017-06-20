@@ -256,3 +256,79 @@ function length(bi::BranchIterator)
     return isnull(bi.filterfn) ? length(_getbranches(bi.tree)) :
         mapreduce(val -> fn(_extractbranch(val)) ? 1 : 0, +, 0, bi)
 end
+
+immutable BranchNameIterator{T <: AbstractTree}
+    tree::T
+    filterfn::Nullable{Function}
+end
+
+BranchNameIterator{T <: AbstractTree}(tree::T) =
+    BranchNameIterator{T}(tree, Nullable{Function}())
+
+BranchNameIterator{T <: AbstractTree}(tree::T, filterfn::Function) =
+    BranchNameIterator{T}(tree, Nullable{Function}(filterfn))
+
+function start(bi::BranchNameIterator)
+    branches = _getbranches(bi.tree)
+    state = start(branches)
+    
+    if isnull(bi.filterfn) || done(branches, state)
+        return state
+    end
+
+    fn = get(bi.filterfn)
+    val, after = next(branches, state)
+    while !fn(_extractbranch(val))
+        state = after
+        if done(branches, state)
+            return state
+        end
+        val, after = next(branches, state)
+    end
+    
+    return state
+end
+
+function next(bi::BranchNameIterator, state)
+    branches = _getbranches(bi.tree)
+    val, state = next(branches, state)
+    branch = _extractbranch(val)
+    name = _extractbranchname(val)
+
+    if isnull(bi.filterfn) || done(bi, state)
+        return name, state
+    end
+
+    fn = get(bi.filterfn)
+    val, after = next(branches, state)
+    while !fn(_extractbranch(val))
+        state = after
+        if done(branches, state)
+            return name, state
+        end
+        val, after = next(branches, state)
+    end
+    
+    return name, state
+end
+
+function done(bi::BranchNameIterator, state)
+    return done(_getbranches(bi.tree), state)
+end
+
+function iteratorsize(bi::Type{BranchNameIterator})
+    return HasLength()
+end
+
+function iteratoreltype(bi::Type{BranchNameIterator})
+    return HasEltype()
+end
+
+function eltype{T <: AbstractTree}(bi::BranchNameIterator{T})
+    return keytype(_getbranches(bi.tree))
+end
+
+function length(bi::BranchNameIterator)
+    return isnull(bi.filterfn) ? length(_getbranches(bi.tree)) :
+        mapreduce(val -> fn(_extractbranch(val)) ? 1 : 0, +, 0, bi)
+end
