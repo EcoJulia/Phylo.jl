@@ -32,31 +32,31 @@ function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
                             lt.rootheight)
 end
 
-function BinaryTree(leaves::AbstractVector{String};
-                    rootheight::Nullable{Float64} = Nullable{Float64}(),
-                    leaftype::Type = LeafInfo,
-                    nodetype::Type = Void)
-    leaftype <: AbstractInfo ||
-        error("Leaf information structure is not an subtype of AbstractInfo")
+function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
+                                      ND}(leaves::Vector{String},
+                                          treetype::Type{BinaryTree{LI, ND}} =
+                                          BinaryTree{LI, ND};
+                                          rootheight::Nullable{Float64} =
+                                          Nullable{Float64}())
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafinfos = OrderedDict(map(leaf -> leaf => leaftype(), leaves))
-    noderecords = OrderedDict(map(leaf -> leaf => nodetype(), leaves))
-    return BinaryTree{leaftype, nodetype}(nodes, OrderedDict{Int, Branch{String}}(),
-                                        leafinfos, noderecords, rootheight)
+    leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
+    noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
+    return BinaryTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
+                              leafinfos, noderecords, rootheight)
 end
 
-function BinaryTree(numleaves::Int;
-                  rootheight::Nullable{Float64} = Nullable{Float64}(),
-                  leaftype::Type = LeafInfo,
-                  nodetype::Type = Void)
-    leaftype <: AbstractInfo ||
-        error("Leaf information structure is not an subtype of AbstractInfo")
+function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
+                                      ND}(numleaves::Int,
+                                          treetype::Type{BinaryTree{LI, ND}} =
+                                          BinaryTree{LI, ND};
+                                          rootheight::Nullable{Float64} =
+                                          Nullable{Float64}())
     leaves = map(num -> "Leaf $num", 1:numleaves)
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafinfos = OrderedDict(map(leaf -> leaf => leaftype(), leaves))
-    noderecords = OrderedDict(map(leaf -> leaf => nodetype(), leaves))
-    return BinaryTree{leaftype, nodetype}(nodes, OrderedDict{Int, Branch{String}}(),
-                                        leafinfos, noderecords, rootheight)
+    leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
+    noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
+    return BinaryTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
+                              leafinfos, noderecords, rootheight)
 end
 
 function _nodetype{LI, ND}(::Type{BinaryTree{LI, ND}})
@@ -96,6 +96,8 @@ function _setnoderecord!(nt::BinaryTree, nodename, value)
 end
 
 function _addnode!{LI, NR}(tree::BinaryTree{LI, NR}, nodename)
+    !_hasnode(tree, nodename) ||
+        error("Node $nodename already present in tree")
     _setnode!(tree, nodename, BinaryNode{Int}())
     setnoderecord!(tree, nodename, NR())
     return nodename
@@ -164,9 +166,6 @@ end
 Binary phylogenetic tree object with known leaves
 """
 const NamedTree = BinaryTree{LeafInfo, Void}
-
-NamedTree(leaves::AbstractVector{String}) = BinaryTree(leaves)
-NamedTree(numleaves::Int) = BinaryTree(numleaves)
 
 
 

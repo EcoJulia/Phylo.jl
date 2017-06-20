@@ -27,7 +27,7 @@ using Base.Test
 end
 
 @testset "BinaryTree()" begin
-    nt = BinaryTree(["Dog", "Cat", "Human"], nodetype=Vector{Float64})
+    nt = BinaryTree{LeafInfo, Vector{Float64}}(["Dog", "Cat", "Human"])
     @test validate(nt)
     n = addnode!(nt)
     @test Set(getleafnames(nt)) == Set(["Dog", "Cat", "Human"])

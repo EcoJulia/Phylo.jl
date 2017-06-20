@@ -61,7 +61,7 @@ end
 
 function rand{LI, ND, RNG}(t::Nonultrametric{BinaryTree{LI, ND}, RNG})
     t.n >= 2 || error("A tree must have at least 2 tips")
-    tree = BinaryTree(t.tiplabels, leaftype=LI, nodetype=ND)
+    tree = BinaryTree{LI, ND}(t.tiplabels)
     roots = NodeNameIterator(tree, isroot)
     while length(roots) > 1
         children = sample(collect(roots), 2, replace=false)
@@ -134,7 +134,7 @@ end
 
 function rand{LI, ND, RNG}(t::Ultrametric{BinaryTree{LI, ND}, RNG})
     t.n >= 2 || error("A tree must have at least 2 tips")
-    tree = BinaryTree(t.tiplabels, leaftype=LI, nodetype=ND)
+    tree = BinaryTree{LI, ND}(t.tiplabels)
     roots = NodeNameIterator(tree, isroot)
     depth = zero(rand(t.rng))
     leaves = getleafnames(tree)
