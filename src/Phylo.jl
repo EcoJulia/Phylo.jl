@@ -72,6 +72,7 @@ export validate
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
+export hasoutboundspace, hasinboundspace
 export getleafnames
 export getleafinfo, setleafinfo!, getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
