@@ -62,6 +62,8 @@ end
 
 """
 function addnode!(tree::AbstractTree, nodename = _newnodelabel(tree))
+    !_hasnode(tree, nodename) ||
+        error("Node $nodename already present in tree")
     return _addnode!(tree, nodename)
 end
 
@@ -74,6 +76,8 @@ end
 function addnodes! end
 
 function addnodes!(tree::AbstractTree, nodenames::AbstractVector)
+    all(map(name -> !_hasnode(tree, name), nodenames)) ||
+        error("Some of nodes $nodenames already present in tree")
     return _addnodes!(tree, nodenames)
 end
 
