@@ -48,6 +48,20 @@ function _branchtype end
 
 # AbstractTree methods
 """
+    _nodetype(::AbstractTree)
+
+Returns type of nodes in a tree.
+"""
+function _nodetype(::AbstractTree) end
+
+"""
+    _branchtype(::AbstractTree)
+
+Returns type of branches in a tree.
+"""
+function _branchtype(::AbstractTree) end
+
+"""
     _newbranchlabel(tree::AbstractTree)
 
 

@@ -59,13 +59,9 @@ function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
                               leafinfos, noderecords, rootheight)
 end
 
-function _nodetype{LI, ND}(::Type{BinaryTree{LI, ND}})
-    return BinaryNode{Int}
-end
+_nodetype(::BinaryTree) = BinaryNode{Int}
 
-function _branchtype{LI, ND}(::Type{BinaryTree{LI, ND}})
-    return Branch{String}
-end
+_branchtype(::BinaryTree) = Branch{String}
 
 function _getnodes(nt::BinaryTree)
     return nt.nodes

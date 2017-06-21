@@ -6,6 +6,36 @@ getbranches(tree::AbstractTree) = _getbranches(tree)
 
 # AbstractTree methods
 """
+    nodetype(tree::AbstractTree)
+
+Returns type of nodes in a tree.
+"""
+nodetype(tree::AbstractTree) = _nodetype(tree)
+
+"""
+    branchtype(tree::AbstractTree)
+
+Returns type of branches in a tree.
+"""
+branchtype(tree::AbstractTree) = _branchtype(tree)
+
+"""
+    nodenametype(::AbstractTree)
+
+Returns type of node names.
+"""
+nodenametype{NodeLabel, BranchLabel}(::AbstractTree{NodeLabel, BranchLabel}) =
+    NodeLabel
+
+"""
+    branchnametype(::AbstractTree)
+
+Returns type of branch names.
+"""
+branchnametype{NodeLabel, BranchLabel}(::AbstractTree{NodeLabel, BranchLabel}) =
+    BranchLabel
+
+"""
     addbranch!(tree::AbstractTree, source, target[, length::Float64];
                branchname = _newbranchlabel(tree))
 

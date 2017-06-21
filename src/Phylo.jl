@@ -60,6 +60,7 @@ end
 
 include("Interface.jl")
 # AbstractTree methods
+export nodetype, branchtype, nodenametype, branchnametype
 export addbranch!, deletebranch!, branch!
 export addnode!, addnodes!, deletenode!
 export getnodenames, hasnode, getnode, getnodes
