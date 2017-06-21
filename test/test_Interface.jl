@@ -12,7 +12,7 @@ using Compat
 
         species = ["Dog", "Cat", "Human", "Potato", "Apple"]
         tree = TreeType(species)
-        othernodes = ["Root", "Internal 1", "Internal 2"]
+        othernodes = ["Some 1", "Some 2"]
         @test othernodes == addnodes!(tree, othernodes)
         extra = addnodes!(tree, 1)
         @test isa(extra[1], String)

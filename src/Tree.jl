@@ -117,6 +117,12 @@ function _validate(tree::BinaryTree)
         warn("Leaf names do not match actual leaves of tree")
         return false
     end
+
+    if Set(NodeNameIterator(tree, hasoutboundspace)) !=
+        Set(NodeNameIterator(tree, isleaf))
+        warn("Nodes must have two or zero outbound connections.")
+        return false
+    end
     
     if Set(keys(tree.noderecords)) != Set(keys(getnodes(tree)))
         warn("Leaf records do not match node records of tree")
