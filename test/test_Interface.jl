@@ -2,6 +2,7 @@ module TestInterface
 
 using Phylo
 using Base.Test
+using Compat
 
 @testset "Build and tear down trees" begin
     @testset "For $TreeType" for TreeType in
@@ -30,11 +31,24 @@ using Base.Test
         pop!(innodes)
         branches =
             map(innodes) do node
-                itr = Iterators.filter(name -> hasoutboundspace(tree, name) &&
-                                       name != node, allnodes)
+                itr = Compat.Iterators.filter(name ->
+                                              hasoutboundspace(tree, name) &&
+                                              name != node, allnodes)
                 addbranch!(tree, first(itr), node)
             end
         @test Set(branches) == Set(BranchNameIterator(tree))
+        @test validate(tree)
+        @test_throws ErrorException addbranch!(tree, allnodes[1], allnodes[2])
+        who = getparent(tree, species[1])
+        b = getinbound(tree, species[1])
+        @test b == deletebranch!(tree, b)
+        branches = collect(Compat.Iterators.filter(name -> name != b, branches))
+        @test Set(branches) == Set(BranchNameIterator(tree))
+        b2 = addbranch!(tree, who, species[1])
+        push!(branches, b2)
+        @test Set(branches) == Set(BranchNameIterator(tree))
+        @test species[1] == deletenode!(tree, species[1])
+        @test species[1] == branch!(tree, who, target=species[1])
         @test validate(tree)
     end
 end
