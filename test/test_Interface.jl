@@ -14,7 +14,7 @@ using Base.Test
         othernodes = ["Root", "Internal 1", "Internal 2"]
         @test othernodes == addnodes!(tree, othernodes)
         extra = addnodes!(tree, 1)
-        @test extra[1] isa String
+        @test isa(extra[1], String)
         append!(othernodes, extra)
         also = addnode!(tree)
         @test also ∉ othernodes
