@@ -1,7 +1,7 @@
 using Phylo
 using Compat
 
-function _newlabel{Label <: Integer}(ids::Vector{Label}, _)
+function _newlabel{Label <: Integer}(ids::Vector{Label})
     return isempty(ids) ? 1 : maximum(ids) + 1
 end
 
@@ -30,8 +30,6 @@ function _extractnodename{L, N <: AbstractNode}(pair::Pair{L, N})
     return pair[1]
 end
 
-function _nodetype end
-
 function _extractbranch{B <: AbstractBranch}(branch::B)
     return branch
 end
@@ -43,8 +41,6 @@ end
 function _extractbranchname{L, B <: AbstractBranch}(pair::Pair{L, B})
     return pair[1]
 end
-
-function _branchtype end
 
 # AbstractTree methods
 """
@@ -67,8 +63,12 @@ function _branchtype(::AbstractTree) end
 
 """
 function _newbranchlabel end
-function _newbranchlabel(tree::AbstractTree)
+function _newbranchlabel{NL}(tree::AbstractTree{NL, String})
     return _newlabel(_getbranchnames(tree), "Branch ")
+end
+
+function _newbranchlabel{NL, I <: Integer}(tree::AbstractTree{NL, I})
+    return _newlabel(_getbranchnames(tree))
 end
 
 """
@@ -103,8 +103,12 @@ end
 
 """
 function _newnodelabel end
-function _newnodelabel(tree::AbstractTree)
+function _newnodelabel{BL}(tree::AbstractTree{String, BL})
     return _newlabel(_getnodenames(tree), "Node ")
+end
+
+function _newnodelabel{I <: Integer, BL}(tree::AbstractTree{I, BL})
+    return _newlabel(_getnodenames(tree))
 end
 
 """
