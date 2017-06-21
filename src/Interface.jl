@@ -525,8 +525,8 @@ function changesource!(tree::AbstractTree, branchname, source)
     branch = _getbranch(tree, branchname)
     oldsource = _getsource(branch)
     _setsource!(branch, source)
-    _deleteoutbound!(tree, oldsource, branchname)
-    _addoutbound!(tree, source, branchname)
+    _deleteoutbound!(_getnode(tree, oldsource), branchname)
+    _addoutbound!(_getnode(tree, source), branchname)
     return branchname
 end
 
@@ -543,8 +543,8 @@ function changetarget!(tree::AbstractTree, branchname, target)
     branch = _getbranch(tree, branchname)
     oldtarget = _gettarget(branch)
     _settarget!(branch, target)
-    _deleteinbound!(tree, oldtarget, branchname)
-    _setinbound!(tree, target, branchname)
+    _deleteinbound!(_getnode(tree, oldtarget), branchname)
+    _setinbound!(_getnode(tree, target), branchname)
     return branchname
 end
 
