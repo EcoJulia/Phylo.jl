@@ -18,27 +18,38 @@ function _newlabel(names::Vector{String}, prefix)
     return name
 end
 
-function _extractnode{N <: AbstractNode}(node::N)
+function _extractnode{N <: AbstractNode}(::AbstractTree, node::N)
     return node
 end
 
-function _extractnode{L, N <: AbstractNode}(pair::Pair{L, N})
+function _extractnode(tree::AbstractTree, nodename)
+    return getnode(tree, nodename)
+end
+
+function _extractnode{L, N <: AbstractNode}(::AbstractTree, pair::Pair{L, N})
     return pair[2]
 end
 
-function _extractnodename{L, N <: AbstractNode}(pair::Pair{L, N})
+function _extractnodename{L, N <: AbstractNode}(::AbstractTree,
+                                                pair::Pair{L, N})
     return pair[1]
 end
 
-function _extractbranch{B <: AbstractBranch}(branch::B)
+function _extractbranch{B <: AbstractBranch}(::AbstractTree, branch::B)
     return branch
 end
 
-function _extractbranch{L, B <: AbstractBranch}(pair::Pair{L, B})
+function _extractbranch(tree::AbstractTree, branchname)
+    return getbranch(tree, branchname)
+end
+
+function _extractbranch{L, B <: AbstractBranch}(::AbstractTree,
+                                                pair::Pair{L, B})
     return pair[2]
 end
 
-function _extractbranchname{L, B <: AbstractBranch}(pair::Pair{L, B})
+function _extractbranchname{L, B <: AbstractBranch}(::AbstractTree,
+                                                    pair::Pair{L, B})
     return pair[1]
 end
 
