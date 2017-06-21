@@ -134,6 +134,7 @@ function showall{LI, ND}(io::IO, object::BinaryTree{LI, ND})
     print(io, _getbranches(object))
     if ND != Void
         print(io, "\nNodeData:\n") 
-        print(io, getnoderecords(object))
+        print(io, map(nodename -> getnoderecord(object, nodename),
+                      NodeNameIterator(object)))
     end
 end
