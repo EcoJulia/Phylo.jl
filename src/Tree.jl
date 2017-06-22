@@ -24,7 +24,7 @@ function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
         branches = OrderedDict{Int, Branch{String}}()
         noderecords = OrderedDict(map(leaf -> leaf => ND(), leafnames))
     else # Make copies of everything
-        nodes = deepcopy(nodes)
+        nodes = deepcopy(getnodes(lt))
         noderecords = deepcopy(lt.noderecords)
         branches = deepcopy(getbranches(lt))
     end

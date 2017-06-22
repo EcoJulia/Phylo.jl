@@ -56,6 +56,15 @@ end
     @test !validate(nt)
     setrootheight!(nt, 0.0)    
     @test validate(nt)
+    nt3 = BinaryTree(nt, empty=false)
+    a=IOBuffer()
+    b=IOBuffer()
+    showall(a, nt)
+    showall(b, nt3)
+    @test a.data == b.data
+    show(a, nt)
+    show(b, nt3)
+    @test a.data == b.data
 end
 
 end
