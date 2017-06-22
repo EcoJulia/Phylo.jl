@@ -4,7 +4,7 @@ using Phylo
 using Base.Test
 if !isdefined(Base.Test, Symbol("@test_nowarn"))
     # Ignore @test_nowarn unless it's there...
-    macro test_nowarn(str, test)
+    macro test_nowarn(test)
     end
 end
 
