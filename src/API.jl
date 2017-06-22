@@ -59,14 +59,15 @@ end
 
 Returns type of nodes in a tree.
 """
-function _nodetype(::AbstractTree) end
+function _nodetype end
 
 """
     _branchtype(::AbstractTree)
 
 Returns type of branches in a tree.
 """
-function _branchtype(::AbstractTree) end
+function _branchtype end
+
 
 """
     _newbranchlabel(tree::AbstractTree)
@@ -74,6 +75,7 @@ function _branchtype(::AbstractTree) end
 
 """
 function _newbranchlabel end
+
 function _newbranchlabel{NL}(tree::AbstractTree{NL, String})
     return _newlabel(_getbranchnames(tree), "Branch ")
 end
@@ -114,6 +116,7 @@ end
 
 """
 function _newnodelabel end
+
 function _newnodelabel{BL}(tree::AbstractTree{String, BL})
     return _newlabel(_getnodenames(tree), "Node ")
 end
