@@ -50,8 +50,8 @@ export _indegree, _outdegree, _hasinbound, _getinbound, _getoutbounds
 export _hasoutboundspace, _hasinboundspace
 
 # AbstractBranch methods
-export _getsource, _gettarget, _getlength
-export _setsource!, _settarget!
+export _src, _dst, _getlength
+export _setsrc!, _setdst!
 
 # Label names
 export _newnodelabel, _newbranchlabel
@@ -79,8 +79,8 @@ export getleafinfo, setleafinfo!, getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
-export getsource, gettarget, getlength
-export changesource!, changetarget!
+export src, dst, getlength
+export changesrc!, changedst!
 
 include("Info.jl")
 export LeafInfo

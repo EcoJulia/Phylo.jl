@@ -59,7 +59,7 @@ function sexp(tree::AbstractTree)
     index = 1
     for branch in bi
         lengths[index] = getlength(branch)
-        edges[index, :] = indexin([getsource(branch), gettarget(branch)], nodes)
+        edges[index, :] = indexin([src(branch), dst(branch)], nodes)
         index += 1
     end
     tor[:edge] = edges

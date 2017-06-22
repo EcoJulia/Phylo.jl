@@ -85,7 +85,7 @@ function _newbranchlabel{NL, I <: Integer}(tree::AbstractTree{NL, I})
 end
 
 """
-    _addbranch!(tree::AbstractTree, source, target;
+    _addbranch!(tree::AbstractTree, source, destination;
                 length::Float64 = NaN,
                 branchname = _newbranchlabel(tree))
 
@@ -101,13 +101,13 @@ Must be implemented for any AbstractTree subtype.
 function _deletebranch! end
 
 """
-    _branch!(tree::AbstractTree, source, length::Float64, target, branchname)
+    _branch!(tree::AbstractTree, source, length::Float64, destination, branchname)
 
 
 """
-function _branch!(tree::AbstractTree, source, length::Float64, target, branchname)
-    _addbranch!(tree, source, _addnode!(tree, target), length, branchname)
-    return target
+function _branch!(tree::AbstractTree, source, length::Float64, destination, branchname)
+    _addbranch!(tree, source, _addnode!(tree, destination), length, branchname)
+    return destination
 end
 
 """
@@ -358,39 +358,47 @@ end
 
 # AbstractBranch methods
 """
-    _getsource
+    _src
 
-Must be implemented for any AbstractBranch subtype.
+Return source node for a branch. Must be implemented for any
+AbstractBranch subtype.
 """
-function _getsource end
+function _src end
 
 """
-    _gettarget
+    _dst
 
-Must be implemented for any AbstractBranch subtype.
+Return destination node for a branch. Must be implemented for any
+AbstractBranch subtype.
 """
-function _gettarget end
+function _dst end
 
 """
     _getlength
 
-Must be implemented for any AbstractBranch subtype.
+Return length of a branch. May be implemented for any AbstractBranch
+subtype.
 """
 function _getlength end
+function _getlength(::AbstractBranch)
+    return NaN
+end
 
 """
-    _setsource!
+    _setsrc!
 
-Must be implemented for any AbstractBranch subtype.
+Set source node for a branch. Must be implemented for any
+AbstractBranch subtype.
 """
-function _setsource! end
+function _setsrc! end
 
 """
-    _settarget!
+    _setdst!
 
-Must be implemented for any AbstractBranch subtype.
+Set destination node for a graph. Must be implemented for any
+AbstractBranch subtype.
 """
-function _settarget! end
+function _setdst! end
 
 
 function _getleafinfo end

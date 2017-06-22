@@ -46,8 +46,8 @@ using Compat
             hasoutboundspace(node1) && !hasinboundspace(node1) &&
             outdegree(node1) == 0 && indegree(node1) == 1
         @test hasbranch(tree, b)
-        @test gettarget(getbranch(tree, b)) == species[1]
-        @test getsource(getbranch(tree, b)) == who
+        @test dst(getbranch(tree, b)) == species[1]
+        @test src(getbranch(tree, b)) == who
         @test b == deletebranch!(tree, b)
         @test !hasbranch(tree, b)
         @test isunattached(tree, species[1]) &&
@@ -59,24 +59,24 @@ using Compat
         branches = collect(Compat.Iterators.filter(name -> name != b, branches))
         @test Set(branches) == Set(BranchNameIterator(tree))
         b3 = getinbound(tree, species[2])
-        src = getsource(tree, b3)
-        tgt = gettarget(tree, b3)
-        @test b3 == changesource!(tree, b3, who)
-        @test b3 == changetarget!(tree, b3, species[1])
-        b2 = addbranch!(tree, src, tgt)
+        source = src(tree, b3)
+        destination = dst(tree, b3)
+        @test b3 == changesrc!(tree, b3, who)
+        @test b3 == changedst!(tree, b3, species[1])
+        b2 = addbranch!(tree, source, destination)
         push!(branches, b2)
         @test Set(branches) == Set(BranchNameIterator(tree))
         @test species[1] == deletenode!(tree, species[1])
         @test !hasnode(tree, species[1])
-        @test species[1] == branch!(tree, who, target=species[1])
+        @test species[1] == branch!(tree, who, destination=species[1])
         @test hasnode(tree, species[1])
         @test validate(tree)
         @test all(map(node -> isleaf(tree, node), species))
         @test all(map(node -> !isroot(tree, node) &&
                       !isunattached(tree, node) &&
                       !isinternal(tree, node), species))
-        @test Set(map(pair -> getsource(pair[2]), collect(getbranches(tree)))) ∪
-            Set(map(pair -> gettarget(pair[2]), collect(getbranches(tree)))) ==
+        @test Set(map(pair -> src(pair[2]), collect(getbranches(tree)))) ∪
+            Set(map(pair -> dst(pair[2]), collect(getbranches(tree)))) ==
             Set(allnodes)
     end
 end

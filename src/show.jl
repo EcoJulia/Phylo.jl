@@ -77,18 +77,18 @@ function show{N <: AbstractNode, NT}(io::IO, p::Pair{NT, N})
 end
 
 function show{B <: AbstractBranch}(io::IO, object::B)
-    NT = typeof(_getsource(object))
-    source = NT <: Number ? "$(_getsource(object))" : "\"$(_getsource(object))\""
-    target = NT <: Number ? "$(_gettarget(object))" : "\"$(_gettarget(object))\""
-    print(io, "[node $source]-->[$(_getlength(object)) length branch]-->[node $target]")   
+    NT = typeof(_src(object))
+    source = NT <: Number ? "$(_src(object))" : "\"$(_src(object))\""
+    destination = NT <: Number ? "$(_dst(object))" : "\"$(_dst(object))\""
+    print(io, "[node $source]-->[$(_getlength(object)) length branch]-->[node $destination]")   
 end  
 
 function show{BT, B <: AbstractBranch}(io::IO, p::Pair{BT, B})
-    NT = typeof(_getsource(p[2]))
-    source = NT <: Number ? "$(_getsource(p[2]))" : "\"$(_getsource(p[2]))\""
-    target = NT <: Number ? "$(_gettarget(p[2]))" : "\"$(_gettarget(p[2]))\""
+    NT = typeof(_src(p[2]))
+    source = NT <: Number ? "$(_src(p[2]))" : "\"$(_src(p[2]))\""
+    destination = NT <: Number ? "$(_dst(p[2]))" : "\"$(_dst(p[2]))\""
     branch = BT <: Number ? "$(p[1])" : "\"$(p[1])\""
-    print(io, "[node $source]-->[$(_getlength(p[2])) length branch $branch]-->[node $target]")
+    print(io, "[node $source]-->[$(_getlength(p[2])) length branch $branch]-->[node $destination]")
 end
 
 function show(io::IO, object::AbstractTree)

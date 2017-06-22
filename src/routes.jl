@@ -4,7 +4,7 @@ function _treepast{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
     while hasinbound(tree, node)
         inbound = getinbound(tree, node)
         branches = push!(branches, inbound)
-        node = getsource(tree, inbound)
+        node = src(tree, inbound)
         nodes = push!(nodes, node)
     end
     return branches, nodes
@@ -19,7 +19,7 @@ function _treefuture{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
         push!(nodesprocessed, nextnode)
         outbounds = getoutbounds(tree, nextnode)
         append!(branches, outbounds)
-        children = map(branch -> gettarget(tree, branch), outbounds)
+        children = map(branch -> dst(tree, branch), outbounds)
         append!(nodestoprocess, children)
     end
     return branches, nodesprocessed

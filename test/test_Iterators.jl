@@ -53,18 +53,18 @@ end
     @test length(ni) == ntip
     @test all(isleaf, collect(ni))
 
-    bni = BranchNameIterator(nur, branch -> isleaf(bni.tree, gettarget(branch)))
+    bni = BranchNameIterator(nur, branch -> isleaf(bni.tree, dst(branch)))
     @test Base.iteratoreltype(bni) == Base.HasEltype()
     @test eltype(bni) == branchnametype(nur)
     @test Base.iteratorsize(bni) == Base.HasLength()
     @test length(bni) == ntip
     
-    bi = BranchIterator(nur, branch -> isleaf(bi.tree, gettarget(branch)))
+    bi = BranchIterator(nur, branch -> isleaf(bi.tree, dst(branch)))
     @test Base.iteratoreltype(bi) == Base.HasEltype()
     @test eltype(bi) == branchtype(nur)
     @test Base.iteratorsize(bi) == Base.HasLength()
     @test length(bi) == ntip
-    bileaves = map(gettarget, bi)
+    bileaves = map(dst, bi)
     @test Set(bileaves) == Set(leaves)
 end
 

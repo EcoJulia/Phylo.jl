@@ -8,33 +8,33 @@ importall Phylo.API
 """
 type Branch{T} <: AbstractBranch
     source::T
-    target::T
+    destination::T
     length::Float64
 
-    function (::Type{Branch{T}}){T}(source::T, target::T, length::Float64)
+    function (::Type{Branch{T}}){T}(source::T, destination::T, length::Float64)
         length >= 0.0 || isnan(length) ||
             error("Branch length must be positive or NaN (no recorded length)")
-        new{T}(source, target, length)
+        new{T}(source, destination, length)
     end
 end
 
-Branch{T}(source::T, target::T, length::Float64) =
-    Branch{T}(source, target, length)
+Branch{T}(source::T, destination::T, length::Float64) =
+    Branch{T}(source, destination, length)
 
 const SimpleBranch = Branch{Int}
 
-_getsource(branch::Branch) = branch.source
-_gettarget(branch::Branch) = branch.target
-_setsource!{T}(branch::Branch{T}, source::T) = branch.source = source
-_settarget!{T}(branch::Branch{T}, target::T) = branch.target = target
+_src(branch::Branch) = branch.source
+_dst(branch::Branch) = branch.destination
+_setsrc!{T}(branch::Branch{T}, source::T) = branch.source = source
+_setdst!{T}(branch::Branch{T}, destination::T) = branch.destination = destination
 _getlength(branch::Branch) = branch.length
 
 function checkbranch(id::Int, branch::Branch, tree::AbstractTree)
     return id > 0 &&
-        getsource(branch) != gettarget(branch) &&
+        src(branch) != dst(branch) &&
         !haskey(getbranches(tree), id) &&
-        haskey(getnodes(tree), getsource(branch)) &&
-        haskey(getnodes(tree), gettarget(branch)) &&
-        !hasinbound(getnodes(tree)[gettarget(branch)]) &&
-        outboundspace(getnodes(tree)[getsource(branch)])
+        haskey(getnodes(tree), src(branch)) &&
+        haskey(getnodes(tree), dst(branch)) &&
+        !hasinbound(getnodes(tree)[dst(branch)]) &&
+        outboundspace(getnodes(tree)[src(branch)])
 end

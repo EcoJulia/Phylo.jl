@@ -36,22 +36,22 @@ branchnametype{NodeLabel, BranchLabel}(::AbstractTree{NodeLabel, BranchLabel}) =
     BranchLabel
 
 """
-    addbranch!(tree::AbstractTree, source, target[, length::Float64];
+    addbranch!(tree::AbstractTree, source, destination[, length::Float64];
                branchname = _newbranchlabel(tree))
 
-Add a branch from `source` to `target` on `tree`.
+Add a branch from `source` to `destination` on `tree`.
 """
-function addbranch!(tree::AbstractTree, source, target, length::Float64 = NaN;
+function addbranch!(tree::AbstractTree, source, destination, length::Float64 = NaN;
                     branchname = _newbranchlabel(tree))
     _hasnode(tree, source) && hasoutboundspace(tree, source) ||
         error("Tree does not have an available source node called $source")
-    _hasnode(tree, target) && !hasinbound(tree, target) ||
-        error("Tree does not have an available target node called $target")
-    target != source || error("Branch must connect different nodes")
+    _hasnode(tree, destination) && !hasinbound(tree, destination) ||
+        error("Tree does not have an available destination node called $destination")
+    destination != source || error("Branch must connect different nodes")
     _hasbranch(tree, branchname) &&
         error("Tree already has a branch called $branchname")
     
-    return _addbranch!(tree, source, target, length, branchname)
+    return _addbranch!(tree, source, destination, length, branchname)
 end
 
 """
@@ -67,22 +67,22 @@ end
 
 """
     branch!(tree::AbstractTree, source[, length])
-    branch!(tree::AbstractTree, source[, length]; target)
-    branch!(tree::AbstractTree, source[, length]; target, branchname)
+    branch!(tree::AbstractTree, source[, length]; destination)
+    branch!(tree::AbstractTree, source[, length]; destination, branchname)
 
-Branch from a source node `source` and create a target node `target`.
+Branch from a source node `source` and create a destination node `destination`.
 """
 function branch!(tree::AbstractTree, source, length::Float64 = NaN;
-                 target = _newnodelabel(tree),
+                 destination = _newnodelabel(tree),
                  branchname = _newbranchlabel(tree))
     _hasnode(tree, source) ||
         error("Node $source not present in tree")
-    !_hasnode(tree, target) ||
-        error("Node $target already present in tree")
+    !_hasnode(tree, destination) ||
+        error("Node $destination already present in tree")
     _hasoutboundspace(_getnode(tree, source)) ||
         error("Node $source has no space to add branches")
     
-    return _branch!(tree, source, length, target, branchname)
+    return _branch!(tree, source, length, destination, branchname)
 end
 
 """
@@ -232,15 +232,15 @@ function validate{NL, BL}(tree::AbstractTree{NL, BL})
             return false
         end
         
-        if !(mapreduce(_getsource, push!, NL[], BranchIterator(tree)) ⊆
+        if !(mapreduce(_src, push!, NL[], BranchIterator(tree)) ⊆
              Set(keys(nodes)))
             warn("Branch sources must be node labels")
             return false
         end
 
-        if !(mapreduce(_gettarget, push!, NL[], BranchIterator(tree)) ⊆
+        if !(mapreduce(_dst, push!, NL[], BranchIterator(tree)) ⊆
              Set(keys(nodes)))
-            warn("Branch targets must be node labels")
+            warn("Branch destinations must be node labels")
             return false
         end
     end
@@ -416,7 +416,7 @@ end
 Return the name of the parent node for this node.
 """
 function getparent(tree::AbstractTree, nodename)
-    return getsource(tree, getinbound(tree, nodename))
+    return src(tree, getinbound(tree, nodename))
 end
 
 """
@@ -450,7 +450,7 @@ end
 Return the name(s) of the child node(s) for this node.
 """
 function getchildren(tree::AbstractTree, nodename)
-    return map(branch -> gettarget(tree, branch), getoutbounds(tree, nodename))
+    return map(branch -> dst(tree, branch), getoutbounds(tree, nodename))
 end
 
 """
@@ -495,35 +495,35 @@ end
 
 # AbstractBranch methods
 """
-    getsource(branch::AbstractBranch)
-    getsource(tree::AbstractTree, branchname)
+    src(branch::AbstractBranch)
+    src(tree::AbstractTree, branchname)
 
 Return the source node for this branch.
 """
-function getsource end
+function src end
 
-function getsource(branch::AbstractBranch)
-    return _getsource(branch)
+function src(branch::AbstractBranch)
+    return _src(branch)
 end
 
-function getsource(tree::AbstractTree, branchname)
-    return _getsource(_getbranch(tree, branchname))
+function src(tree::AbstractTree, branchname)
+    return _src(_getbranch(tree, branchname))
 end
 
 """
-    gettarget(branch::AbstractBranch)
-    gettarget(tree::AbstractTree, branchname)
+    dst(branch::AbstractBranch)
+    dst(tree::AbstractTree, branchname)
 
-Return the target node for this branch.
+Return the destination node for this branch.
 """
-function gettarget end
+function dst end
 
-function gettarget(branch::AbstractBranch)
-    return _gettarget(branch)
+function dst(branch::AbstractBranch)
+    return _dst(branch)
 end
 
-function gettarget(tree::AbstractTree, branchname)
-    return _gettarget(_getbranch(tree, branchname))
+function dst(tree::AbstractTree, branchname)
+    return _dst(_getbranch(tree, branchname))
 end
 
 """
@@ -543,38 +543,38 @@ function getlength(tree::AbstractTree, branchname)
 end
 
 """
-    changesource!(tree::AbstractTree, branchname, source)
+    changesrc!(tree::AbstractTree, branchname, source)
 
 Change the source node for this branch.
 """
-function changesource!(tree::AbstractTree, branchname, source)
+function changesrc!(tree::AbstractTree, branchname, source)
     _hasbranch(tree, branchname) ||
         error("Branch $branchname does not exist")
     _hasnode(tree, source) ||
         error("Node $source does not exist")
     branch = _getbranch(tree, branchname)
-    oldsource = _getsource(branch)
-    _setsource!(branch, source)
+    oldsource = _src(branch)
+    _setsrc!(branch, source)
     _deleteoutbound!(_getnode(tree, oldsource), branchname)
     _addoutbound!(_getnode(tree, source), branchname)
     return branchname
 end
 
 """
-    changetarget!(tree::AbstractTree, branchname, target)
+    changedst!(tree::AbstractTree, branchname, destination)
 
-Change the target node for this node.
+Change the destination node for this node.
 """
-function changetarget!(tree::AbstractTree, branchname, target)
+function changedst!(tree::AbstractTree, branchname, destination)
     _hasbranch(tree, branchname) ||
         error("Branch $branchname does not exist")
-    _hasnode(tree, target) ||
-        error("Node $target does not exist")
+    _hasnode(tree, destination) ||
+        error("Node $destination does not exist")
     branch = _getbranch(tree, branchname)
-    oldtarget = _gettarget(branch)
-    _settarget!(branch, target)
-    _deleteinbound!(_getnode(tree, oldtarget), branchname)
-    _setinbound!(_getnode(tree, target), branchname)
+    olddestination = _dst(branch)
+    _setdst!(branch, destination)
+    _deleteinbound!(_getnode(tree, olddestination), branchname)
+    _setinbound!(_getnode(tree, destination), branchname)
     return branchname
 end
 
