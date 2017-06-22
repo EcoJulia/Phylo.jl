@@ -2,22 +2,27 @@ module TestTrees
 
 using Phylo
 using Base.Test
+if !isdefined(Base.Test, Symbol("@test_warn"))
+    # Ignore @test_warn unless it's there...
+    macro test_warn(str, test)
+    end
+end
 
+species = ["Dog", "Cat", "Human"]
 @testset "NamedTree()" begin
-    species = ["Dog", "Cat", "Human"]
     nt = NamedTree(species)
     @test isnull(noderoute(nt, "Dog", "Cat"))
     @test isnull(branchroute(nt, "Dog", "Human"))
     @test validate(nt)
     n = addnode!(nt)
-    @test !validate(nt)
+    @test_warn "Leaf names do not match actual leaves of tree" !validate(nt) || error("validate() should have returned false")
     b1 = addbranch!(nt, n, "Dog", 2.0)
     b2 = addbranch!(nt, n, "Cat", 2.0)
     @test_throws ErrorException addbranch!(nt, n, "Human", 2.0)
     @test validate(nt)
     r = addnode!(nt)
     @test_throws ErrorException addbranch!(nt, r, "Potato", 2.0)
-    @test !validate(nt)
+    @test_warn "Leaf names do not match actual leaves of tree" !validate(nt) || error("validate() should have returned false")
     b3 = addbranch!(nt, r, "Human", 5.0)
     b4 = addbranch!(nt, r, n, 3.0)
     @test maximum(distances(nt)) ≈ 10.0
@@ -27,10 +32,10 @@ using Base.Test
 end
 
 @testset "BinaryTree()" begin
-    nt = BinaryTree{LeafInfo, Vector{Float64}}(["Dog", "Cat", "Human"])
+    nt = BinaryTree{LeafInfo, Vector{Float64}}(species)
     @test validate(nt)
     n = addnode!(nt)
-    @test Set(getleafnames(nt)) == Set(["Dog", "Cat", "Human"])
+    @test Set(getleafnames(nt)) == Set(species)
     addbranch!(nt, n, "Dog", 2.0)
     addbranch!(nt, n, "Cat", 2.0)
     @test_throws ErrorException addbranch!(nt, n, "Human", 2.0)
@@ -45,15 +50,15 @@ end
     @test length(getnoderecord(nt, "Cat")) == 0
     nt2 = BinaryTree(nt)
     @test length(getnoderecord(nt2, "Dog")) == 0
-    @test Set(getleafnames(nt2)) == Set(["Dog", "Cat", "Human"])
+    @test Set(getleafnames(nt2)) == Set(species)
     setheight!(nt, "Dog", 4.0)
     setheight!(nt, "Cat", 5.0)
     setheight!(nt, "Human", 4.0)
-    @test !validate(nt)
+    @test_warn "does not match branches" !validate(nt) || error("validate() should have returned false")
     setheight!(nt, "Cat", 4.0)
     @test validate(nt)
     setrootheight!(nt, 1.0)
-    @test !validate(nt)
+    @test_warn "does not match branches" !validate(nt) || error("validate() should have returned false")
     setrootheight!(nt, 0.0)    
     @test validate(nt)
     nt3 = BinaryTree(nt, empty=false)
