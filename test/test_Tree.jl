@@ -9,7 +9,13 @@ if !isdefined(Base.Test, Symbol("@test_warn"))
 end
 
 species = ["Dog", "Cat", "Human"]
+ntips = 10
 @testset "NamedTree()" begin
+    ntn = NamedTree(ntips)
+    @test length(NodeIterator(ntn, isroot)) == ntips
+    @test length(NodeIterator(ntn, isleaf)) == ntips
+    @test length(NodeIterator(ntn, isinternal)) == 0
+    @test validate(ntn)
     nt = NamedTree(species)
     @test isnull(noderoute(nt, "Dog", "Cat"))
     @test isnull(branchroute(nt, "Dog", "Human"))
@@ -32,6 +38,11 @@ species = ["Dog", "Cat", "Human"]
 end
 
 @testset "BinaryTree()" begin
+    btn = BinaryTree{LeafInfo, Vector{Float64}}(ntips)
+    @test length(NodeIterator(btn, isroot)) == ntips
+    @test length(NodeIterator(btn, isleaf)) == ntips
+    @test length(NodeIterator(btn, isinternal)) == 0
+
     nt = BinaryTree{LeafInfo, Vector{Float64}}(species)
     @test validate(nt)
     n = addnode!(nt)
