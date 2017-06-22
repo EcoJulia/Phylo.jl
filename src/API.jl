@@ -304,9 +304,7 @@ function _outdegree end
 
 
 """
-function _hasoutboundspace(node::AbstractNode)
-    return _outdegree(node) < 2
-end
+function _hasoutboundspace end
 
 """
     _hasinbound(node::AbstractNode)
