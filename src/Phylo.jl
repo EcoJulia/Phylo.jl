@@ -14,6 +14,9 @@ a simple phylogenetics type.
 module Phylo
 
 using Compat
+import Base: Pair, Tuple, show, showall, start, next, done,
+    iteratorsize, iteratoreltype, eltype, length
+
 @compat abstract type AbstractNode end
 @compat abstract type AbstractBranch end
 @compat abstract type AbstractTree{NodeLabel, BranchLabel} end

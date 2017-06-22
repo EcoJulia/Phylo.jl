@@ -527,6 +527,38 @@ function dst(tree::AbstractTree, branchname)
 end
 
 """
+    Pair(branch::AbstractBranch)
+    Pair(tree::AbstractTree, branchname)
+
+Return a Pair containing the source and destination for this branch.
+"""
+function Pair end
+
+function Pair(branch::AbstractBranch)
+    return Pair(src(branch), dst(branch))
+end
+
+function Pair(tree::AbstractTree, branchname)
+    return Pair(_getbranch(tree, branchname))
+end
+
+"""
+    Tuple(branch::AbstractBranch)
+    Tuple(tree::AbstractTree, branchname)
+
+Return a Tuple containing the source and destination for this branch.
+"""
+function Tuple end
+
+function Tuple(branch::AbstractBranch)
+    return (src(branch), dst(branch))
+end
+
+function Tuple(tree::AbstractTree, branchname)
+    return Tuple(_getbranch(tree, branchname))
+end
+
+"""
     getlength(branch::AbstractBranch)
     getlength(tree::AbstractTree, branchname)
 

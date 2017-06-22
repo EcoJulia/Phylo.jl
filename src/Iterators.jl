@@ -1,9 +1,6 @@
 using Compat
 using Phylo.API
 
-import Base.start, Base.next, Base.done
-import Base.iteratorsize, Base.iteratoreltype, Base.eltype, Base.length
-
 @compat abstract type AbstractTreeIterator{T <: AbstractTree} end
 
 function iteratorsize(::Type{AbstractTreeIterator})

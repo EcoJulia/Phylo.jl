@@ -1,8 +1,6 @@
 using Phylo
 using Phylo.API
 
-import Base.show, Base.showall
-
 function show(io::IO, object::AbstractNode, n::String = "")
     node = "node"
     if !isempty(n)
