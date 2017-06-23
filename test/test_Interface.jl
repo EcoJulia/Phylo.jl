@@ -72,6 +72,8 @@ using Compat
         @test hasnode(tree, species[1])
         @test validate(tree)
         @test all(map(==, Pair(first(BranchIterator(tree))),
+                      Tuple(tree, first(BranchNameIterator(tree)))))
+        @test all(map(==, Pair(tree, first(BranchNameIterator(tree))),
                       Tuple(first(BranchIterator(tree)))))
         @test all(map(node -> isleaf(tree, node), species))
         @test all(map(node -> !isroot(tree, node) &&
