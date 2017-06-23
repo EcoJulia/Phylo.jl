@@ -84,7 +84,7 @@ end
 NodeIterator{T <: AbstractTree}(tree::T) =
     NodeIterator{T}(tree, Nullable{Function}())
 
-NodeIterator{T <: AbstractTree}(tree::T, filterfn::Function) =
+NodeIterator{T <: AbstractTree}(filterfn::Function, tree::T) =
     NodeIterator{T}(tree, Nullable{Function}(filterfn))
 
 eltype{T <: AbstractTree}(ni::NodeIterator{T}) = nodetype(ni.tree)
@@ -119,7 +119,7 @@ end
 NodeNameIterator{T <: AbstractTree}(tree::T) =
     NodeNameIterator{T}(tree, Nullable{Function}())
 
-NodeNameIterator{T <: AbstractTree}(tree::T, filterfn::Function) =
+NodeNameIterator{T <: AbstractTree}(filterfn::Function, tree::T) =
     NodeNameIterator{T}(tree, Nullable{Function}(filterfn))
 
 eltype{T <: AbstractTree}(ni::NodeNameIterator{T}) = nodenametype(ni.tree)
@@ -155,7 +155,7 @@ end
 BranchIterator{T <: AbstractTree}(tree::T) =
     BranchIterator{T}(tree, Nullable{Function}())
 
-BranchIterator{T <: AbstractTree}(tree::T, filterfn::Function) =
+BranchIterator{T <: AbstractTree}(filterfn::Function, tree::T) =
     BranchIterator{T}(tree, Nullable{Function}(filterfn))
 
 eltype{T <: AbstractTree}(bi::BranchIterator{T}) = branchtype(bi.tree)
@@ -190,7 +190,7 @@ end
 BranchNameIterator{T <: AbstractTree}(tree::T) =
     BranchNameIterator{T}(tree, Nullable{Function}())
 
-BranchNameIterator{T <: AbstractTree}(tree::T, filterfn::Function) =
+BranchNameIterator{T <: AbstractTree}(filterfn::Function, tree::T) =
     BranchNameIterator{T}(tree, Nullable{Function}(filterfn))
 
 eltype{T <: AbstractTree}(bi::BranchNameIterator{T}) = branchnametype(bi.tree)

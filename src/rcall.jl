@@ -41,12 +41,12 @@ import RCall.sexp
 function sexp(tree::AbstractTree)
     validate(tree) || warn("Tree does not internally validate")
 
-    tipnames = collect(NodeNameIterator(tree, isleaf))
-    root = collect(NodeNameIterator(tree, isroot))
+    tipnames = collect(NodeNameIterator(isleaf, tree))
+    root = collect(NodeNameIterator(isroot, tree))
     if (length(root) != 1)
         error("Can't currently translate tree with > 1 roots")
     end
-    nontips = collect(NodeNameIterator(tree, isinternal))
+    nontips = collect(NodeNameIterator(isinternal, tree))
     tor = Dict{Symbol, Any}()
     tor[:Nnode] = length(nontips) + length(root)
     tor[Symbol("tip.label")] = tipnames

@@ -113,13 +113,13 @@ function _deletenode!(tree::BinaryTree, nodename)
 end
 
 function _validate(tree::BinaryTree)
-    if Set(NodeNameIterator(tree, isleaf)) != Set(getleafnames(tree))
+    if Set(NodeNameIterator(isleaf, tree)) != Set(getleafnames(tree))
         warn("Leaf names do not match actual leaves of tree")
         return false
     end
 
-    if Set(NodeNameIterator(tree, hasoutboundspace)) !=
-        Set(NodeNameIterator(tree, isleaf))
+    if Set(NodeNameIterator(hasoutboundspace, tree)) !=
+        Set(NodeNameIterator(isleaf, tree))
         warn("Nodes must have two or zero outbound connections.")
         return false
     end

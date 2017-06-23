@@ -12,9 +12,9 @@ species = ["Dog", "Cat", "Human"]
 ntips = 10
 @testset "NamedTree()" begin
     ntn = NamedTree(ntips)
-    @test length(NodeIterator(ntn, isroot)) == ntips
-    @test length(NodeIterator(ntn, isleaf)) == ntips
-    @test length(NodeIterator(ntn, isinternal)) == 0
+    @test length(NodeIterator(isroot, ntn)) == ntips
+    @test length(NodeIterator(isleaf, ntn)) == ntips
+    @test length(NodeIterator(isinternal, ntn)) == 0
     @test validate(ntn)
     nt = NamedTree(species)
     @test isnull(noderoute(nt, "Dog", "Cat"))
@@ -39,9 +39,9 @@ end
 
 @testset "BinaryTree()" begin
     btn = BinaryTree{LeafInfo, Vector{Float64}}(ntips)
-    @test length(NodeIterator(btn, isroot)) == ntips
-    @test length(NodeIterator(btn, isleaf)) == ntips
-    @test length(NodeIterator(btn, isinternal)) == 0
+    @test length(NodeIterator(isroot, btn)) == ntips
+    @test length(NodeIterator(isleaf, btn)) == ntips
+    @test length(NodeIterator(isinternal, btn)) == 0
 
     nt = BinaryTree{LeafInfo, Vector{Float64}}(species)
     @test validate(nt)

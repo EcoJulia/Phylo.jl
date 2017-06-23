@@ -220,7 +220,7 @@ function validate{NL, BL}(tree::AbstractTree{NL, BL})
     if !isempty(nodes) || !isempty(branches)
         # We need to validate the connections
         if Set(mapreduce(_getinbound, push!, BL[],
-                         NodeIterator(tree, _hasinbound))) !=
+                         NodeIterator(_hasinbound, tree))) !=
                              Set(keys(branches))
             warn("Inbound branches must exactly match Branch labels")
             return false

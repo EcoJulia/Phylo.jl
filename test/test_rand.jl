@@ -41,6 +41,6 @@ end
     ul = Ultrametric{BinaryTree{LeafInfo, Vector{Float64}}}(numnodes)
     u2 = rand(ul)
     @test eltype(ul) == BinaryTree{LeafInfo, Vector{Float64}}
-    @test length(NodeIterator(u2, isinternal)) == numnodes - 2
+    @test length(NodeIterator(isinternal, u2)) == numnodes - 2
 end
 end

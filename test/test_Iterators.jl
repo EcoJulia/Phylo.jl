@@ -38,7 +38,7 @@ end
     ntip = 10
     nur = rand(TreeType(ntip))
     
-    nni = NodeNameIterator(nur, isleaf)
+    nni = NodeNameIterator(isleaf, nur)
     @test Base.iteratoreltype(nni) == Base.HasEltype()
     @test eltype(nni) == nodenametype(nur)
     @test Base.iteratorsize(nni) == Base.HasLength()
@@ -46,20 +46,24 @@ end
     leaves = collect(nni)
     @test leaves == getleafnames(nur)
     
-    ni = NodeIterator(nur, isleaf)
+    ni = NodeIterator(isleaf, nur)
     @test Base.iteratoreltype(ni) == Base.HasEltype()
     @test eltype(ni) == nodetype(nur)
     @test Base.iteratorsize(ni) == Base.HasLength()
     @test length(ni) == ntip
     @test all(isleaf, collect(ni))
 
-    bni = BranchNameIterator(nur, branch -> isleaf(bni.tree, dst(branch)))
+    bni = BranchNameIterator(nur) do branch
+        return isleaf(nur, dst(branch))
+    end
     @test Base.iteratoreltype(bni) == Base.HasEltype()
     @test eltype(bni) == branchnametype(nur)
     @test Base.iteratorsize(bni) == Base.HasLength()
     @test length(bni) == ntip
     
-    bi = BranchIterator(nur, branch -> isleaf(bi.tree, dst(branch)))
+    bi = BranchIterator(nur) do branch
+        return isleaf(nur, dst(branch))
+    end
     @test Base.iteratoreltype(bi) == Base.HasEltype()
     @test eltype(bi) == branchtype(nur)
     @test Base.iteratorsize(bi) == Base.HasLength()
