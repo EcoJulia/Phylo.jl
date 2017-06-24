@@ -50,7 +50,7 @@ phylogenetics to use in our [Diversity][diversity-url] package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
 
-However, it can also read newick trees is a very hacky way:
+However, it can also read newick trees:
 
 ```julia
 julia> using Phylo

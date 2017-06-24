@@ -70,6 +70,12 @@ if Rinstalled
                 @test getleafnames(jt) == getleafnames(jt2)
                 @test rcopy(rcall(Symbol("all.equal"), rt, RObject(jt2)))
             end
+
+            @testset "Testing reading in newick trees from disk" begin
+                jtree = open(parsenewick, "h1n1.trees")
+                rtree = rcall(Symbol("read.tree"), "h1n1.trees")
+                @test rcopy(rcall(Symbol("all.equal"), jtree, rtree))
+            end
         end
     end
     rm(libdir, force=true, recursive=true);
