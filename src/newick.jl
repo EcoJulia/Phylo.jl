@@ -3,7 +3,7 @@ using Tokenize
 using Tokenize.Lexers
 const T = Tokenize.Tokens
 
-function parsenewick(io::IOStream)
+function parsenewick(io::IO)
     tree = NamedTree()
     children = Dict{Int,Vector{String}}()
     children[0] = []
@@ -167,3 +167,5 @@ end
 tree = resetleaves(tree)
 return tree
 end
+
+parsenewick(s::String) = parsenewick(IOBuffer(s))
