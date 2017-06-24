@@ -93,17 +93,21 @@ function parsenewick(io::IO)
                 processed = true
             end
             
-            if token.kind ∈ [T.STRING, T.IDENTIFIER, # Very likely a leaf
-                             T.INTEGER, T.FLOAT] # Maybe a leaf
-                if token.kind ∈ [T.INTEGER, T.FLOAT] && addlength # It's a length!
+            if token.kind ∈ [T.STRING, T.CHAR, T.IDENTIFIER, # A leaf
+                             T.INTEGER, T.FLOAT] # A leaf or a length
+                if token.kind ∈ [T.INTEGER, T.FLOAT] && addlength # A length!
                     !isnull(currentname) ||
                         error("Found length $(untokenize(token)) " *
                               "with no associated node")
                     lengths[get(currentname)] = parse(Float64, untokenize(token))
                     addlength = false
                 else # It's a leaf
+                    name = token.kind == T.STRING ?
+                        parse(untokenize(token)) : token.kind == T.CHAR ?
+                        replace(untokenize(token), "'", "") :
+                        untokenize(token)
                     if readyforparent
-                        parent = addnode!(tree, untokenize(token))
+                        parent = addnode!(tree, name)
                         makenode = false
                         for child in children[depth]
                             haskey(lengths, child) ?
@@ -117,9 +121,9 @@ function parsenewick(io::IO)
                         readyforparent = false
                     else
                         makenode ||
-                            error("Found nodename '$(untokenize(token))' " *
+                            error("Found nodename '$name' " *
                                   "while not expecting one")
-                        nodename = addnode!(tree, untokenize(token))
+                        nodename = addnode!(tree, name)
                         push!(children[depth], nodename)
                         currentname = Nullable(nodename)
                         makenode = false
