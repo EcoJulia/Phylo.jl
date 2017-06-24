@@ -56,8 +56,36 @@ phylogenetics to use in our [Diversity][diversity-url] package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
 
-However, while we wait for me (or kind [contributors][pr-url]!) to
-fill out the extensive functionality that many phylogenetics packages
+However, it can also read newick trees is a very hacky way:
+
+```julia
+julia> using Phylo
+
+julia> parsenewick("((,Tip:1.0)Internal,)Root;")
+NamedTree phylogenetic tree with 5 nodes and 4 branches
+Leaf names:
+String["Node 2", "Tip", "Node 1"]
+
+julia> simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
+NamedTree phylogenetic tree with 5 nodes and 4 branches
+Leaf names:
+String["Node 2", "Tip", "Node 1"]
+
+julia> getbranches(simpletree)
+Dict{Int64,Phylo.Branch{String}} with 4 entries:
+  4 => [node "Root"]-->[NaN length branch]-->[node "Node 2"]
+  2 => [node "Internal"]-->[1.0 length branch]-->[node "Tip"]
+  3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]
+  1 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]
+
+julia> open(parsenewick, "h1n1.trees")
+NamedTree phylogenetic tree with 1013 nodes and 1012 branches
+Leaf names:
+String["407", "153", "1", "54", "101", "371", "41", "464", "65", "475"  …  "336", "145", "36", "95", "414", "138", "294", "353", "232", "306"]
+```
+
+And while we wait for me (or kind [contributors][pr-url]!) to fill out
+the other extensive functionality that many phylogenetics packages
 have in other languages, the other important feature that it offers is
 a fully(?)-functional interface to R, allowing any existing R library
 functions to be carried out on julia trees, and trees to be read from
