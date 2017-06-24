@@ -7,6 +7,26 @@
 | [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.5-img]][pkg-0.5-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
 | [![][docs-latest-img]][docs-latest-url]         | [![][pkg-0.6-img]][pkg-0.6-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
+## Installation
+
+The package is registered in `METADATA.jl` and so can be installed with `Pkg.add`.
+
+```julia
+julia> Pkg.add("Phylo")
+```
+
+## Project Status
+
+The package is tested against the current Julia `0.6` release, the
+last Julia `0.5` release and nightly on Linux, OS X, and Windows.
+
+## Contributing and Questions
+
+Contributions are very welcome, as are feature requests and suggestions. Please open an
+[issue][issues-url] if you encounter any problems or would just like to ask a question.
+
+## Summary
+
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
  [Diversity][diversity-url] package to calculate phylogenetic
@@ -95,10 +115,6 @@ R> all.equal(rt, jt) # check no damage in translations
 For the time being the code will only work with rooted binary trees
 with named tips and branch lengths. If there's [demand][issues-url]
 for other types of trees, I'll look into it.
-
-## Install
-
-*Phylo* is in `METADATA` so can be installed via `Pkg.add("Phylo")`.
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest
