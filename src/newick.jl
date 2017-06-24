@@ -61,14 +61,10 @@ function parsenewick(io::IO)
                 makenode = true
                 addlength = false
                 processed = true
-            end
-            
-            if token.kind == T.RPAREN # Add a parent node and connect to children
+            elseif token.kind == T.RPAREN # Add a parent node and connect to children
                 readyforparent = true
                 processed = true
-            end
-            
-            if token.kind == T.COLON # Length coming
+            elseif token.kind == T.COLON # Length coming
                 addlength = true
                 if readyforparent
                     parent = addnode!(tree)
@@ -90,13 +86,11 @@ function parsenewick(io::IO)
                     makenode = false
                 end
                 processed = true
-            end
-            
-            if token.kind ∈ [T.STRING, T.CHAR, T.IDENTIFIER, # A leaf
-                             T.INTEGER, T.FLOAT] || # A leaf or a length
-                                 T.iskeyword(token.kind) ||
-                                 T.isliteral(token.kind) ||
-                                 T.isoperator(token.kind)
+            elseif token.kind ∈ [T.STRING, T.CHAR, T.IDENTIFIER, # A leaf
+                                 T.INTEGER, T.FLOAT] || # A leaf or a length
+                                     T.iskeyword(token.kind) ||
+                                     T.isliteral(token.kind) ||
+                                     T.isoperator(token.kind)
                 if token.kind ∈ [T.INTEGER, T.FLOAT] && addlength # A length!
                     !isnull(currentname) ||
                         error("Found length $(untokenize(token)) " *
