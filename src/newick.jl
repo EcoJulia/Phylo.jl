@@ -93,7 +93,10 @@ function parsenewick(io::IO)
             end
             
             if token.kind ∈ [T.STRING, T.CHAR, T.IDENTIFIER, # A leaf
-                             T.INTEGER, T.FLOAT] # A leaf or a length
+                             T.INTEGER, T.FLOAT] || # A leaf or a length
+                                 T.iskeyword(token.kind) ||
+                                 T.isliteral(token.kind) ||
+                                 T.isoperator(token.kind)
                 if token.kind ∈ [T.INTEGER, T.FLOAT] && addlength # A length!
                     !isnull(currentname) ||
                         error("Found length $(untokenize(token)) " *
@@ -168,7 +171,7 @@ depth >= 0 ||
     error("Malformed tree had too many closing brackets")
 
 if !processed && token.kind != T.WHITESPACE
-    info("Discarding unused token '$(untokenize(token))'")
+    warn("Discarding unused token '$(untokenize(token))'")
 end
 end
 
