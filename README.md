@@ -61,7 +61,7 @@ However, it can also read newick trees is a very hacky way:
 ```julia
 julia> using Phylo
 
-julia> parsenewick("((,Tip:1.0)Internal,)Root;")
+julia> simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
 NamedTree phylogenetic tree with 5 nodes and 4 branches
 Leaf names:
 String["Node 2", "Tip", "Node 1"]
