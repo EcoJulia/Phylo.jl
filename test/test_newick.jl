@@ -12,6 +12,9 @@ using Phylo
     end
     @test length(branches) == 1
     @test getlength(first(branches)) ≈ 4.0
+    @test_throws ErrorException parsenewick("((,),(,)));")
+    @test_throws ErrorException parsenewick("((,),(,))")
+    @test_throws ErrorException parsenewick("((,),(,);")
 end
 
 end

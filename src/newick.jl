@@ -5,8 +5,7 @@ const T = Tokenize.Tokens
 
 function parsenewick(io::IO)
     tree = NamedTree()
-    children = Dict{Int,Vector{String}}()
-    children[0] = []
+    children = Dict{Int,Vector{String}}([0 => [], -1 => []])
     lengths = Dict{String,Float64}()
     depth = 0
     makenode = true
@@ -159,9 +158,14 @@ end
 
 if token.kind == T.ENDMARKER # End of tokens
     eot ||
-        error("Reached end of tokenbs without reaching end of tree")
+        error("Reached end of file without reaching end of tree")
+    depth == 0 ||
+        error("Malformed tree ended without closing brackets")
     processed = true
 end
+
+depth >= 0 ||
+    error("Malformed tree had too many closing brackets")
 
 if !processed && token.kind != T.WHITESPACE
     info("Discarding unused token '$(untokenize(token))'")
