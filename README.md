@@ -66,11 +66,6 @@ NamedTree phylogenetic tree with 5 nodes and 4 branches
 Leaf names:
 String["Node 2", "Tip", "Node 1"]
 
-julia> simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
-NamedTree phylogenetic tree with 5 nodes and 4 branches
-Leaf names:
-String["Node 2", "Tip", "Node 1"]
-
 julia> getbranches(simpletree)
 Dict{Int64,Phylo.Branch{String}} with 4 entries:
   4 => [node "Root"]-->[NaN length branch]-->[node "Node 2"]
