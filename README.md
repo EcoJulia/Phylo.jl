@@ -44,11 +44,31 @@ julia> using Phylo
 
 julia> nu = Nonultrametric(5);
 
-julia> rand(nu)
+julia> tree = rand(nu)
 NamedTree phylogenetic tree with 9 nodes and 8 branches
 Leaf names:
 String["tip 1", "tip 2", "tip 3", "tip 4", "tip 5"]
+```
 
+The code also provides iterators, and filtered iterators over the
+branches, nodes, branchnames and nodenames of a tree:
+
+```julia
+julia> collect(nodeiter(tree))
+9-element Array{Phylo.BinaryNode{Int64},1}:
+ [branch 4]-->[leaf node]
+ [branch 5]-->[leaf node]
+ [branch 2]-->[leaf node]
+ [branch 1]-->[leaf node]
+ [branch 8]-->[leaf node]
+ [branch 3]-->[internal node]-->[branches 1 and 2]
+ [branch 6]-->[internal node]-->[branches 3 and 4]
+ [branch 7]-->[internal node]-->[branches 5 and 6]
+ [root node]-->[branches 7 and 8]
+
+julia> collect(nodenamefilter(isroot, tree))
+1-element Array{String,1}:
+ "Node 4"
 ```
 
 The current main purpose of this package is to provide a framework for

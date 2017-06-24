@@ -18,24 +18,71 @@ julia> using Phylo
 
 julia> nu = Nonultrametric(5);
 
-julia> rand(nu)
+julia> tree = rand(nu)
 NamedTree phylogenetic tree with 9 nodes and 8 branches
 Leaf names:
 String["tip 1", "tip 2", "tip 3", "tip 4", "tip 5"]
 ```
 
-The main purpose of this package is to provide a framework for
-phylogenetics to use in our [Diversity][diversity-url] package, and
-they will [both](https://github.com/richardreeve/Diversity.jl/pull/18)
-be adapted as appropriate until both are functioning as required.
+The code also provides iterators, and filtered iterators over the
+branches, nodes, branchnames and nodenames of a tree:
 
-However, the other important feature that it holds is to allow an
-interface to R, allowing any existing R functionality to be carried
-out on julia trees, and trees to be read from disk and written using R
-helper functions. This is not built into the package as it will make
-RCall (and R) a dependency, which I wanted to avoid. Instead, for now,
-if you want to use the R interface you need to do it manually, as
-below:
+```julia
+julia> collect(nodeiter(tree))
+9-element Array{Phylo.BinaryNode{Int64},1}:
+ [branch 4]-->[leaf node]
+ [branch 5]-->[leaf node]
+ [branch 2]-->[leaf node]
+ [branch 1]-->[leaf node]
+ [branch 8]-->[leaf node]
+ [branch 3]-->[internal node]-->[branches 1 and 2]
+ [branch 6]-->[internal node]-->[branches 3 and 4]
+ [branch 7]-->[internal node]-->[branches 5 and 6]
+ [root node]-->[branches 7 and 8]
+
+julia> collect(nodenamefilter(isroot, tree))
+1-element Array{String,1}:
+ "Node 4"
+```
+
+The current main purpose of this package is to provide a framework for
+phylogenetics to use in our [Diversity][diversity-url] package, and
+they will both be adapted as appropriate until both are functioning as
+required (though they are currently working together reasonably successfully).
+
+However, it can also read newick trees is a very hacky way:
+
+```julia
+julia> using Phylo
+
+julia> simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
+NamedTree phylogenetic tree with 5 nodes and 4 branches
+Leaf names:
+String["Node 2", "Tip", "Node 1"]
+
+julia> getbranches(simpletree)
+Dict{Int64,Phylo.Branch{String}} with 4 entries:
+  4 => [node "Root"]-->[NaN length branch]-->[node "Node 2"]
+  2 => [node "Internal"]-->[1.0 length branch]-->[node "Tip"]
+  3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]
+  1 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]
+
+julia> open(parsenewick, "h1n1.trees")
+NamedTree phylogenetic tree with 1013 nodes and 1012 branches
+Leaf names:
+String["407", "153", "1", "54", "101", "371", "41", "464", "65", "475"  …  "336", "145", "36", "95", "414", "138", "294", "353", "232", "306"]
+```
+
+And while we wait for me (or kind [contributors][pr-url]!) to fill out
+the other extensive functionality that many phylogenetics packages
+have in other languages, the other important feature that it offers is
+a fully(?)-functional interface to R, allowing any existing R library
+functions to be carried out on julia trees, and trees to be read from
+disk and written using R helper functions. Naturally the medium-term
+plan is to fill in as many of these gaps as possible in Julia, and as
+a result this R interface is not built into the package as it will make
+RCall (and R) a dependency, which I wanted to avoid. Instead, if you
+want to use the R interface you need to do it manually, as below:
 
 ```julia
 julia> using RCall
