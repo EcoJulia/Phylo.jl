@@ -83,6 +83,12 @@ function _setleafinfo!(nt::BinaryTree, leaf, value)
     nt.leafinfos[leaf] = value
 end
 
+function _resetleaves(bt::BinaryTree)
+    bt.leafinfos = Dict(map(name -> name => LeafInfo(),
+                            nodenamefilter(isleaf, bt)))
+    return bt
+end
+
 function _getnoderecord(nt::BinaryTree, nodename)
     return nt.noderecords[nodename]
 end
