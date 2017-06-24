@@ -112,6 +112,10 @@ export nodeiter, nodefilter, nodenameiter, nodenamefilter,
 include("rand.jl")
 export Nonultrametric, Ultrametric
 
+# Read Newick Tree
+include("newick.jl")
+export parsenewick
+
 # Display methods expanded
 include("show.jl")
 

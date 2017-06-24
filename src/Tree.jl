@@ -46,7 +46,7 @@ function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
 end
 
 function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
-                                      ND}(numleaves::Int,
+                                      ND}(numleaves::Int = 0,
                                           treetype::Type{BinaryTree{LI, ND}} =
                                           BinaryTree{LI, ND};
                                           rootheight::Nullable{Float64} =
