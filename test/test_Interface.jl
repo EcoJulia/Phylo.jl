@@ -25,7 +25,7 @@ using Compat
         @test also == deletenode!(tree, also)
         also = addnode!(tree)
         push!(othernodes, also)
-        @test Set(othernodes) ⊆ Set(NodeNameIterator(tree))
+        @test Set(othernodes) ⊆ Set(nodenameiter(tree))
         innodes = append!(copy(species), othernodes)
         allnodes = reverse(innodes)
         pop!(innodes)
@@ -36,7 +36,7 @@ using Compat
                                               name != node, allnodes)
                 addbranch!(tree, first(itr), node)
             end
-        @test Set(branches) == Set(BranchNameIterator(tree))
+        @test Set(branches) == Set(branchnameiter(tree))
         @test validate(tree)
         @test_throws ErrorException addbranch!(tree, allnodes[1], allnodes[2])
         who = getparent(tree, species[1])
@@ -57,7 +57,7 @@ using Compat
             indegree(tree, species[1]) == 0
         @test_throws ErrorException getbranch(tree, b)
         branches = collect(Compat.Iterators.filter(name -> name != b, branches))
-        @test Set(branches) == Set(BranchNameIterator(tree))
+        @test Set(branches) == Set(branchnameiter(tree))
         b3 = getinbound(tree, species[2])
         source = src(tree, b3)
         destination = dst(tree, b3)
@@ -65,16 +65,16 @@ using Compat
         @test b3 == changedst!(tree, b3, species[1])
         b2 = addbranch!(tree, source, destination)
         push!(branches, b2)
-        @test Set(branches) == Set(BranchNameIterator(tree))
+        @test Set(branches) == Set(branchnameiter(tree))
         @test species[1] == deletenode!(tree, species[1])
         @test !hasnode(tree, species[1])
         @test species[1] == branch!(tree, who, destination=species[1])
         @test hasnode(tree, species[1])
         @test validate(tree)
-        @test all(map(==, Pair(first(BranchIterator(tree))),
-                      Tuple(tree, first(BranchNameIterator(tree)))))
-        @test all(map(==, Pair(tree, first(BranchNameIterator(tree))),
-                      Tuple(first(BranchIterator(tree)))))
+        @test all(map(==, Pair(first(branchiter(tree))),
+                      Tuple(tree, first(branchnameiter(tree)))))
+        @test all(map(==, Pair(tree, first(branchnameiter(tree))),
+                      Tuple(first(branchiter(tree)))))
         @test all(map(node -> isleaf(tree, node), species))
         @test all(map(node -> !isroot(tree, node) &&
                       !isunattached(tree, node) &&

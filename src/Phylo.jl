@@ -105,7 +105,8 @@ export distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
 include("Iterators.jl")
-export NodeIterator, NodeNameIterator, BranchIterator, BranchNameIterator
+export nodeiter, nodefilter, nodenameiter, nodenamefilter,
+    branchiter, branchfilter, branchnameiter, branchnamefilter
 
 # Random tree generator
 include("rand.jl")

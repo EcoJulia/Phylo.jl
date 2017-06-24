@@ -18,8 +18,10 @@ using Base.Test
     t2 = rand(Nonultrametric{BinaryTree{LeafInfo, Vector{Float64}}}(species))
     @test length(getnoderecord(t2, species[1])) == 0
     t3 = rand(Nonultrametric{BinaryTree{LeafInfo, Vector{String}}}(species))
-    map(node -> setnoderecord!(t3, node, nodehistory(t3, node)), NodeNameIterator(t3))
-    for name in NodeNameIterator(t3)
+    map(nodenameiter(t3)) do name
+        setnoderecord!(t3, name, nodehistory(t3, name))
+    end
+    for name in nodenameiter(t3)
         @test all(getnoderecord(t3, name) .== nodehistory(t3, name))
     end
 end
@@ -41,6 +43,6 @@ end
     ul = Ultrametric{BinaryTree{LeafInfo, Vector{Float64}}}(numnodes)
     u2 = rand(ul)
     @test eltype(ul) == BinaryTree{LeafInfo, Vector{Float64}}
-    @test length(NodeIterator(isinternal, u2)) == numnodes - 2
+    @test length(nodefilter(isinternal, u2)) == numnodes - 2
 end
 end
