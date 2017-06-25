@@ -220,25 +220,25 @@ function validate{NL, BL}(tree::AbstractTree{NL, BL})
     if !isempty(nodes) || !isempty(branches)
         # We need to validate the connections
         if Set(mapreduce(_getinbound, push!, BL[],
-                         NodeIterator(_hasinbound, tree))) !=
+                         nodefilter(_hasinbound, tree))) !=
                              Set(keys(branches))
             warn("Inbound branches must exactly match Branch labels")
             return false
         end
         
-        if Set(mapreduce(_getoutbounds, append!, BL[], NodeIterator(tree))) !=
+        if Set(mapreduce(_getoutbounds, append!, BL[], nodeiter(tree))) !=
             Set(keys(branches))
             warn("Node outbound branches must exactly match Branch labels")
             return false
         end
         
-        if !(mapreduce(_src, push!, NL[], BranchIterator(tree)) ⊆
+        if !(mapreduce(_src, push!, NL[], branchiter(tree)) ⊆
              Set(keys(nodes)))
             warn("Branch sources must be node labels")
             return false
         end
 
-        if !(mapreduce(_dst, push!, NL[], BranchIterator(tree)) ⊆
+        if !(mapreduce(_dst, push!, NL[], branchiter(tree)) ⊆
              Set(keys(nodes)))
             warn("Branch destinations must be node labels")
             return false
@@ -608,6 +608,15 @@ function changedst!(tree::AbstractTree, branchname, destination)
     _deleteinbound!(_getnode(tree, olddestination), branchname)
     _setinbound!(_getnode(tree, destination), branchname)
     return branchname
+end
+
+"""
+    resetleaves(::AbstractTree)
+
+Reset the leaf records to the current leaves, deleting all leaf records.
+"""
+function resetleaves(tree::AbstractTree)
+    return _resetleaves(tree)
 end
 
 

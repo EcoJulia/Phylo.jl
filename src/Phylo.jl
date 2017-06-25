@@ -77,7 +77,7 @@ export validate
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames
+export getleafnames, resetleaves
 export getleafinfo, setleafinfo!, getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
 
@@ -105,11 +105,16 @@ export distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
 include("Iterators.jl")
-export NodeIterator, NodeNameIterator, BranchIterator, BranchNameIterator
+export nodeiter, nodefilter, nodenameiter, nodenamefilter,
+    branchiter, branchfilter, branchnameiter, branchnamefilter
 
 # Random tree generator
 include("rand.jl")
 export Nonultrametric, Ultrametric
+
+# Read Newick Tree
+include("newick.jl")
+export parsenewick
 
 # Display methods expanded
 include("show.jl")

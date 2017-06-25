@@ -7,26 +7,26 @@ using Base.Test
     ntip = 10
     nur = rand(TreeType(ntip))
     
-    nni = NodeNameIterator(nur)
+    nni = nodenameiter(nur)
     @test Base.iteratoreltype(nni) == Base.HasEltype()
     @test eltype(nni) == nodenametype(nur)
     @test Base.iteratorsize(nni) == Base.HasLength()
     @test length(nni) == 2 * ntip - 1
     
-    ni = NodeIterator(nur)
+    ni = nodeiter(nur)
     @test Base.iteratoreltype(ni) == Base.HasEltype()
     @test eltype(ni) == nodetype(nur)
     @test Base.iteratorsize(ni) == Base.HasLength()
     @test length(ni) == 2 * ntip - 1
     @test Set(ni) == Set(map(n -> getnode(nur, n), nni))
 
-    bni = BranchNameIterator(nur)
+    bni = branchnameiter(nur)
     @test Base.iteratoreltype(bni) == Base.HasEltype()
     @test eltype(bni) == branchnametype(nur)
     @test Base.iteratorsize(bni) == Base.HasLength()
     @test length(bni) == ntip * 2 - 2
     
-    bi = BranchIterator(nur)
+    bi = branchiter(nur)
     @test Base.iteratoreltype(bi) == Base.HasEltype()
     @test eltype(bi) == branchtype(nur)
     @test Base.iteratorsize(bi) == Base.HasLength()
@@ -38,7 +38,7 @@ end
     ntip = 10
     nur = rand(TreeType(ntip))
     
-    nni = NodeNameIterator(isleaf, nur)
+    nni = nodenamefilter(isleaf, nur)
     @test Base.iteratoreltype(nni) == Base.HasEltype()
     @test eltype(nni) == nodenametype(nur)
     @test Base.iteratorsize(nni) == Base.HasLength()
@@ -46,14 +46,14 @@ end
     leaves = collect(nni)
     @test leaves == getleafnames(nur)
     
-    ni = NodeIterator(isleaf, nur)
+    ni = nodefilter(isleaf, nur)
     @test Base.iteratoreltype(ni) == Base.HasEltype()
     @test eltype(ni) == nodetype(nur)
     @test Base.iteratorsize(ni) == Base.HasLength()
     @test length(ni) == ntip
     @test all(isleaf, collect(ni))
 
-    bni = BranchNameIterator(nur) do branch
+    bni = branchnamefilter(nur) do branch
         return isleaf(nur, dst(branch))
     end
     @test Base.iteratoreltype(bni) == Base.HasEltype()
@@ -61,7 +61,7 @@ end
     @test Base.iteratorsize(bni) == Base.HasLength()
     @test length(bni) == ntip
     
-    bi = BranchIterator(nur) do branch
+    bi = branchfilter(nur) do branch
         return isleaf(nur, dst(branch))
     end
     @test Base.iteratoreltype(bi) == Base.HasEltype()

@@ -46,7 +46,7 @@ function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
 end
 
 function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
-                                      ND}(numleaves::Int,
+                                      ND}(numleaves::Int = 0,
                                           treetype::Type{BinaryTree{LI, ND}} =
                                           BinaryTree{LI, ND};
                                           rootheight::Nullable{Float64} =
@@ -83,6 +83,12 @@ function _setleafinfo!(nt::BinaryTree, leaf, value)
     nt.leafinfos[leaf] = value
 end
 
+function _resetleaves(bt::BinaryTree)
+    bt.leafinfos = Dict(map(name -> name => LeafInfo(),
+                            nodenamefilter(isleaf, bt)))
+    return bt
+end
+
 function _getnoderecord(nt::BinaryTree, nodename)
     return nt.noderecords[nodename]
 end
@@ -113,13 +119,13 @@ function _deletenode!(tree::BinaryTree, nodename)
 end
 
 function _validate(tree::BinaryTree)
-    if Set(NodeNameIterator(isleaf, tree)) != Set(getleafnames(tree))
+    if Set(nodenamefilter(isleaf, tree)) != Set(getleafnames(tree))
         warn("Leaf names do not match actual leaves of tree")
         return false
     end
 
-    if Set(NodeNameIterator(hasoutboundspace, tree)) !=
-        Set(NodeNameIterator(isleaf, tree))
+    if Set(nodenamefilter(hasoutboundspace, tree)) !=
+        Set(nodenamefilter(isleaf, tree))
         warn("Nodes must have two or zero outbound connections.")
         return false
     end

@@ -7,6 +7,26 @@
 | [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.5-img]][pkg-0.5-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
 | [![][docs-latest-img]][docs-latest-url]         | [![][pkg-0.6-img]][pkg-0.6-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
+## Installation
+
+The package is registered in `METADATA.jl` and so can be installed with `Pkg.add`.
+
+```julia
+julia> Pkg.add("Phylo")
+```
+
+## Project Status
+
+The package is tested against the current Julia `0.6` release, the
+last Julia `0.5` release and nightly on Linux, OS X, and Windows.
+
+## Contributing and Questions
+
+Contributions are very welcome, as are feature requests and suggestions. Please open an
+[issue][issues-url] if you encounter any problems or would just like to ask a question.
+
+## Summary
+
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
  [Diversity][diversity-url] package to calculate phylogenetic
@@ -24,11 +44,31 @@ julia> using Phylo
 
 julia> nu = Nonultrametric(5);
 
-julia> rand(nu)
+julia> tree = rand(nu)
 NamedTree phylogenetic tree with 9 nodes and 8 branches
 Leaf names:
 String["tip 1", "tip 2", "tip 3", "tip 4", "tip 5"]
+```
 
+The code also provides iterators, and filtered iterators over the
+branches, nodes, branchnames and nodenames of a tree:
+
+```julia
+julia> collect(nodeiter(tree))
+9-element Array{Phylo.BinaryNode{Int64},1}:
+ [branch 4]-->[leaf node]
+ [branch 5]-->[leaf node]
+ [branch 2]-->[leaf node]
+ [branch 1]-->[leaf node]
+ [branch 8]-->[leaf node]
+ [branch 3]-->[internal node]-->[branches 1 and 2]
+ [branch 6]-->[internal node]-->[branches 3 and 4]
+ [branch 7]-->[internal node]-->[branches 5 and 6]
+ [root node]-->[branches 7 and 8]
+
+julia> collect(nodenamefilter(isroot, tree))
+1-element Array{String,1}:
+ "Node 4"
 ```
 
 The current main purpose of this package is to provide a framework for
@@ -36,8 +76,31 @@ phylogenetics to use in our [Diversity][diversity-url] package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
 
-However, while we wait for me (or kind [contributors][pr-url]!) to
-fill out the extensive functionality that many phylogenetics packages
+However, it can also read newick trees is a very hacky way:
+
+```julia
+julia> using Phylo
+
+julia> simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
+NamedTree phylogenetic tree with 5 nodes and 4 branches
+Leaf names:
+String["Node 2", "Tip", "Node 1"]
+
+julia> getbranches(simpletree)
+Dict{Int64,Phylo.Branch{String}} with 4 entries:
+  4 => [node "Root"]-->[NaN length branch]-->[node "Node 2"]
+  2 => [node "Internal"]-->[1.0 length branch]-->[node "Tip"]
+  3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]
+  1 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]
+
+julia> open(parsenewick, "h1n1.trees")
+NamedTree phylogenetic tree with 1013 nodes and 1012 branches
+Leaf names:
+String["407", "153", "1", "54", "101", "371", "41", "464", "65", "475"  …  "336", "145", "36", "95", "414", "138", "294", "353", "232", "306"]
+```
+
+And while we wait for me (or kind [contributors][pr-url]!) to fill out
+the other extensive functionality that many phylogenetics packages
 have in other languages, the other important feature that it offers is
 a fully(?)-functional interface to R, allowing any existing R library
 functions to be carried out on julia trees, and trees to be read from
@@ -95,10 +158,6 @@ R> all.equal(rt, jt) # check no damage in translations
 For the time being the code will only work with rooted binary trees
 with named tips and branch lengths. If there's [demand][issues-url]
 for other types of trees, I'll look into it.
-
-## Install
-
-*Phylo* is in `METADATA` so can be installed via `Pkg.add("Phylo")`.
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest

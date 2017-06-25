@@ -95,7 +95,7 @@ end
 Pairwise distances between all leaf nodes on a tree
 """
 function distances(tree::AbstractTree)
-    leaves = NodeNameIterator(isleaf, tree)
+    leaves = nodenamefilter(isleaf, tree)
     return [distance(tree, i, j) for i in leaves, j in leaves]
 end
 
@@ -115,5 +115,5 @@ end
 Height of all of the leaves of the tree above the root 
 """
 function heightstoroot(tree::AbstractTree)
-    return [heighttoroot(tree, i) for i in NodeNameIterator(isleaf, tree)]
+    return [heighttoroot(tree, i) for i in nodenamefilter(isleaf, tree)]
 end
