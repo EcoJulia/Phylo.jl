@@ -93,7 +93,7 @@ Dict{Int64,Phylo.Branch{String}} with 4 entries:
   3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]
   1 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]
 
-julia> open(parsenewick, "h1n1.trees")
+julia> open(parsenewick, tree = open(parsenewick, Pkg.dir("Phylo", "test", "h1n1.trees")))
 NamedTree phylogenetic tree with 1013 nodes and 1012 branches
 Leaf names:
 String["407", "153", "1", "54", "101", "371", "41", "464", "65", "475"  …  "336", "145", "36", "95", "414", "138", "294", "353", "232", "306"]
