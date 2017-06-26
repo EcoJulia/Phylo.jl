@@ -4,10 +4,10 @@
 
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
- [Diversity][diversity-url] package to calculate phylogenetic
+ [Diversity](https://github.com/richardreeve/Diversity.jl) package to calculate phylogenetic
  diversity (currently on master, accessible via `Pkg.checkout()`,
  but not released). Both are currently under development, so please
- [raise an issue][issues-url] if you find any problems. Currently the
+ [raise an issue](https://github.com/richardreeve/Phylo.jl/issues) if you find any problems. Currently the
  package can be used to make trees manually, and to generate random
  trees using the framework from `Distributions`. For instance, to
  construct a sampler for 5 tip non-ultrametric trees, and then
@@ -46,7 +46,7 @@ julia> collect(nodenamefilter(isroot, tree))
 ```
 
 The current main purpose of this package is to provide a framework for
-phylogenetics to use in our [Diversity][diversity-url] package, and
+phylogenetics to use in our [Diversity](https://github.com/richardreeve/Diversity.jl) package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
 
@@ -67,13 +67,13 @@ Dict{Int64,Phylo.Branch{String}} with 4 entries:
   3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]
   1 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]
 
-julia> open(parsenewick, "h1n1.trees")
+julia> open(parsenewick, tree = open(parsenewick, Pkg.dir("Phylo", "test", "h1n1.trees")))
 NamedTree phylogenetic tree with 1013 nodes and 1012 branches
 Leaf names:
 String["407", "153", "1", "54", "101", "371", "41", "464", "65", "475"  …  "336", "145", "36", "95", "414", "138", "294", "353", "232", "306"]
 ```
 
-And while we wait for me (or kind [contributors][pr-url]!) to fill out
+And while we wait for me (or kind [contributors](https://github.com/richardreeve/Phylo.jl/pulls)!) to fill out
 the other extensive functionality that many phylogenetics packages
 have in other languages, the other important feature that it offers is
 a fully(?)-functional interface to R, allowing any existing R library
@@ -128,9 +128,6 @@ Rooted; includes branch lengths.
 R> all.equal(rt, jt) # check no damage in translations
 [1] TRUE
 ```
-
-[issues-url]: https://github.com/richardreeve/Phylo.jl/issues
-[diversity-url]: https://github.com/richardreeve/Diversity.jl/
 
 ```@contents
 ```
