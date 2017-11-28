@@ -83,9 +83,9 @@ function _setleafinfo!(nt::BinaryTree, leaf, value)
     nt.leafinfos[leaf] = value
 end
 
-function _resetleaves(bt::BinaryTree)
-    bt.leafinfos = Dict(map(name -> name => LeafInfo(),
-                            nodenamefilter(isleaf, bt)))
+function _resetleaves!(bt::BinaryTree)
+    bt.leafinfos = OrderedDict(map(name -> name => LeafInfo(),
+                                   nodenamefilter(isleaf, bt)))
     return bt
 end
 

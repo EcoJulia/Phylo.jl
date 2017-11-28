@@ -611,12 +611,12 @@ function changedst!(tree::AbstractTree, branchname, destination)
 end
 
 """
-    resetleaves(::AbstractTree)
+    resetleaves!(::AbstractTree)
 
 Reset the leaf records to the current leaves, deleting all leaf records.
 """
-function resetleaves(tree::AbstractTree)
-    return _resetleaves(tree)
+function resetleaves!(tree::AbstractTree)
+    return _resetleaves!(tree)
 end
 
 

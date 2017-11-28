@@ -169,7 +169,7 @@ if !processed && token.kind != T.WHITESPACE
 end
 end
 
-tree = resetleaves(tree)
+tree = resetleaves!(tree)
 return tree
 end
 

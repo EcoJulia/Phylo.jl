@@ -405,3 +405,4 @@ function _getleafinfo end
 function _setleafinfo! end
 function _getnoderecord end
 function _setnoderecord! end
+function _resetleaves! end

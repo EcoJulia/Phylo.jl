@@ -46,6 +46,7 @@ export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
 export _validate
+export _resetleaves!
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
