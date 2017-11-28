@@ -1,5 +1,4 @@
-using Compat
-importall Phylo.API
+import Phylo.API: _src, _dst, _setsrc!, _setdst!, _getlength
 
 """
     Branch

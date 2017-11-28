@@ -1,5 +1,6 @@
 using Compat
-importall Phylo.API
+import Phylo.API: _hasinbound, _getinbound, _setinbound!, _deleteinbound!
+import Phylo.API: _outdegree, _hasoutboundspace, _getoutbounds, _addoutbound!, _deleteoutbound!
 
 """
     BinaryNode{T}(AbstractVector{T}, AbstractVector{T}) <: AbstractNode

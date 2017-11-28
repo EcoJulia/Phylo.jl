@@ -1,4 +1,4 @@
-importall Phylo.API
+import Phylo.API: _hasheight, _getheight, _setheight!
 
 type LeafInfo <: AbstractInfo
     height::Nullable{Float64}

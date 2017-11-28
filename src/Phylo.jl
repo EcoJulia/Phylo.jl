@@ -33,11 +33,11 @@ ignored.
 module API
 include("API.jl")
 # AbstractTree methods
-export _addbranch!, _deletebranch!, _branch!
-export _addnode!, _addnodes!, _deletenode!
+export _addbranch!, _deletebranch!, _branch!, _setbranch!
+export _addnode!, _addnodes!, _deletenode!, _setnode!
 export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _hasbranch, _getbranch, _getbranches
-export _hasrootheight, _getrootheight, _setrootheight!
+export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _nodetype, _branchtype
 export _extractnode, _extractbranch
 export _extractnodename, _extractbranchname
@@ -46,11 +46,12 @@ export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
 export _validate
-export _resetleaves!
+export _getleafnames, _resetleaves!
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
-export _indegree, _outdegree, _hasinbound, _getinbound, _getoutbounds
+export _indegree, _hasinbound, _getinbound, _setinbound!, _deleteoutbound!
+export _outdegree, _getoutbounds, _addoutbound!, _deleteoutbound!
 export _hasoutboundspace, _hasinboundspace
 
 # AbstractBranch methods

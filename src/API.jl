@@ -321,11 +321,39 @@ Must be implemented for any AbstractNode subtype.
 function _getinbound end
 
 """
+    _setinbound!(node::AbstractNode, inbound)
+
+Must be implemented for any AbstractNode subtype.
+"""
+function _setinbound! end
+
+"""
+    _deleteinbound!(node::AbstractNode, inbound)
+
+Must be implemented for any AbstractNode subtype.
+"""
+function _deleteinbound! end
+
+"""
     _getoutbounds(node::AbstractNode)
 
 Must be implemented for any AbstractNode subtype.
 """
 function _getoutbounds end
+
+"""
+    _addinbound!(node::AbstractNode, outbound)
+
+Must be implemented for any AbstractNode subtype.
+"""
+function _addoutbound! end
+
+"""
+    _deleteoutbound!(node::AbstractNode, outbound)
+
+Must be implemented for any AbstractNode subtype.
+"""
+function _deleteoutbound! end
 
 """
     _hasheight(tree::AbstractTree, nodename)
@@ -405,4 +433,8 @@ function _getleafinfo end
 function _setleafinfo! end
 function _getnoderecord end
 function _setnoderecord! end
+function _getleafnames end
 function _resetleaves! end
+function _clearrootheight! end
+function _setnode! end
+function _setbranch! end

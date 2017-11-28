@@ -1,5 +1,10 @@
 using DataStructures
-importall Phylo.API
+import Phylo.API: _nodetype, _branchtype, _getnodes, _getbranches
+import Phylo.API: _getnodenames, _getbranchnames, _getleafnames
+import Phylo.API: _getleafinfo, _setleafinfo!, _resetleaves!, _getnoderecord, _setnoderecord!
+import Phylo.API: _addnode!, _deletenode!, _addbranch!, _deletebranch!, _validate
+import Phylo.API: _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
+import Phylo.API: _hasheight, _getheight, _setheight!, _getnode, _getbranch, _setnode!, _setbranch!
 
 """
     BinaryTree
