@@ -1,7 +1,7 @@
 using Phylo
 using Compat
 
-function _newlabel{Label <: Integer}(ids::Vector{Label})
+function _newlabel(ids::Vector{Label}) where Label <: Integer
     return isempty(ids) ? 1 : maximum(ids) + 1
 end
 
@@ -18,38 +18,39 @@ function _newlabel(names::Vector{String}, prefix)
     return name
 end
 
-function _extractnode{N <: AbstractNode}(::AbstractTree, node::N)
+function _extractnode(::T, node::N) where {T <: AbstractTree, N <: AbstractNode}
     return node
 end
 
-function _extractnode(tree::AbstractTree, nodename)
+function _extractnode(tree::T, nodename::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
     return getnode(tree, nodename)
 end
 
-function _extractnode{L, N <: AbstractNode}(::AbstractTree, pair::Pair{L, N})
+function _extractnode(::T, pair::Pair{NL, N}) where {NL, BL, T <: AbstractTree{NL, BL},
+                                                     N <: AbstractNode}
     return pair[2]
 end
 
-function _extractnodename{L, N <: AbstractNode}(::AbstractTree,
-                                                pair::Pair{L, N})
+function _extractnodename(::T, pair::Pair{NL, N}) where {NL, BL, T <: AbstractTree{NL, BL},
+                                                         N <: AbstractNode}
     return pair[1]
 end
 
-function _extractbranch{B <: AbstractBranch}(::AbstractTree, branch::B)
+function _extractbranch(::T, branch::B) where {T <: AbstractTree, B <: AbstractBranch}
     return branch
 end
 
-function _extractbranch(tree::AbstractTree, branchname)
+function _extractbranch(tree::T, branchname::BL) where {NL, BL, T <: AbstractTree{NL, BL}}
     return getbranch(tree, branchname)
 end
 
-function _extractbranch{L, B <: AbstractBranch}(::AbstractTree,
-                                                pair::Pair{L, B})
+function _extractbranch(::T, pair::Pair{BL, B}) where {NL, BL, T <: AbstractTree{NL, BL},
+                                                       B <: AbstractBranch}
     return pair[2]
 end
 
-function _extractbranchname{L, B <: AbstractBranch}(::AbstractTree,
-                                                    pair::Pair{L, B})
+function _extractbranchname(::T, pair::Pair{BL, B}) where {NL, BL, T <: AbstractTree{NL, BL},
+                                                           B <: AbstractBranch}
     return pair[1]
 end
 
@@ -76,11 +77,11 @@ function _branchtype end
 """
 function _newbranchlabel end
 
-function _newbranchlabel{NL}(tree::AbstractTree{NL, String})
+function _newbranchlabel(tree::AbstractTree{NL, String}) where NL
     return _newlabel(_getbranchnames(tree), "Branch ")
 end
 
-function _newbranchlabel{NL, I <: Integer}(tree::AbstractTree{NL, I})
+function _newbranchlabel(tree::AbstractTree{NL, I}) where {NL, I <: Integer}
     return _newlabel(_getbranchnames(tree))
 end
 
@@ -117,11 +118,11 @@ end
 """
 function _newnodelabel end
 
-function _newnodelabel{BL}(tree::AbstractTree{String, BL})
+function _newnodelabel(tree::T) where {BL, T <: AbstractTree{String, BL}}
     return _newlabel(_getnodenames(tree), "Node ")
 end
 
-function _newnodelabel{I <: Integer, BL}(tree::AbstractTree{I, BL})
+function _newnodelabel(tree::T) where {I <: Integer, BL, T <: AbstractTree{I, BL}}
     return _newlabel(_getnodenames(tree))
 end
 

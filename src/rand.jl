@@ -3,8 +3,8 @@ import Base: eltype, rand
 using Phylo
 using Distributions
 
-type Phylogenetics{T <: AbstractTree} <: ValueSupport end
-Base.eltype{T <: AbstractTree}(::Type{Phylogenetics{T}}) = T
+mutable struct Phylogenetics{T <: AbstractTree} <: ValueSupport end
+Base.eltype(::Type{Phylogenetics{T}}) where T <: AbstractTree = T
 
 """
     Nonultrametric{T <: AbstractTree,
@@ -18,37 +18,35 @@ The sampler for non-ultrametric phylogenetic trees of size `n` or with
 tip labels `tiplabels`. Generate random trees by calling rand().
 Currently only works for `NamedTree`s.
 """
-type Nonultrametric{T <: AbstractTree,
-                    RNG <: Sampleable{Univariate, Continuous}} <:
+struct Nonultrametric{T <: AbstractTree,
+                              RNG <: Sampleable{Univariate, Continuous}} <:
     Sampleable{Univariate, Phylogenetics{T}}
     n::Int
     tiplabels::Vector{String}
     rng::RNG
     
-    function (::Type{Nonultrametric{T, RNG}}){T, RNG}(n::Int,
-                                                      rng::RNG)
+    function Nonultrametric{T, RNG}(n::Int, rng::RNG) where {T, RNG}
         return new{T, RNG}(n, map(i -> "tip $i", 1:n), rng)
     end
     
-    function (::Type{Nonultrametric{T, RNG}}){T, RNG}(tiplabels::Vector{String},
-                                                      rng::RNG)
+    function Nonultrametric{T, RNG}(tiplabels::Vector{String}, rng::RNG) where {T, RNG}
         return new{T, RNG}(length(tiplabels), tiplabels, rng)
     end
 end
 
-function (::Type{Nonultrametric{T}}){T <: AbstractTree}(n::Int)
+function Nonultrametric{T}(n::Int) where T <: AbstractTree
     return Nonultrametric{T, Exponential}(n, Exponential())
 end
 
 Nonultrametric(n::Int) = Nonultrametric{NamedTree}(n)
 
-function (::Type{Nonultrametric{T}}){T <: AbstractTree}(tiplabels::Vector{String})
+function Nonultrametric{T}(tiplabels::Vector{String}) where T <: AbstractTree
     return Nonultrametric{T, Exponential}(tiplabels, Exponential())
 end
 
 Nonultrametric(tiplabels::Vector{String}) = Nonultrametric{NamedTree}(tiplabels)
 
-function rand{T, RNG}(t::Nonultrametric{T, RNG})
+function rand(t::Nonultrametric{T, RNG}) where {T, RNG}
     t.n >= 2 || error("A tree must have at least 2 tips")
     tree = T(t.tiplabels)
     roots = nodenamefilter(isroot, tree)
@@ -74,36 +72,35 @@ The sampler for ultrametric phylogenetic trees of size `n` or with
 tip labels `tiplabels`. Generate random trees by calling rand().
 Currently only works for `NamedTree`s.
 """
-type Ultrametric{T <: AbstractTree,
+struct Ultrametric{T <: AbstractTree,
                  RNG <: Sampleable{Univariate, Continuous}} <:
     Sampleable{Univariate, Phylogenetics{T}}
     n::Int
     tiplabels::Vector{String}
     rng::RNG
     
-    function (::Type{Ultrametric{T, RNG}}){T, RNG}(n::Int, rng::RNG)
+    function Ultrametric{T, RNG}(n::Int, rng::RNG) where {T, RNG}
         return new{T, RNG}(n, map(i -> "tip $i", 1:n), rng)
     end
     
-    function (::Type{Ultrametric{T, RNG}}){T, RNG}(tiplabels::Vector{String},
-                                                   rng::RNG)
+    function Ultrametric{T, RNG}(tiplabels::Vector{String}, rng::RNG) where {T, RNG}
         return new{T, RNG}(length(tiplabels), tiplabels, rng)
     end
 end
 
-function (::Type{Ultrametric{T}}){T <: AbstractTree}(n::Int)
+function Ultrametric{T}(n::Int) where T <: AbstractTree
     return Ultrametric{T, Exponential}(n, Exponential())
 end
 
 Ultrametric(n::Int) = Ultrametric{NamedTree}(n)
 
-function (::Type{Ultrametric{T}}){T <: AbstractTree}(tiplabels::Vector{String})
+function Ultrametric{T}(tiplabels::Vector{String}) where T <: AbstractTree
     return Ultrametric{T, Exponential}(tiplabels, Exponential())
 end
 
 Ultrametric(tiplabels::Vector{String}) = Ultrametric{NamedTree}(tiplabels)
 
-function rand{T, RNG}(t::Ultrametric{T, RNG})
+function rand(t::Ultrametric{T, RNG}) where {T, RNG}
     t.n >= 2 || error("A tree must have at least 2 tips")
     tree = T(t.tiplabels)
     roots = nodenamefilter(isroot, tree)

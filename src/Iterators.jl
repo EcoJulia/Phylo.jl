@@ -13,7 +13,7 @@ end
 
 @compat abstract type AbstractNodeIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
 
-function start{It <: AbstractNodeIterator}(ni::It)
+function start(ni::It) where It <: AbstractNodeIterator
     nodes = _getnodes(ni.tree)
     state = start(nodes)
     
@@ -34,11 +34,11 @@ function start{It <: AbstractNodeIterator}(ni::It)
     return state
 end
 
-function done{It <: AbstractNodeIterator}(ni::It, state)
+function done(ni::It, state) where It <: AbstractNodeIterator
     return done(_getnodes(ni.tree), state)
 end
 
-function length{It <: AbstractNodeIterator}(ni::It)
+function length(ni::It) where It <: AbstractNodeIterator
     return isnull(ni.filterfn) ? length(_getnodes(ni.tree)) :
         mapreduce(val -> get(ni.filterfn)(_extractnode(ni.tree, val)) ? 1 : 0, +, 0, ni)
 end
@@ -46,7 +46,7 @@ end
 
 @compat abstract type AbstractBranchIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
 
-function start{It <: AbstractBranchIterator}(bi::It)
+function start(bi::It) where It <: AbstractBranchIterator
     branches = _getbranches(bi.tree)
     state = start(branches)
     
@@ -67,16 +67,16 @@ function start{It <: AbstractBranchIterator}(bi::It)
     return state
 end
 
-function done{It <: AbstractBranchIterator}(bi::It, state)
+function done(bi::It, state) where It <: AbstractBranchIterator
     return done(_getbranches(bi.tree), state)
 end
 
-function length{It <: AbstractBranchIterator}(bi::It)
+function length(bi::It) where It <: AbstractBranchIterator
     return isnull(bi.filterfn) ? length(_getbranches(bi.tree)) :
         mapreduce(val -> get(bi.filterfn)(_extractbranch(bi.tree, val)) ? 1 : 0, +, 0, bi)
 end
 
-immutable NodeIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
+struct NodeIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
     tree::T
     filterfn::Nullable{Function}
 end
@@ -85,7 +85,7 @@ end
 
 Returns an iterator over the nodes of any tree.
 """
-nodeiter{T <: AbstractTree}(tree::T) =
+nodeiter(tree::T) where T <: AbstractTree =
     NodeIterator{T}(tree, Nullable{Function}())
 
 """
@@ -94,10 +94,10 @@ nodeiter{T <: AbstractTree}(tree::T) =
 Returns an iterator over the nodes of any tree, where the
 `AbstractNode` is filtered by the function `filterfn`.
 """
-nodefilter{T <: AbstractTree}(filterfn::Function, tree::T) =
+nodefilter(filterfn::Function, tree::T) where T <: AbstractTree =
     NodeIterator{T}(tree, Nullable{Function}(filterfn))
 
-eltype{T <: AbstractTree}(ni::NodeIterator{T}) = nodetype(ni.tree)
+eltype(ni::NodeIterator{T}) where T <: AbstractTree = nodetype(ni.tree)
 
 function next(ni::NodeIterator, state)
     nodes = _getnodes(ni.tree)
@@ -121,7 +121,7 @@ function next(ni::NodeIterator, state)
     return node, state
 end
 
-immutable NodeNameIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
+struct NodeNameIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
     tree::T
     filterfn::Nullable{Function}
 end
@@ -131,7 +131,7 @@ end
 
 Returns an iterator over the names of the nodes of any tree.
 """
-nodenameiter{T <: AbstractTree}(tree::T) =
+nodenameiter(tree::T) where T <: AbstractTree =
     NodeNameIterator{T}(tree, Nullable{Function}())
 
 """
@@ -140,10 +140,10 @@ nodenameiter{T <: AbstractTree}(tree::T) =
 Returns an iterator over the nodenames of any tree, where the
 `AbstractNode` itself is filtered by the function `filterfn`.
 """
-nodenamefilter{T <: AbstractTree}(filterfn::Function, tree::T) =
+nodenamefilter(filterfn::Function, tree::T) where T <: AbstractTree =
     NodeNameIterator{T}(tree, Nullable{Function}(filterfn))
 
-eltype{T <: AbstractTree}(ni::NodeNameIterator{T}) = nodenametype(ni.tree)
+eltype(ni::NodeNameIterator{T}) where T <: AbstractTree = nodenametype(ni.tree)
 
 function next(ni::NodeNameIterator, state)
     nodes = getnodes(ni.tree)
@@ -168,7 +168,7 @@ function next(ni::NodeNameIterator, state)
     return name, state
 end
 
-immutable BranchIterator{T <: AbstractTree} <: AbstractBranchIterator{T}
+struct BranchIterator{T <: AbstractTree} <: AbstractBranchIterator{T}
     tree::T
     filterfn::Nullable{Function}
 end
@@ -178,7 +178,7 @@ end
 
 Returns an iterator over the branches of any tree.
 """
-branchiter{T <: AbstractTree}(tree::T) =
+branchiter(tree::T) where T <: AbstractTree =
     BranchIterator{T}(tree, Nullable{Function}())
 
 """
@@ -187,10 +187,10 @@ branchiter{T <: AbstractTree}(tree::T) =
 Returns an iterator over the branches of any tree, where the
 `AbstractBranch` is filtered by the function `filterfn`.
 """
-branchfilter{T <: AbstractTree}(filterfn::Function, tree::T) =
+branchfilter(filterfn::Function, tree::T) where T <: AbstractTree =
     BranchIterator{T}(tree, Nullable{Function}(filterfn))
 
-eltype{T <: AbstractTree}(bi::BranchIterator{T}) = branchtype(bi.tree)
+eltype(bi::BranchIterator{T}) where T <: AbstractTree = branchtype(bi.tree)
 
 function next(bi::BranchIterator, state)
     branches = _getbranches(bi.tree)
@@ -214,7 +214,7 @@ function next(bi::BranchIterator, state)
     return branch, state
 end
 
-immutable BranchNameIterator{T <: AbstractTree} <: AbstractBranchIterator{T}
+struct BranchNameIterator{T <: AbstractTree} <: AbstractBranchIterator{T}
     tree::T
     filterfn::Nullable{Function}
 end
@@ -224,7 +224,7 @@ end
 
 Returns an iterator over the names of branches of any tree.
 """
-branchnameiter{T <: AbstractTree}(tree::T) =
+branchnameiter(tree::T) where T <: AbstractTree =
     BranchNameIterator{T}(tree, Nullable{Function}())
 
 """
@@ -233,10 +233,10 @@ branchnameiter{T <: AbstractTree}(tree::T) =
 Returns an iterator over the names of the branches of any tree, where
 the `AbstractBranch` is filtered by the function `filterfn`.
 """
-branchnamefilter{T <: AbstractTree}(filterfn::Function, tree::T) =
+branchnamefilter(filterfn::Function, tree::T) where T <: AbstractTree =
     BranchNameIterator{T}(tree, Nullable{Function}(filterfn))
 
-eltype{T <: AbstractTree}(bi::BranchNameIterator{T}) = branchnametype(bi.tree)
+eltype(bi::BranchNameIterator{T}) where T <: AbstractTree = branchnametype(bi.tree)
 
 function next(bi::BranchNameIterator, state)
     branches = _getbranches(bi.tree)

@@ -69,19 +69,19 @@ function show(io::IO, object::AbstractNode, n::String = "")
     end
 end
 
-function show{N <: AbstractNode, NT}(io::IO, p::Pair{NT, N})
+function show(io::IO, p::Pair{NT, N}) where {N <: AbstractNode, NT}
     n = NT <: Number ? "$(p[1])" : "\"$(p[1])\""
     show(io, p[2], "$n")
 end
 
-function show{B <: AbstractBranch}(io::IO, object::B)
+function show(io::IO, object::B) where {B <: AbstractBranch}
     NT = typeof(_src(object))
     source = NT <: Number ? "$(_src(object))" : "\"$(_src(object))\""
     destination = NT <: Number ? "$(_dst(object))" : "\"$(_dst(object))\""
     print(io, "[node $source]-->[$(_getlength(object)) length branch]-->[node $destination]")   
 end  
 
-function show{BT, B <: AbstractBranch}(io::IO, p::Pair{BT, B})
+function show(io::IO, p::Pair{BT, B}) where {BT, B <: AbstractBranch}
     NT = typeof(_src(p[2]))
     source = NT <: Number ? "$(_src(p[2]))" : "\"$(_src(p[2]))\""
     destination = NT <: Number ? "$(_dst(p[2]))" : "\"$(_dst(p[2]))\""
@@ -124,7 +124,7 @@ function show(io::IO, object::BinaryTree)
     end
 end
 
-function showall{LI, ND}(io::IO, object::BinaryTree{LI, ND})
+function showall(io::IO, object::BinaryTree{LI, ND}) where {LI, ND}
     print(io, object)
     print(io, "\nNodes:\n") 
     print(io, _getnodes(object))

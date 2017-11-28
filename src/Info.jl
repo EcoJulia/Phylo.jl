@@ -1,6 +1,6 @@
 import Phylo.API: _hasheight, _getheight, _setheight!
 
-type LeafInfo <: AbstractInfo
+mutable struct LeafInfo <: AbstractInfo
     height::Nullable{Float64}
 end
 

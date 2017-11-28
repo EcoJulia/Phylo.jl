@@ -1,4 +1,4 @@
-function _treepast{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+function _treepast(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
     branches = BL[]
     nodes = NL[node]
     while hasinbound(tree, node)
@@ -10,7 +10,7 @@ function _treepast{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
     return branches, nodes
 end
 
-function _treefuture{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+function _treefuture(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
     branches = BL[]
     nodestoprocess = NL[node]
     nodesprocessed = NL[]
@@ -30,7 +30,7 @@ end
 
 Find the branch route between a node on a tree and its root
 """
-function branchhistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+function branchhistory(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
     return _treepast(tree, node)[1]
 end
 
@@ -39,7 +39,7 @@ end
 
 Find the node route between a node on a tree and its root
 """
-function nodehistory{NL, BL}(tree::AbstractTree{NL, BL}, node::NL)
+function nodehistory(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
     return _treepast(tree, node)[2]
 end
 
@@ -48,7 +48,7 @@ end
 
 Find the branch route between two nodes on a tree
 """
-function branchroute{NL, BL}(tree::AbstractTree{NL, BL}, node1::NL, node2::NL)
+function branchroute(tree::T, node1::NL, node2::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
     branches1, nodes1 = _treepast(tree, node1)
     branches2, nodes2 = _treepast(tree, node2)
     nodes1[end] == nodes2[end] ||
@@ -63,7 +63,7 @@ end
 
 Find the node route between two nodes on a tree
 """
-function noderoute{NL, BL}(tree::AbstractTree{NL, BL}, node1::NL, node2::NL)
+function noderoute(tree::T, node1::NL, node2::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
     branches1, nodes1 = _treepast(tree, node1)
     branches2, nodes2 = _treepast(tree, node2)
     nodes1[end] == nodes2[end] ||

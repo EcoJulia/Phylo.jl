@@ -4,7 +4,7 @@ using RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
 
 import RCall.rcopy
 
-function rcopy{T <: AbstractTree}(::Type{T}, rt::Ptr{VecSxp})
+function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     if !isObject(rt) || isS4(rt) || rcopy(rcall_p(:class, rt)) != "phylo"
         error("Object is not of S3 phylo class, aborting")
     end
@@ -38,7 +38,7 @@ rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = NamedTree
 
 import RCall.sexp
 
-function sexp(tree::AbstractTree)
+function sexp(tree::T) where T <: AbstractTree
     validate(tree) || warn("Tree does not internally validate")
 
     tipnames = collect(nodenamefilter(isleaf, tree))

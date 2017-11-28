@@ -7,12 +7,12 @@ import Phylo.API: _outdegree, _hasoutboundspace, _getoutbounds, _addoutbound!, _
 
 A node of strict binary phylogenetic tree
 """
-type BinaryNode{T} <: AbstractNode
+mutable struct BinaryNode{T} <: AbstractNode
     inbound::Nullable{T}
     outbounds::Tuple{Nullable{T}, Nullable{T}}
 
-    function (::Type{BinaryNode{T}}){T}(inbound::AbstractVector{T} = T[],
-                                        outbounds::AbstractVector{T} = T[])
+    function BinaryNode{T}(inbound::AbstractVector{T} = T[],
+                           outbounds::AbstractVector{T} = T[]) where T
         length(inbound) <= 1 ||
             error("At most one inbound connection to BinaryNode")
         n_in = length(inbound) == 0 ? Nullable{T}() :
@@ -45,13 +45,13 @@ function _getinbound(node::BinaryNode)
     return get(node.inbound)
 end
 
-function _setinbound!{T}(node::BinaryNode{T}, inbound::T)
+function _setinbound!(node::BinaryNode{T}, inbound::T) where T
     !_hasinbound(node) ||
         error("BinaryNode already has an inbound connection")
     node.inbound = inbound
 end
 
-function _deleteinbound!{T}(node::BinaryNode{T}, inbound::T)
+function _deleteinbound!(node::BinaryNode{T}, inbound::T) where T
     _hasinbound(node) ||
         error("Node has no inbound connection")
     get(node.inbound) == inbound ||
@@ -59,14 +59,14 @@ function _deleteinbound!{T}(node::BinaryNode{T}, inbound::T)
     node.inbound = Nullable{T}()
 end
 
-function _getoutbounds{T}(node::BinaryNode{T})
+function _getoutbounds(node::BinaryNode{T}) where T
     return isnull(node.outbounds[1]) ?
         (isnull(node.outbounds[2]) ? T[] : [get(node.outbounds[2])]) :
         (isnull(node.outbounds[2]) ? [get(node.outbounds[1])] :
          [get(node.outbounds[1]), get(node.outbounds[2])])
 end
 
-function _addoutbound!{T}(node::BinaryNode{T}, outbound::T)
+function _addoutbound!(node::BinaryNode{T}, outbound::T) where T
     isnull(node.outbounds[1]) ?
         node.outbounds = (Nullable(outbound), node.outbounds[2]) :
         (isnull(node.outbounds[2]) ?
@@ -74,7 +74,7 @@ function _addoutbound!{T}(node::BinaryNode{T}, outbound::T)
          error("BinaryNode already has two outbound connections"))
 end
 
-function _deleteoutbound!{T}(node::BinaryNode{T}, outbound::T)
+function _deleteoutbound!(node::BinaryNode{T}, outbound::T) where T
     !isnull(node.outbounds[1]) && get(node.outbounds[1]) == outbound ?
         node.outbounds = (node.outbounds[2], Nullable{T}()) :
         (!isnull(node.outbounds[2]) && get(node.outbounds[2]) == outbound ?

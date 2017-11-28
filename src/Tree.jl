@@ -11,7 +11,7 @@ import Phylo.API: _hasheight, _getheight, _setheight!, _getnode, _getbranch, _se
 
 Binary phylogenetic tree object with known leaves and per node data
 """
-type BinaryTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
+mutable struct BinaryTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
     nodes::OrderedDict{String, BinaryNode{Int}}
     branches::Dict{Int, Branch{String}}
     leafinfos::OrderedDict{String, LI}
@@ -19,7 +19,7 @@ type BinaryTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
     rootheight::Nullable{Float64}
 end
 
-function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
+function BinaryTree(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true) where {LI, ND}
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
@@ -37,12 +37,11 @@ function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
                             lt.rootheight)
 end
 
-function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
-                                      ND}(leaves::Vector{String},
-                                          treetype::Type{BinaryTree{LI, ND}} =
-                                          BinaryTree{LI, ND};
-                                          rootheight::Nullable{Float64} =
-                                          Nullable{Float64}())
+function BinaryTree{LI, ND}(leaves::Vector{String},
+                            treetype::Type{BinaryTree{LI, ND}} =
+                            BinaryTree{LI, ND};
+                            rootheight::Nullable{Float64} =
+                            Nullable{Float64}()) where {LI <: AbstractInfo, ND}
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
     leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
     noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
@@ -50,12 +49,11 @@ function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
                               leafinfos, noderecords, rootheight)
 end
 
-function (::Type{BinaryTree{LI, ND}}){LI <: AbstractInfo,
-                                      ND}(numleaves::Int = 0,
-                                          treetype::Type{BinaryTree{LI, ND}} =
-                                          BinaryTree{LI, ND};
-                                          rootheight::Nullable{Float64} =
-                                          Nullable{Float64}())
+function BinaryTree{LI, ND}(numleaves::Int = 0,
+                            treetype::Type{BinaryTree{LI, ND}} =
+                            BinaryTree{LI, ND};
+                            rootheight::Nullable{Float64} =
+                            Nullable{Float64}()) where {LI <: AbstractInfo, ND}
     leaves = map(num -> "Leaf $num", 1:numleaves)
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
     leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
@@ -102,7 +100,7 @@ function _setnoderecord!(nt::BinaryTree, nodename, value)
     nt.noderecords[nodename] = value
 end
 
-function _addnode!{LI, NR}(tree::BinaryTree{LI, NR}, nodename)
+function _addnode!(tree::BinaryTree{LI, NR}, nodename) where {LI, NR}
     !_hasnode(tree, nodename) ||
         error("Node $nodename already present in tree")
     _setnode!(tree, nodename, BinaryNode{Int}())
@@ -179,11 +177,6 @@ end
 Binary phylogenetic tree object with known leaves
 """
 const NamedTree = BinaryTree{LeafInfo, Void}
-
-
-
-
-
 
 _getnodenames(tree::AbstractTree) = collect(keys(_getnodes(tree)))
 _getbranchnames(tree::AbstractTree) = collect(keys(_getbranches(tree)))

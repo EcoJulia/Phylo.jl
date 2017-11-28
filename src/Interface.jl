@@ -24,16 +24,14 @@ branchtype(tree::AbstractTree) = _branchtype(tree)
 
 Returns type of node names.
 """
-nodenametype{NodeLabel, BranchLabel}(::AbstractTree{NodeLabel, BranchLabel}) =
-    NodeLabel
+nodenametype(::T) where {NL, BL, T <: AbstractTree{NL, BL}} = NL
 
 """
     branchnametype(::AbstractTree)
 
 Returns type of branch names.
 """
-branchnametype{NodeLabel, BranchLabel}(::AbstractTree{NodeLabel, BranchLabel}) =
-    BranchLabel
+branchnametype(::T) where {NL, BL, T <: AbstractTree{NL, BL}} = BL
 
 """
     addbranch!(tree::AbstractTree, source, destination[, length::Float64];
@@ -214,7 +212,7 @@ end
 
 
 """
-function validate{NL, BL}(tree::AbstractTree{NL, BL})
+function validate(tree::T) where {NL, BL, T <: AbstractTree{NL, BL}}
     nodes = _getnodes(tree)
     branches = _getbranches(tree)
     if !isempty(nodes) || !isempty(branches)
