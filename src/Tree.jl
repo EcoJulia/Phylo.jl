@@ -26,7 +26,7 @@ function BinaryTree{LI, ND}(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true)
     leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos
     if empty # Empty out everything else
         nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leafnames))
-        branches = OrderedDict{Int, Branch{String}}()
+        branches = Dict{Int, Branch{String}}()
         noderecords = OrderedDict(map(leaf -> leaf => ND(), leafnames))
     else # Make copies of everything
         nodes = deepcopy(getnodes(lt))
