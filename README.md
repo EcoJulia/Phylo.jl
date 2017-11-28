@@ -4,8 +4,8 @@
 
 | **Documentation**                               | **PackageEvaluator**            | **Build Status of master**                                                    |
 |:-----------------------------------------------:|:------------------------:|:-------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.5-img]][pkg-0.5-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
-| [![][docs-latest-img]][docs-latest-url]         | [![][pkg-0.6-img]][pkg-0.6-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.6-img]][pkg-0.6-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
+| [![][docs-latest-img]][docs-latest-url]         |  | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
 
@@ -177,8 +177,6 @@ for other types of trees, I'll look into it.
 [codecov-img]: https://codecov.io/gh/richardreeve/Phylo.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/richardreeve/Phylo.jl
 
-[pkg-0.5-img]: http://pkg.julialang.org/badges/Phylo_0.5.svg
-[pkg-0.5-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.5
 [pkg-0.6-img]: http://pkg.julialang.org/badges/Phylo_0.6.svg
 [pkg-0.6-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.6
 
