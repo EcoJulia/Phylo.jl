@@ -14,11 +14,11 @@ function rcopy{T <: AbstractTree}(::Type{T}, rt::Ptr{VecSxp})
     end
 
     dict = rcopy(Dict{Symbol, Any}, rt)
-    nodes = dict[Symbol("tip.label")]
+    nodes = dict[:tip_label]
     tree = NamedTree(nodes)
     edges = dict[:edge]
     nnode = dict[:Nnode]
-    lengths = dict[Symbol("edge.length")]
+    lengths = dict[:edge_length]
     nontips = nnode
     append!(nodes, addnodes!(tree, nontips))
     
