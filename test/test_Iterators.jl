@@ -1,7 +1,7 @@
 module TestIterators
 
 using Phylo
-using Base.Test
+using Compat.Test
 
 @testset "$TreeType" for TreeType in [Nonultrametric, Ultrametric]
     ntip = 10

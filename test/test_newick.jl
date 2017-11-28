@@ -1,7 +1,7 @@
 module TestNewick
-using Base.Test
 
 using Phylo
+using Compat.Test
 
 @testset "A few simple trees" begin
     @test length(nodeiter(parsenewick("((,),(,));"))) == 7

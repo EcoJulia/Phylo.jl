@@ -1,30 +1,33 @@
-module TestRCall_ape
-using Base.Test
+module TestRCall_macros
 
-using Phylo
-Rinstalled = false
-
-module addmacros
 macro rput(x) end
 macro rget(x) end
 
 export @rput, @rget
+
 end
+
+module TestRCall_ape
+
+using Phylo
+using Compat.Test
+using Compat
+Rinstalled = false
 
 # Environment variable to avoid boring R package builds
 hasRinstall = haskey(ENV, "SKIP_R_INSTALL") && ENV["SKIP_R_INSTALL"] == "1"
 
 # Only run R on linux or on our machines
-skipR = !is_linux() && !hasRinstall
+skipR = !Compat.Sys.islinux() && !hasRinstall
 
 try
     skipR && error("Skipping R testing...")
     using RCall
     include(joinpath(dirname(dirname(@__FILE__)), "src", "rcall.jl"))
-    Rinstalled = true
+    global Rinstalled = true
 catch
     warn("R not installed, skipping RCall testing")
-    using TestRCall_ape.addmacros
+    using TestRCall_macros
 end
 
 if Rinstalled

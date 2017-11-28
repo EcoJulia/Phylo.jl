@@ -1,7 +1,7 @@
 module TestRand
 
 using Phylo
-using Base.Test
+using Compat.Test
 
 @testset "Nonultrametric()" begin
     # Create a 10 tip tree

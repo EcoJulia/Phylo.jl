@@ -1,7 +1,7 @@
 module TestLengths
 
 using Phylo
-using Base.Test
+using Compat.Test
 
 @testset "routes" begin
     species = ["Dog", "Cat", "Human", "Potato"]

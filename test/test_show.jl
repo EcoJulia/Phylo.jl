@@ -1,12 +1,7 @@
 module TestShow
 
 using Phylo
-using Base.Test
-if !isdefined(Base.Test, Symbol("@test_nowarn"))
-    # Ignore @test_nowarn unless it's there...
-    macro test_nowarn(test)
-    end
-end
+using Compat.Test
 
 info("""
 These tests only check that the show() and showall() commands

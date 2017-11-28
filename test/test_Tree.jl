@@ -1,12 +1,7 @@
 module TestTrees
 
 using Phylo
-using Base.Test
-if !isdefined(Base.Test, Symbol("@test_warn"))
-    # Ignore @test_warn unless it's there...
-    macro test_warn(str, test)
-    end
-end
+using Compat.Test
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10

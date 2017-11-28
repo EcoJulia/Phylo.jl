@@ -1,7 +1,7 @@
 module TestInterface
 
 using Phylo
-using Base.Test
+using Compat.Test
 using Compat
 
 @testset "Build and tear down trees" begin
