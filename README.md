@@ -17,8 +17,7 @@ julia> Pkg.add("Phylo")
 
 ## Project Status
 
-The package is tested against the current Julia `0.6` release, the
-last Julia `0.5` release and nightly on Linux, OS X, and Windows.
+The package is tested against the current Julia `0.6` release, and `nightly` on Linux, OS X, and Windows.
 
 ## Contributing and Questions
 
