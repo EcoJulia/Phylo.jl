@@ -1,7 +1,6 @@
-using Compat
 using Phylo.API
 
-@compat abstract type AbstractTreeIterator{T <: AbstractTree} end
+abstract type AbstractTreeIterator{T <: AbstractTree} end
 
 function iteratorsize(::Type{AbstractTreeIterator})
     return Base.HasLength()
@@ -11,7 +10,7 @@ function iteratoreltype(::Type{AbstractTreeIterator})
     return Base.HasEltype()
 end
 
-@compat abstract type AbstractNodeIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
+abstract type AbstractNodeIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
 
 function start(ni::It) where It <: AbstractNodeIterator
     nodes = _getnodes(ni.tree)
@@ -44,7 +43,7 @@ function length(ni::It) where It <: AbstractNodeIterator
 end
 
 
-@compat abstract type AbstractBranchIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
+abstract type AbstractBranchIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
 
 function start(bi::It) where It <: AbstractBranchIterator
     branches = _getbranches(bi.tree)

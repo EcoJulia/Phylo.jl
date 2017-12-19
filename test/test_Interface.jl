@@ -2,7 +2,6 @@ module TestInterface
 
 using Phylo
 using Compat.Test
-using Compat
 
 @testset "Build and tear down trees" begin
     @testset "For $TreeType" for TreeType in
@@ -31,9 +30,9 @@ using Compat
         pop!(innodes)
         branches =
             map(innodes) do node
-                itr = Compat.Iterators.filter(name ->
-                                              hasoutboundspace(tree, name) &&
-                                              name != node, allnodes)
+                itr = Iterators.filter(name ->
+                                       hasoutboundspace(tree, name) &&
+                                       name != node, allnodes)
                 addbranch!(tree, first(itr), node)
             end
         @test Set(branches) == Set(branchnameiter(tree))
@@ -56,7 +55,7 @@ using Compat
             outdegree(tree, species[1]) == 0 &&
             indegree(tree, species[1]) == 0
         @test_throws ErrorException getbranch(tree, b)
-        branches = collect(Compat.Iterators.filter(name -> name != b, branches))
+        branches = collect(Iterators.filter(name -> name != b, branches))
         @test Set(branches) == Set(branchnameiter(tree))
         b3 = getinbound(tree, species[2])
         source = src(tree, b3)

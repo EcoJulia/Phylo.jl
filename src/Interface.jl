@@ -1,4 +1,3 @@
-using Compat
 using Phylo.API
 
 getnodes(tree::AbstractTree) = _getnodes(tree)

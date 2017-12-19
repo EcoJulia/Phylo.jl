@@ -1,7 +1,3 @@
-using Compat
-import Phylo.API: _hasinbound, _getinbound, _setinbound!, _deleteinbound!
-import Phylo.API: _outdegree, _hasoutboundspace, _getoutbounds, _addoutbound!, _deleteoutbound!
-
 """
     BinaryNode{T}(AbstractVector{T}, AbstractVector{T}) <: AbstractNode
 
@@ -26,31 +22,39 @@ mutable struct BinaryNode{T} <: AbstractNode
     end
 end
 
+import Phylo.API._hasinbound
 function _hasinbound(node::BinaryNode)
     return !isnull(node.inbound)
 end
 
+
+import Phylo.API._outdegree
 function _outdegree(node::BinaryNode)
     return (isnull(node.outbounds[1]) ? 0 : 1) +
         (isnull(node.outbounds[2]) ? 0 : 1)
 end
 
+
+import Phylo.API._hasoutboundspace
 function _hasoutboundspace(node::BinaryNode)
     return _outdegree(node) < 2
 end
 
+import Phylo.API._getinbound
 function _getinbound(node::BinaryNode)
     _hasinbound(node) ||
         error("Node has no inbound connection")
     return get(node.inbound)
 end
 
+import Phylo.API._setinbound!
 function _setinbound!(node::BinaryNode{T}, inbound::T) where T
     !_hasinbound(node) ||
         error("BinaryNode already has an inbound connection")
     node.inbound = inbound
 end
 
+import Phylo.API._deleteinbound!
 function _deleteinbound!(node::BinaryNode{T}, inbound::T) where T
     _hasinbound(node) ||
         error("Node has no inbound connection")
@@ -59,6 +63,7 @@ function _deleteinbound!(node::BinaryNode{T}, inbound::T) where T
     node.inbound = Nullable{T}()
 end
 
+import Phylo.API._getoutbounds
 function _getoutbounds(node::BinaryNode{T}) where T
     return isnull(node.outbounds[1]) ?
         (isnull(node.outbounds[2]) ? T[] : [get(node.outbounds[2])]) :
@@ -66,6 +71,7 @@ function _getoutbounds(node::BinaryNode{T}) where T
          [get(node.outbounds[1]), get(node.outbounds[2])])
 end
 
+import Phylo.API._addoutbound!
 function _addoutbound!(node::BinaryNode{T}, outbound::T) where T
     isnull(node.outbounds[1]) ?
         node.outbounds = (Nullable(outbound), node.outbounds[2]) :
@@ -74,6 +80,7 @@ function _addoutbound!(node::BinaryNode{T}, outbound::T) where T
          error("BinaryNode already has two outbound connections"))
 end
 
+import Phylo.API._deleteoutbound!
 function _deleteoutbound!(node::BinaryNode{T}, outbound::T) where T
     !isnull(node.outbounds[1]) && get(node.outbounds[1]) == outbound ?
         node.outbounds = (node.outbounds[2], Nullable{T}()) :

@@ -1,14 +1,12 @@
 using Phylo
-using Compat
 
 function _newlabel(ids::Vector{Label}) where Label <: Integer
     return isempty(ids) ? 1 : maximum(ids) + 1
 end
 
 function _newlabel(names::Vector{String}, prefix)
-    names = collect(Compat.Iterators.filter(n -> length(n) > length(prefix) &&
-                                            n[1:length(prefix)]==prefix,
-                                            names))
+    names = collect(Iterators.filter(n -> length(n) > length(prefix) &&
+                                     n[1:length(prefix)]==prefix, names))
     start = length(names) + 1
     name = prefix * "$start"
     while (name ∈ names)
