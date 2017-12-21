@@ -31,14 +31,14 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
  [Diversity][diversity-url] package to calculate phylogenetic
- diversity (currently on master, accessible via `Pkg.checkout()`, but
- not released). `Phylo` is currently in *alpha*, and is missing
- critical functionality, so please [raise an issue][issues-url]
- if/when you find problems or missing functionality - don't assume
- that I know! Currently the package can be used to make trees
- manually, and to generate random trees using the framework from
- `Distributions`. For instance, to construct a sampler for 5 tip
- non-ultrametric trees, and then generate a random tree of that type:
+ diversity. `Phylo` is currently in *alpha*, and is missing much
+ functionality that people may desire, so please
+ [raise an issue][issues-url] if/when you find problems or missing
+ functionality - don't assume that I know! Currently the package can
+ be used to make trees manually, to generate random trees using the
+ framework from `Distributions`, and to read newick format trees from
+ files. For instance, to construct a sampler for 5 tip non-ultrametric
+ trees, and then generate a random tree of that type:
 
 ```julia
 julia> using Phylo
@@ -77,7 +77,8 @@ phylogenetics to use in our [Diversity][diversity-url] package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
 
-However, it can also read newick trees is a very hacky way:
+It can also read newick trees somewhat successfully either from
+strings or files:
 
 ```julia
 julia> using Phylo
@@ -94,7 +95,7 @@ Dict{Int64,Phylo.Branch{String}} with 4 entries:
   3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]
   1 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]
 
-julia> open(parsenewick, tree = open(parsenewick, Pkg.dir("Phylo", "test", "h1n1.trees")))
+julia> tree = open(parsenewick, Pkg.dir("Phylo", "test", "h1n1.trees"))
 NamedTree phylogenetic tree with 1013 nodes and 1012 branches
 Leaf names:
 String["407", "153", "1", "54", "101", "371", "41", "464", "65", "475"  …  "336", "145", "36", "95", "414", "138", "294", "353", "232", "306"]
