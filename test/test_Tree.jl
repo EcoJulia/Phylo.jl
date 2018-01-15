@@ -12,8 +12,8 @@ ntips = 10
     @test length(nodefilter(isinternal, ntn)) == 0
     @test validate(ntn)
     nt = NamedTree(species)
-    @test isnull(noderoute(nt, "Dog", "Cat"))
-    @test isnull(branchroute(nt, "Dog", "Human"))
+    @test_throws ErrorException noderoute(nt, "Dog", "Cat")
+    @test_throws ErrorException branchroute(nt, "Dog", "Human")
     @test validate(nt)
     n = addnode!(nt)
     @test_warn "Leaf names do not match actual leaves of tree" !validate(nt) || error("validate() should have returned false")
@@ -28,8 +28,8 @@ ntips = 10
     b4 = addbranch!(nt, r, n, 3.0)
     @test maximum(distances(nt)) ≈ 10.0
     @test validate(nt)
-    @test get(noderoute(nt, "Human", "Dog")) == ["Human", r, n, "Dog"]
-    @test get(branchroute(nt, "Human", "Dog")) == [b3, b4, b1]
+    @test noderoute(nt, "Human", "Dog") == ["Human", r, n, "Dog"]
+    @test branchroute(nt, "Human", "Dog") == [b3, b4, b1]
 end
 
 @testset "BinaryTree()" begin

@@ -1,13 +1,13 @@
 import Phylo.API: _hasheight, _getheight, _setheight!
 
 mutable struct LeafInfo <: AbstractInfo
-    height::Nullable{Float64}
+    height::Float64
 end
 
-LeafInfo() = LeafInfo(Nullable{Float64}())
+LeafInfo() = LeafInfo(NaN)
 
-_hasheight(li::LeafInfo) = !isnull(li.height)
-_getheight(li::LeafInfo) = get(li.height)
+_hasheight(li::LeafInfo) = !isnan(li.height)
+_getheight(li::LeafInfo) = li.height
 _setheight!(li::LeafInfo, height::Float64) = (li.height = height)
 
 #  - _hasheight()

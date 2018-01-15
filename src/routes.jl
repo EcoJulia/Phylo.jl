@@ -52,10 +52,10 @@ function branchroute(tree::T, node1::NL, node2::NL) where {NL, BL, T <: Abstract
     branches1, nodes1 = _treepast(tree, node1)
     branches2, nodes2 = _treepast(tree, node2)
     nodes1[end] == nodes2[end] ||
-        return Nullable{Vector{BL}}()
+        return error("No route between nodes")
     common = branches1 ∩ branches2
-    return Nullable(append!(filter(b -> b ∉ common, branches1),
-                            filter(b -> b ∉ common, reverse(branches2))))
+    return append!(filter(b -> b ∉ common, branches1),
+                   filter(b -> b ∉ common, reverse(branches2)))
 end
 
 """
@@ -67,7 +67,7 @@ function noderoute(tree::T, node1::NL, node2::NL) where {NL, BL, T <: AbstractTr
     branches1, nodes1 = _treepast(tree, node1)
     branches2, nodes2 = _treepast(tree, node2)
     nodes1[end] == nodes2[end] ||
-        return Nullable{Vector{NL}}()
+        return error("No route between nodes")
     common = nodes1[end]
     while min(length(nodes1), length(nodes2)) > 0 && nodes1[end] == nodes2[end]
         common = nodes1[end]
@@ -75,7 +75,7 @@ function noderoute(tree::T, node1::NL, node2::NL) where {NL, BL, T <: AbstractTr
         pop!(nodes2)
     end
     push!(nodes1, common)
-    return Nullable(append!(nodes1, reverse(nodes2)))
+    return append!(nodes1, reverse(nodes2))
 end
 
 """
@@ -85,8 +85,7 @@ Distance between two nodes on a tree
 """
 function distance(tree::AbstractTree, node1, node2)
     branches = branchroute(tree, node1, node2)
-    return isnull(branches) ? Inf :
-        mapreduce(branch -> getlength(tree, branch), +, 0.0, get(branches))
+    return mapreduce(branch -> getlength(tree, branch), +, 0.0, branches)
 end
 
 """

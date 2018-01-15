@@ -3,6 +3,8 @@ using Tokenize
 using Tokenize.Lexers
 const T = Tokenize.Tokens
 
+noname(name::String) = name == ""
+
 function parsenewick(io::IOBuffer)
     tree = NamedTree()
     children = Dict{Int,Vector{String}}([0 => [], -1 => []])
@@ -10,7 +12,7 @@ function parsenewick(io::IOBuffer)
     depth = 0
     makenode = true
     addlength = false
-    currentname = Nullable{String}()
+    currentname = ""
     readyforparent = false
     eot = false
     insquarebrackets = false
@@ -30,7 +32,7 @@ function parsenewick(io::IOBuffer)
                 depth += 1
                 children[depth] = []
                 makenode = true
-                currentname = Nullable{String}()
+                currentname = ""
                 processed = true
             end
 
@@ -47,12 +49,12 @@ function parsenewick(io::IOBuffer)
                     children[depth] = []
                     depth -= 1
                     push!(children[depth], parent)
-                    currentname = Nullable(parent)
+                    currentname = parent
                     readyforparent = false
                 else
                     nodename = addnode!(tree)
                     push!(children[depth], nodename)
-                    currentname = Nullable{String}()
+                    currentname = ""
                     makenode = false
                 end
             end
@@ -77,12 +79,12 @@ function parsenewick(io::IOBuffer)
                     children[depth] = []
                     depth -= 1
                     push!(children[depth], parent)
-                    currentname = Nullable(parent)
+                    currentname = parent
                     readyforparent = false
                 elseif makenode # We have an anonymous leaf
                     nodename = addnode!(tree)
                     push!(children[depth], nodename)
-                    currentname = Nullable(nodename)
+                    currentname = nodename
                     makenode = false
                 end
                 processed = true
@@ -92,10 +94,10 @@ function parsenewick(io::IOBuffer)
                                      T.isliteral(token.kind) ||
                                      T.isoperator(token.kind)
                 if token.kind ∈ [T.INTEGER, T.FLOAT] && addlength # A length!
-                    !isnull(currentname) ||
+                    noname(currentname) ?
                         error("Found length $(untokenize(token)) " *
-                              "with no associated node")
-                    lengths[get(currentname)] = parse(Float64, untokenize(token))
+                              "with no associated node") :
+                              lengths[currentname] = parse(Float64, untokenize(token))
                     addlength = false
                 else # It's a leaf
                     name = token.kind == T.STRING ?
@@ -113,7 +115,7 @@ function parsenewick(io::IOBuffer)
                         children[depth] = []
                         depth -= 1
                         push!(children[depth], parent)
-                        currentname = Nullable(parent)
+                        currentname = parent
                         readyforparent = false
                     else
                         makenode ||
@@ -121,7 +123,7 @@ function parsenewick(io::IOBuffer)
                                   "while not expecting one")
                         nodename = addnode!(tree, name)
                         push!(children[depth], nodename)
-                        currentname = Nullable(nodename)
+                        currentname = nodename
                         makenode = false
                     end
                 end
@@ -140,12 +142,12 @@ function parsenewick(io::IOBuffer)
                     children[depth] = []
                     depth -= 1
                     push!(children[depth], parent)
-                    currentname = Nullable(parent)
+                    currentname = parent
                     readyforparent = false
                 elseif makenode
                     nodename = addnode!(tree)
                     push!(children[depth], nodename)
-                    currentname = Nullable(nodename)
+                    currentname = nodename
                     makenode = false
                 end
                 eot = true

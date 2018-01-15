@@ -21,10 +21,10 @@ using Compat.Test
     br = addbranch!(tree, n3, "Dog")
     @test br ∈ branchhistory(tree, "Dog")
     br2 = addbranch!(tree, n3, "Cat")
-    @test [br2, br] == get(branchroute(tree, "Cat", "Dog"))
+    @test [br2, br] == branchroute(tree, "Cat", "Dog")
     br3 = addbranch!(tree, n2, "Human")
     @test addbranch!(tree, nr, "Potato", branchname = 551) == 551
-    @test 551 ∈ get(branchroute(tree, "Dog", "Potato"))
+    @test 551 ∈ branchroute(tree, "Dog", "Potato")
     deletebranch!(tree, 551)
     br4 = addbranch!(tree, nr, "Potato")
     @test Set(species) ⊆ Set(getdescendants(tree, nr))

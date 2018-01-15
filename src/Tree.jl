@@ -16,7 +16,7 @@ mutable struct BinaryTree{LI <: AbstractInfo, ND} <: AbstractTree{String, Int}
     branches::Dict{Int, Branch{String}}
     leafinfos::OrderedDict{String, LI}
     noderecords::OrderedDict{String, ND}
-    rootheight::Nullable{Float64}
+    rootheight::Float64
 end
 
 function BinaryTree(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true) where {LI, ND}
@@ -40,8 +40,7 @@ end
 function BinaryTree{LI, ND}(leaves::Vector{String},
                             treetype::Type{BinaryTree{LI, ND}} =
                             BinaryTree{LI, ND};
-                            rootheight::Nullable{Float64} =
-                            Nullable{Float64}()) where {LI <: AbstractInfo, ND}
+                            rootheight::Float64 = NaN) where {LI <: AbstractInfo, ND}
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
     leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
     noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
@@ -52,8 +51,7 @@ end
 function BinaryTree{LI, ND}(numleaves::Int = 0,
                             treetype::Type{BinaryTree{LI, ND}} =
                             BinaryTree{LI, ND};
-                            rootheight::Nullable{Float64} =
-                            Nullable{Float64}()) where {LI <: AbstractInfo, ND}
+                            rootheight::Float64 = NaN) where {LI <: AbstractInfo, ND}
     leaves = map(num -> "Leaf $num", 1:numleaves)
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
     leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
@@ -155,11 +153,11 @@ function _validate(tree::BinaryTree)
 end
 
 function _hasrootheight(tree::BinaryTree)
-    return !isnull(tree.rootheight)
+    return !isnan(tree.rootheight)
 end
 
 function _getrootheight(tree::BinaryTree)
-    return get(tree.rootheight)
+    return tree.rootheight
 end
 
 function _setrootheight!(tree::BinaryTree, height::Float64)
@@ -168,7 +166,7 @@ function _setrootheight!(tree::BinaryTree, height::Float64)
 end
 
 function _clearrootheight!(tree::BinaryTree)
-    tree.rootheight = Nullable{Float64}()
+    tree.rootheight = NaN
 end
 
 """
