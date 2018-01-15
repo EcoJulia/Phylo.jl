@@ -5,7 +5,7 @@
 | **Documentation**                               | **PackageEvaluator**            | **Build Status of master**                                                    |
 |:-----------------------------------------------:|:------------------------:|:-------------------------------------------------------------------:|
 | [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.6-img]][pkg-0.6-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
-| [![][docs-latest-img]][docs-latest-url]         |  | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| [![][docs-latest-img]][docs-latest-url]         | [![][pkg-0.7-img]][pkg-0.7-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
 
@@ -19,7 +19,7 @@ julia> Pkg.add("Phylo")
 
 The package is tested against the current Julia `0.6` release, and
 `nightly` on Linux, OS X, and Windows. It is currently broken on
-nightly due to changes to Nullable handling, but this will be fixed soon...
+nightly due to other package failures, but this will (hopefully!) be fixed soon...
 
 ## Contributing and Questions
 
@@ -181,6 +181,9 @@ for other types of trees, I'll look into it.
 
 [pkg-0.6-img]: http://pkg.julialang.org/badges/Phylo_0.6.svg
 [pkg-0.6-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.6
+
+[pkg-0.6-img]: http://pkg.julialang.org/badges/Phylo_0.7.svg
+[pkg-0.6-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.7
 
 [issues-url]: https://github.com/richardreeve/Phylo.jl/issues
 [pr-url]: https://github.com/richardreeve/Phylo.jl/pulls
