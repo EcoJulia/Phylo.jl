@@ -182,8 +182,8 @@ for other types of trees, I'll look into it.
 [pkg-0.6-img]: http://pkg.julialang.org/badges/Phylo_0.6.svg
 [pkg-0.6-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.6
 
-[pkg-0.6-img]: http://pkg.julialang.org/badges/Phylo_0.7.svg
-[pkg-0.6-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.7
+[pkg-0.7-img]: http://pkg.julialang.org/badges/Phylo_0.7.svg
+[pkg-0.7-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.7
 
 [issues-url]: https://github.com/richardreeve/Phylo.jl/issues
 [pr-url]: https://github.com/richardreeve/Phylo.jl/pulls
