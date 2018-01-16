@@ -1,3 +1,8 @@
+- v0.2.2
+  - Switch Void to Nothing and add Compat for Julia 0.6
+- v0.2.1
+  - Remove use of Nullable, replace with Union{T, Void}
+  - Add in package manager for 0.7
 - v0.2.0
   - Add in parsenewick() to parse newick trees using Tokenize
   - Rename iterator and filter functions to nodeiter(),

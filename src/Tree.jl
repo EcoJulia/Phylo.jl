@@ -1,4 +1,6 @@
 using DataStructures
+using Compat
+
 import Phylo.API: _nodetype, _branchtype, _getnodes, _getbranches
 import Phylo.API: _getnodenames, _getbranchnames, _getleafnames
 import Phylo.API: _getleafinfo, _setleafinfo!, _resetleaves!, _getnoderecord, _setnoderecord!
@@ -174,7 +176,7 @@ end
 
 Binary phylogenetic tree object with known leaves
 """
-const NamedTree = BinaryTree{LeafInfo, Void}
+const NamedTree = BinaryTree{LeafInfo, Nothing}
 
 _getnodenames(tree::AbstractTree) = collect(keys(_getnodes(tree)))
 _getbranchnames(tree::AbstractTree) = collect(keys(_getbranches(tree)))

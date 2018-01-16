@@ -1,5 +1,6 @@
 using Phylo
 using Phylo.API
+using Compat
 
 function show(io::IO, object::AbstractNode, n::String = "")
     node = "node"
@@ -130,9 +131,15 @@ function showall(io::IO, object::BinaryTree{LI, ND}) where {LI, ND}
     print(io, _getnodes(object))
     print(io, "\nBranches:\n") 
     print(io, _getbranches(object))
-    if ND != Void
-        print(io, "\nNodeData:\n") 
-        print(io, Dict(map(nodename -> nodename => getnoderecord(object, nodename),
-                           nodenameiter(object))))
-    end
+    print(io, "\nNodeData:\n") 
+    print(io, Dict(map(nodename -> nodename => getnoderecord(object, nodename),
+                       nodenameiter(object))))
+end
+
+function showall(io::IO, object::BinaryTree{LI, Nothing}) where LI
+    print(io, object)
+    print(io, "\nNodes:\n") 
+    print(io, _getnodes(object))
+    print(io, "\nBranches:\n") 
+    print(io, _getbranches(object))
 end

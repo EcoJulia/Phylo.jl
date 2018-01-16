@@ -1,11 +1,13 @@
+using Compat
+
 """
     BinaryNode{T}(AbstractVector{T}, AbstractVector{T}) <: AbstractNode
 
 A node of strict binary phylogenetic tree
 """
 mutable struct BinaryNode{T} <: AbstractNode
-    inbound::Union{T, Void}
-    outbounds::Tuple{Union{T, Void}, Union{T, Void}}
+    inbound::Union{T, Nothing}
+    outbounds::Tuple{Union{T, Nothing}, Union{T, Nothing}}
 
     function BinaryNode{T}(inbound::AbstractVector{T} = T[],
                            outbounds::AbstractVector{T} = T[]) where T
@@ -29,8 +31,8 @@ end
 
 import Phylo.API._outdegree
 function _outdegree(node::BinaryNode)
-    return (node.outbounds[1] == nothing ? 0 : 1) +
-        (node.outbounds[2] == nothing ? 0 : 1)
+    return (node.outbounds[1] === nothing ? 0 : 1) +
+        (node.outbounds[2] === nothing ? 0 : 1)
 end
 
 
@@ -64,17 +66,17 @@ end
 
 import Phylo.API._getoutbounds
 function _getoutbounds(node::BinaryNode{T}) where T
-    return node.outbounds[1] == nothing ?
-        (node.outbounds[2] == nothing ? T[] : [node.outbounds[2]]) :
-        (node.outbounds[2] == nothing ? [node.outbounds[1]] :
+    return node.outbounds[1] === nothing ?
+        (node.outbounds[2] === nothing ? T[] : [node.outbounds[2]]) :
+        (node.outbounds[2] === nothing ? [node.outbounds[1]] :
          [node.outbounds[1], node.outbounds[2]])
 end
 
 import Phylo.API._addoutbound!
 function _addoutbound!(node::BinaryNode{T}, outbound::T) where T
-    node.outbounds[1] == nothing ?
+    node.outbounds[1] === nothing ?
         node.outbounds = (outbound, node.outbounds[2]) :
-        (node.outbounds[2] == nothing ?
+        (node.outbounds[2] === nothing ?
          node.outbounds = (node.outbounds[1], outbound) :
          error("BinaryNode already has two outbound connections"))
 end
