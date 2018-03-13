@@ -13,8 +13,8 @@ a simple phylogenetics type.
 """
 module Phylo
 
-import Base: Pair, Tuple, show, showall, start, next, done,
-    iteratorsize, iteratoreltype, eltype, length
+import Base: Pair, Tuple, show, showall, start, next, done, eltype, length
+import Compat: IteratorSize, IteratorEltype
 
 abstract type AbstractNode end
 abstract type AbstractBranch end

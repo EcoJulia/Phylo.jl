@@ -1,3 +1,4 @@
+using Compat.Random
 import Distributions: ValueSupport, Sampleable
 import Base: eltype, rand
 using Phylo
