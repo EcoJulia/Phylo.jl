@@ -102,24 +102,11 @@ function showall(io::IO, object::AbstractTree)
     print(io, _getbranches(object))
 end
 
-
-
-
-function show(io::IO, object::NamedTree)
+function show(io::IO, object::TREE) where TREE <: AbstractBranchTree
     if get(io, :compact, false)
-        print(io, "NamedTree phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafnames(object))) leaves) and $(length(_getbranches(object))) branches")
+        print(io, "$TREE phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafnames(object))) leaves) and $(length(_getbranches(object))) branches")
     else
-        print(io, "NamedTree phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches\n") 
-        print(io, "Leaf names:\n")
-        print(io, getleafnames(object))
-    end
-end
-
-function show(io::IO, object::BinaryTree)
-    if get(io, :compact, false)
-        print(io, "$(string(typeof(object))) phylogenetic tree with $(length(_getnodes(object))) nodes ($(length(getleafnames(object))) leaves) and $(length(_getbranches(object))) branches")
-    else
-        print(io, "$(string(typeof(object))) phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches\n") 
+        print(io, "$TREE phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches\n") 
         print(io, "Leaf names:\n")
         print(io, getleafnames(object))
     end
@@ -137,6 +124,25 @@ function showall(io::IO, object::BinaryTree{LI, ND}) where {LI, ND}
 end
 
 function showall(io::IO, object::BinaryTree{LI, Nothing}) where LI
+    print(io, object)
+    print(io, "\nNodes:\n") 
+    print(io, _getnodes(object))
+    print(io, "\nBranches:\n") 
+    print(io, _getbranches(object))
+end
+
+function showall(io::IO, object::PolytomousTree{LI, ND}) where {LI, ND}
+    print(io, object)
+    print(io, "\nNodes:\n") 
+    print(io, _getnodes(object))
+    print(io, "\nBranches:\n") 
+    print(io, _getbranches(object))
+    print(io, "\nNodeData:\n") 
+    print(io, Dict(map(nodename -> nodename => getnoderecord(object, nodename),
+                       nodenameiter(object))))
+end
+
+function showall(io::IO, object::PolytomousTree{LI, Nothing}) where LI
     print(io, object)
     print(io, "\nNodes:\n") 
     print(io, _getnodes(object))
