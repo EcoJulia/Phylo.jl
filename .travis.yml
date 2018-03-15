@@ -19,7 +19,6 @@ matrix:
   fast_finish: true
   allow_failures:
     - julia: nightly
-    - os: osx
 
 before_install:
   # linux
@@ -31,12 +30,13 @@ before_install:
   # osx
   # faster than using homebrew/science tap
   # but no permalink to release download
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then wget "https://cran.rstudio.com/bin/macosx/$(wget -qO- https://cran.rstudio.com/bin/macosx/ | sed -n 's/.*href="\(R-[^"]*.pkg\)".*/\1/p' | head -n 1)"; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo installer -pkg R-*.pkg -target /; fi
+  # - if [ "$TRAVIS_OS_NAME" == "osx" ]; then wget "https://cran.rstudio.com/bin/macosx/$(wget -qO- https://cran.rstudio.com/bin/macosx/ | sed -n 's/.*href="\(R-[^"]*.pkg\)".*/\1/p' | head -n 1)"; fi
+  # - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo installer -pkg R-*.pkg -target /; fi
 
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo"; coverage=true)'
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then JULIA_MUST_CROSSVALIDATE=1 julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
 
 after_success:
   - julia -e 'cd(Pkg.dir("Phylo", "test")); include("coverage.jl")'

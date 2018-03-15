@@ -1,3 +1,5 @@
+- v0.3
+   - Allow polytomies
 - v0.2.2
   - Switch Void to Nothing and add Compat for Julia 0.6
 - v0.2.1

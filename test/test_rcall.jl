@@ -1,50 +1,57 @@
-module TestRCall_macros
-
-macro rput(x) end
-macro rget(x) end
-
-export @rput, @rget
-
+module ValidateRCall_rcall
+macro R_str(script)
+    script
+end
+macro rput(script)
+    script
+end
+macro rget(script)
+    script
+end
+export @R_str, @rput, @rget
 end
 
-module TestRCall_ape
+module ValidateRCall_ape
+using Compat.Test
+using Compat: @warn
 
 using Phylo
-using Compat.Test
-using Compat
-Rinstalled = false
 
 # Environment variable to avoid boring R package builds
-hasRinstall = haskey(ENV, "SKIP_R_INSTALL") && ENV["SKIP_R_INSTALL"] == "1"
+mustCrossvalidate = haskey(ENV, "JULIA_MUST_CROSSVALIDATE") && ENV["JULIA_MUST_CROSSVALIDATE"] == "1"
 
-# Only run R on linux or on our machines
-skipR = !Compat.Sys.islinux() && !hasRinstall
-
+# Only run R on unix or when R is installed because JULIA_MUST_CROSSVALIDATE is set to 1
+skipR = !mustCrossvalidate && !is_unix()
+Rinstalled = false
 try
     skipR && error("Skipping R testing...")
     using RCall
     include(joinpath(dirname(dirname(@__FILE__)), "src", "rcall.jl"))
-    global Rinstalled = true
+    Rinstalled = true
 catch
-    warn("R not installed, skipping RCall testing")
-    using TestRCall_macros
+    if mustCrossvalidate
+        error("R not installed, but JULIA_MUST_CROSSVALIDATE is set")
+    else
+        @warn "R or appropriate Phylo package not installed, skipping R cross-validation."
+    end
+    using ValidateRCall_rcall
 end
 
 if Rinstalled
     # Create a temporary directory to work in
     libdir = mktempdir();
 
-    # Only run R on macs
-    if !skipR
-        # Skip the (slow!) R package installation step
-        if hasRinstall
-            reval("library(ape)");
-        else
-            rcall(Symbol(".libPaths"), libdir);
-            reval("install.packages(c(\"devtools\", \"ggplot2\", \"ape\", \"plyr\", \"phangorn\", \"tidyr\", \"tibble\", \"phytools\", \"reshape2\", \"ggthemes\"), lib=\"$libdir\", repos=\"http://cran.r-project.org\", type=\"source\")");
-            reval("library(ape, lib.loc=c(\"$libdir\", .libPaths()))");
-        end
+    if !skipR && !rcopy(R"require(ape)")
+        rcall(Symbol(".libPaths"), libdir);
+        reval("install.packages(\"ape\", lib=\"$libdir\", " *
+              "repos=\"http://cran.r-project.org\")");
+        skipR = !rcopy(R"require(ape, lib.loc=c(\"$libdir\", .libPaths()))") &&
+            !mustCrossvalidate;
+        skipR && @warn "ape R package not installed and would not install, " *
+            "skipping R crossvalidation"
+    end
 
+    if !skipR
         # Run tree comparisons on increasing numbers of tips
         @testset "RCall - testing Phylo vs ape" begin
             @testset "Testing with R rtree($i)" for i in 5:5:50

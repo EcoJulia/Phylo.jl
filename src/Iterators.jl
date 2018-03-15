@@ -1,14 +1,18 @@
 using Compat
+using Compat.Random
+import Base.start, Base.next, Base.done
+import Compat.IteratorSize, Base.length, Compat.IteratorEltype, Base.eltype
+
 using Phylo.API
 
 abstract type AbstractTreeIterator{T <: AbstractTree} end
 
-function iteratorsize(::Type{AbstractTreeIterator})
-    return Base.HasLength()
+function IteratorSize(::Type{AbstractTreeIterator})
+    return HasLength()
 end
 
-function iteratoreltype(::Type{AbstractTreeIterator})
-    return Base.HasEltype()
+function IteratorEltype(::Type{AbstractTreeIterator})
+    return HasEltype()
 end
 
 abstract type AbstractNodeIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end

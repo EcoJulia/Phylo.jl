@@ -13,12 +13,13 @@ a simple phylogenetics type.
 """
 module Phylo
 
-import Base: Pair, Tuple, show, showall, start, next, done,
-    iteratorsize, iteratoreltype, eltype, length
+import Base: Pair, Tuple, show, showall, start, next, done, eltype, length
+import Compat: IteratorSize, IteratorEltype
 
 abstract type AbstractNode end
 abstract type AbstractBranch end
 abstract type AbstractTree{NodeLabel, BranchLabel} end
+abstract type AbstractBranchTree{NL, BL} <: AbstractTree{NL, BL} end
 abstract type AbstractInfo end
 export AbstractNode, AbstractBranch, AbstractTree, AbstractInfo
 
@@ -93,10 +94,11 @@ include("Branch.jl")
 export Branch
 
 include("Node.jl")
-export BinaryNode
+export BinaryNode, Node
 
 include("Tree.jl")
-export BinaryTree, NamedTree
+export BinaryTree, NamedBinaryTree, NamedTree
+export PolytomousTree, NamedPolytomousTree
 export hasrootheight, getrootheight, setrootheight!, clearrootheight!
 export getrootdistance
 

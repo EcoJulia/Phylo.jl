@@ -1,12 +1,11 @@
-using Phylo
 using Tokenize
 using Tokenize.Lexers
 const T = Tokenize.Tokens
 
 noname(name::String) = name == ""
 
-function parsenewick(io::IOBuffer)
-    tree = NamedTree()
+function parsenewick(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractBranchTree{String, Int}
+    tree = TREE()
     children = Dict{Int,Vector{String}}([0 => [], -1 => []])
     lengths = Dict{String,Float64}()
     depth = 0
@@ -175,11 +174,13 @@ tree = resetleaves!(tree)
 return tree
 end
 
-parsenewick(s::String) = parsenewick(IOBuffer(s))
+parsenewick(s::String, ::Type{TREE}) where TREE = parsenewick(IOBuffer(s), TREE)
 
-function parsenewick(ios::IOStream)
+function parsenewick(ios::IOStream, ::Type{TREE}) where TREE
     buf = IOBuffer()
     print(buf, read(ios, String))
     seek(buf, 0)
-    return parsenewick(buf)
+    return parsenewick(buf, TREE)
 end
+
+parsenewick(inp) = parsenewick(inp, NamedTree)
