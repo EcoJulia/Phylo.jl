@@ -3,6 +3,16 @@ module TestTrim
 using Phylo
 using Compat.Test
 
+@testset "getinternalnodes()" begin
+    # Create a 10 tip tree
+    test_tree = rand(Ultrametric(10))
+    ints = getinternalnodes(test_tree)
+    tips = getleafnames(test_tree)
+    root = collect(nodenamefilter(isroot, t))
+    @test all(ints .!= tips)
+    @test all(ints .!= root)
+end
+
 @testset "drop_tip!()" begin
     # Create a 10 tip tree
     test_tree = rand(Ultrametric(10))
