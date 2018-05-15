@@ -46,4 +46,10 @@ function drop_tip!(t::AbstractTree, tip::Vector{String})
             addbranch!(t, parent, child, len)
         end
     end
+    # Remove root if it no longer has two branches
+    root = collect(nodenamefilter(isroot, t))[1]
+    if length(getchildren(t, root)) < 2
+        deletenode!(t, root)
+    end
+    map(x -> delete!(t.leafinfos, x), cut_names)
 end
