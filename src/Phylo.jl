@@ -122,4 +122,8 @@ export parsenewick
 # Display methods expanded
 include("show.jl")
 
+# Method for trimming trees
+include("trim.jl")
+export droptips!, keeptips!
+
 end # module
