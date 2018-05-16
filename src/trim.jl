@@ -8,7 +8,7 @@ function getinternalnodes(t::AbstractTree)
     return collect(nodenamefilter(x->!isleaf(x)& !isroot(x), t))
 end
 """
-    droptips!(t::AbstractTree, tips::Vector{String})
+    droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
 Function to drop tips from a phylogenetic tree `t`, which are found in
 the vector of tip names, `tip`.
 
@@ -54,4 +54,15 @@ function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, 
     map(x -> delete!(t.leafinfos, x), tips)
     return tips
 end
+
+"""
+    keeptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
+Function to keep only the tips in a phylogenetic tree, `t`, that are found in
+the vector of tip names, `tip`.
+
+"""
+function keeptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
+    tree_names = getleafnames(t)
+    cut_names = setdiff(tree_names, tips)
+    droptips!(t, cut_names)
 end
