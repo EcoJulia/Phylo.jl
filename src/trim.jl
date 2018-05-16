@@ -8,21 +8,21 @@ function getinternalnodes(t::AbstractTree)
     return collect(nodenamefilter(x->!isleaf(x)& !isroot(x), t))
 end
 """
-    drop_tip!(t::AbstractTree, tip::Vector{String})
-Function to drop tips from a phylogenetic tree `t`, which are not found in
+    droptips!(t::AbstractTree, tips::Vector{String})
+Function to drop tips from a phylogenetic tree `t`, which are found in
 the vector of tip names, `tip`.
 
 """
-function drop_tip!(t::AbstractTree, tip::Vector{String})
+function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
     tree_names = getleafnames(t)
-    cut_names = setdiff(tree_names, tip)
+    keep_tips = setdiff(tree_names, tips)
     # Remove nodes that are not in tip names
-    for i in cut_names[1:end]
+    for i in tips
         deletenode!(t, i)
     end
     # Remove nodes that are related to the cut tips
-    while length(setdiff(collect(nodenamefilter(isleaf, t)), tip)) > 0
-        nodes = setdiff(collect(nodenamefilter(isleaf, t)), tip)
+    while length(setdiff(collect(nodenamefilter(isleaf, t)), keep_tips)) > 0
+        nodes = setdiff(collect(nodenamefilter(isleaf, t)), keep_tips)
         map(x -> deletenode!(t, x), nodes)
     end
     # Merge internal nodes that no longer have multiple children
@@ -51,5 +51,7 @@ function drop_tip!(t::AbstractTree, tip::Vector{String})
     if length(getchildren(t, root)) < 2
         deletenode!(t, root)
     end
-    map(x -> delete!(t.leafinfos, x), cut_names)
+    map(x -> delete!(t.leafinfos, x), tips)
+    return tips
+end
 end
