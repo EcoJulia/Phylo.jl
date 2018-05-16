@@ -8,9 +8,9 @@ using Compat.Test
     test_tree = rand(Ultrametric(10))
     ints = getinternalnodes(test_tree)
     tips = getleafnames(test_tree)
-    root = collect(nodenamefilter(isroot, t))
-    @test all(ints .!= tips)
-    @test all(ints .!= root)
+    root = collect(nodenamefilter(isroot, test_tree))
+    @test length(ints ∩ tips) == 0
+    @test length(ints ∩ root) == 0 
 end
 
 @testset "drop_tip!()" begin
