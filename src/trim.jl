@@ -10,7 +10,7 @@ end
 """
     droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
 Function to drop tips from a phylogenetic tree `t`, which are found in
-the vector of tip names, `tip`.
+the vector of tip names, `tips`.
 
 """
 function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
