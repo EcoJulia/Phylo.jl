@@ -117,7 +117,7 @@ function _deletenode!(tree::BinaryTree, nodename)
         deletebranch!(tree, b)
     end
     delete!(_getnodes(tree), nodename)
-    delete!(tree.noderecords, nodename)    
+    delete!(tree.noderecords, nodename)
     return nodename
 end
 
@@ -132,12 +132,12 @@ function _validate(tree::BinaryTree)
         warn("Nodes must have two or zero outbound connections.")
         return false
     end
-    
+
     if Set(keys(tree.noderecords)) != Set(keys(getnodes(tree)))
         warn("Leaf records do not match node records of tree")
         return false
     end
-    
+
     rootheight = hasrootheight(tree) ? getrootheight(tree) : NaN
     for leaf in getleafnames(tree)
         if hasheight(tree, leaf)
@@ -175,7 +175,7 @@ end
 
 Binary phylogenetic tree object with known leaves
 """
-const NamedTree = NamedBinaryTree = BinaryTree{LeafInfo, Nothing}
+const NamedTree = NamedBinaryTree = BinaryTree{LeafInfo, Dict{String, Any}}
 
 
 
@@ -286,7 +286,7 @@ function _deletenode!(tree::PolytomousTree, nodename)
         deletebranch!(tree, b)
     end
     delete!(_getnodes(tree), nodename)
-    delete!(tree.noderecords, nodename)    
+    delete!(tree.noderecords, nodename)
     return nodename
 end
 
@@ -300,7 +300,7 @@ function _validate(tree::PolytomousTree)
         warn("Leaf records do not match node records of tree")
         return false
     end
-    
+
     rootheight = hasrootheight(tree) ? getrootheight(tree) : NaN
     for leaf in getleafnames(tree)
         if hasheight(tree, leaf)
@@ -338,10 +338,7 @@ end
 
 Binary phylogenetic tree object with known leaves
 """
-const NamedPolytomousTree = PolytomousTree{LeafInfo, Nothing}
-
-
-
+const NamedPolytomousTree = PolytomousTree{LeafInfo, Dict{String, Any}}
 
 _getnodenames(tree::AbstractTree) = collect(keys(_getnodes(tree)))
 _getbranchnames(tree::AbstractTree) = collect(keys(_getbranches(tree)))
@@ -353,11 +350,11 @@ _hasbranch(tree::AbstractTree, label) = haskey(_getbranches(tree), label)
 function _addbranch!(tree::AbstractBranchTree, source, destination, length::Float64, label)
     # Add the new branch
     _setbranch!(tree, label, Branch(source, destination, length))
-    
+
     # Update the associated source and destination nodes
     _addoutbound!(getnode(tree, source), label)
     _setinbound!(getnode(tree, destination), label)
-    
+
     # Return updated tree
     return label
 end
