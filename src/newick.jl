@@ -29,7 +29,6 @@ function nextskip(tokens, state)
     while isWHITESPACE(token)
         token, state = next(tokens, state)
     end
-    #@info untokenize(token)
     return token, state
 end
 
@@ -144,12 +143,10 @@ function parsenode(token, state, tokens, tree::TREE,
                                           t -> t.kind ∈ endkinds)
         if isempty(lookup)
             myname = addnode!(tree, name)
-            @info "Created new named $(istip?"tip":"node") '$myname'"
         else
             if istip
                 if haskey(lookup, name)
                     myname = lookup[name]
-                    @info "Using lookup named tip '$myname'"
                 else
                     @warn "Wrongly named tip '$name' found in tree " *
                         "with named tips, adding"
@@ -157,12 +154,8 @@ function parsenode(token, state, tokens, tree::TREE,
                 end
             else
                 if haskey(lookup, name)
-                    @info "Recognized internal node '$name' -> " *
-                        "'$(lookup[name])' found in tree with named tips"
                     myname = lookup[name]
                 else
-                    @info "Unrecognized internal node '$name' " *
-                        "found in tree with named tips"
                     myname = addnode!(tree, name)
                 end
             end
@@ -172,7 +165,6 @@ function parsenode(token, state, tokens, tree::TREE,
             @warn "Anonymous tip found in tree with named tips"
         end
         myname = addnode!(tree)
-        @info "Created anonymous $(istip?"tip":"node") '$myname'"
     end
     siblings[myname] = Dict{String, Any}()
     foundcolon = false
@@ -204,7 +196,6 @@ function parsenewick(token, state, tokens, tree::TREE,
                      lookup = Dict(), depth = 0,
                      children = Dict{NL, Dict{String, Any}}()) where
     {NL, BL, TREE <: AbstractBranchTree{NL, BL}}
-    @warn "Entering depth $depth, $(token.kind) = '$(untokenize(token))'"
     token, state = nextskip(tokens, state)
     mychildren = Dict{NL, Dict{String, Any}}()
     while token.kind != T.RPAREN && token.kind != T.ENDMARKER
@@ -216,21 +207,17 @@ function parsenewick(token, state, tokens, tree::TREE,
         else
             token, state, nodename = parsenode(token, state, tokens, tree,
                                                lookup, mychildren, true)
-            @warn "Added a tip called $nodename"
         end
     end
     token, state = nextskip(tokens, state)
     token, state, nodename = parsenode(token, state, tokens, tree,
                                        lookup, children, false)
-    @warn "Added a node called $nodename"
     for child in keys(mychildren)
         dict = mychildren[child]
         haskey(dict, "length") ?
             addbranch!(tree, nodename, child, dict["length"]) :
             addbranch!(tree, nodename, child)
-        @warn "Added branch from $nodename to $child"
     end
-    @warn "Exiting depth $depth, $(token.kind) = '$(untokenize(token))'"
     if depth == 0
         # Should be at end of tree
         if token.kind == T.SEMICOLON
@@ -302,7 +289,6 @@ function parsetaxa(token, state, tokens, taxa)
     if length(taxa) != ntax
         @warn "Taxa list length ($(length(taxa))) and ntax ($ntax) do not match"
     end
-    @info "$ntax taxa"
 
     token, state = nextskip(tokens, state)
     if !checktosemi(isEND, token, state, tokens)
@@ -325,7 +311,7 @@ function parsetrees(token, state, tokens,
                 delete!(taxa, proper)
                 taxa[short] = proper
             elseif notaxa
-                @info "Found a '$short' => '$proper' link without a taxa entry first"
+                @warn "Found a '$short' => '$proper' link without a taxa entry first"
                 taxa[short] = proper
             else
                 @warn "Missing '$proper' in taxa block, but in 'trees -> translate' block"
@@ -343,6 +329,7 @@ function parsetrees(token, state, tokens,
         token, state = nextskip(tokens, state)
         token, state, treename = tokensgetkey(token, state, tokens,
                                               t -> t.kind ∈ [T.LSQUARE, T.EQ])
+        @info "Created a tree called '$treename'"
         trees[treename] = TREE()
         addnodes!(trees[treename], collect(values(taxa)))
         if token.kind == T.LSQUARE
@@ -387,7 +374,7 @@ function parsenexus(token, state, tokens,
             token, state = nextskip(tokens, state)
             token, state, trees, treedata = parsetrees(token, state, tokens, TREE, taxa)
         else
-            warn("Unexpected nexus block '$(untokenize(token))', skipping...")
+            @warn "Unexpected nexus block '$(untokenize(token))', skipping..."
             token, state = nextskip(tokens, state)
             while !checktosemi(isEND, token, state, tokens) && token.kind != T.ENDMARKER
                 token, state = nextskip(tokens, state)
