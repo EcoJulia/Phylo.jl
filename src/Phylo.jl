@@ -33,7 +33,7 @@ ignored.
 module API
 include("API.jl")
 # AbstractTree methods
-export _addbranch!, _deletebranch!, _branch!, _setbranch!
+export _ntrees, _addbranch!, _deletebranch!, _branch!, _setbranch!
 export _addnode!, _addnodes!, _deletenode!, _setnode!
 export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _hasbranch, _getbranch, _getbranches
@@ -65,7 +65,7 @@ end
 
 include("Interface.jl")
 # AbstractTree methods
-export nodetype, branchtype, nodenametype, branchnametype
+export ntrees, nodetype, branchtype, nodenametype, branchnametype
 export addbranch!, deletebranch!, branch!
 export addnode!, addnodes!, deletenode!
 export getnodenames, hasnode, getnode, getnodes

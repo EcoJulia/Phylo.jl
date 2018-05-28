@@ -103,8 +103,6 @@ String["44", "429", "294", "295", "227", "14", "106", "104", "174", "331"  …  
 And it can read nexus trees from files too:
 
 ```julia
-julia> using Phylo
-
 julia> trees, treedata = open(parsenexus, Pkg.dir("Phylo", "test", "H1N1.trees"))
 Info: Created a tree called 'TREE1'
 Info: Created a tree called 'TREE2'

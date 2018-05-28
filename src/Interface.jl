@@ -3,6 +3,10 @@ using Phylo.API
 getnodes(tree::AbstractTree) = _getnodes(tree)
 getbranches(tree::AbstractTree) = _getbranches(tree)
 
+function ntrees(tree::AbstractTree)
+    return _ntrees(tree)
+end
+
 # AbstractTree methods
 """
     nodetype(tree::AbstractTree)

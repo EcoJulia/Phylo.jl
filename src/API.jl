@@ -16,6 +16,10 @@ function _newlabel(names::Vector{String}, prefix)
     return name
 end
 
+function _ntrees(::AbstractTree)
+    return 1
+end
+
 function _extractnode(::T, node::N) where {T <: AbstractTree, N <: AbstractNode}
     return node
 end
