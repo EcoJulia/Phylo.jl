@@ -86,6 +86,13 @@ if Rinstalled
                 rtree = rcall(Symbol("read.tree"), "H1N1.newick")
                 @test rcopy(rcall(Symbol("all.equal"), jtree, rtree))
             end
+
+            @testset "Testing reading in nexus trees from disk" begin
+                jtrees, jtreedata = open(parsenexus, "H1N1.trees")
+                rtree1 = R"read.nexus('H1N1.trees')$TREE1"
+                jtree1 = jtrees["TREE1"]
+                @test rcopy(rcall(Symbol("all.equal"), jtree1, rtree1))
+            end
         end
     end
     rm(libdir, force=true, recursive=true);
