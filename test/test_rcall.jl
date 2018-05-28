@@ -82,8 +82,8 @@ if Rinstalled
             end
 
             @testset "Testing reading in newick trees from disk" begin
-                jtree = open(parsenewick, "h1n1.trees")
-                rtree = rcall(Symbol("read.tree"), "h1n1.trees")
+                jtree = open(parsenewick, "H1N1.newick")
+                rtree = rcall(Symbol("read.tree"), "H1N1.newick")
                 @test rcopy(rcall(Symbol("all.equal"), jtree, rtree))
             end
         end
