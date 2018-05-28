@@ -117,7 +117,7 @@ export Nonultrametric, Ultrametric
 
 # Read Newick Tree
 include("newick.jl")
-export parsenewick
+export parsenewick, parsenexus
 
 # Display methods expanded
 include("show.jl")

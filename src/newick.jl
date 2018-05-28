@@ -2,6 +2,7 @@ using Compat.@warn
 using Compat.@info
 using Tokenize
 using Tokenize.Lexers
+using Missings
 const T = Tokenize.Tokens
 
 noname(name::String) = name == ""
@@ -148,12 +149,12 @@ function parsenode(token, state, tokens, tree::TREE,
             if istip
                 if haskey(lookup, name)
                     myname = lookup[name]
+                    @info "Using lookup named tip '$myname'"
                 else
                     @warn "Wrongly named tip '$name' found in tree " *
                         "with named tips, adding"
                     myname = addnode!(tree, name)
                 end
-                @info "Created lookup named tip '$myname'"
             else
                 if haskey(lookup, name)
                     @info "Recognized internal node '$name' -> " *
@@ -164,7 +165,6 @@ function parsenode(token, state, tokens, tree::TREE,
                         "found in tree with named tips"
                     myname = addnode!(tree, name)
                 end
-                @info "Created lookup named internal node '$myname'"
             end
         end
     else
@@ -175,14 +175,21 @@ function parsenode(token, state, tokens, tree::TREE,
         @info "Created anonymous $(istip?"tip":"node") '$myname'"
     end
     siblings[myname] = Dict{String, Any}()
+    foundcolon = false
+    if token.kind == T.COLON
+        foundcolon = true
+        token, state = nextskip(tokens, state)
+    end
     if token.kind == T.LSQUARE
         token, state, dict = parsedict(token, state, tokens)
         siblings[myname]["dict"] = dict
         setnoderecord!(tree, myname, dict)
         token, state = nextskip(tokens, state)
     end
-    if token.kind == T.COLON
-        token, state = nextskip(tokens, state)
+    if token.kind == T.COLON || foundcolon
+        if token.kind == T.COLON
+            token, state = nextskip(tokens, state)
+        end
         if token.kind ∈ [T.INTEGER, T.FLOAT]
             siblings[myname]["length"] = parse(Float64, untokenize(token))
         else
@@ -266,3 +273,154 @@ function parsenewick(ios::IOStream, ::Type{TREE}) where TREE <: AbstractBranchTr
 end
 
 parsenewick(inp) = parsenewick(inp, NamedTree)
+
+function parsetaxa(token, state, tokens, taxa)
+    if !isDIMENSIONS(token)
+        tokenerror(token, "Dimensions")
+    end
+    token, state = nextskip(tokens, state)
+    token, state, ntaxstr = tokensgetkey(token, state, tokens)
+    if lowercase(ntaxstr) != "ntax"
+        error("Unexpected label '$ntaxstr=' not 'ntax='")
+    end
+    token, state = nextskip(tokens, state)
+    ntax = parse(Int64, untokenize(token))
+    token, state = nextskip(tokens, state)
+    if token.kind != T.SEMICOLON
+        tokenerror(token, ";")
+    end
+    token, state = nextskip(tokens, state)
+    if !isTAXLABELS(token)
+        tokenerror(token, "Taxlabels")
+    end
+    token, state = nextskip(tokens, state)
+    while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
+        name = untokenize(token)
+        token, state = nextskip(tokens, state)
+        taxa[name] = name
+    end
+    if length(taxa) != ntax
+        @warn "Taxa list length ($(length(taxa))) and ntax ($ntax) do not match"
+    end
+    @info "$ntax taxa"
+
+    token, state = nextskip(tokens, state)
+    if !checktosemi(isEND, token, state, tokens)
+        tokenerror(token, "End;")
+    end
+    return nextskip(tokens, state)
+end
+
+function parsetrees(token, state, tokens,
+                    ::Type{TREE}, taxa) where TREE <: AbstractBranchTree{String, Int}
+    notaxa = isempty(taxa)
+    if isTRANSLATE(token)
+        token, state = nextskip(tokens, state)
+        while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
+            short = untokenize(token)
+            token, state = nextskip(tokens, state)
+            proper = untokenize(token)
+            token, state = nextskip(tokens, state)
+            if haskey(taxa, proper)
+                delete!(taxa, proper)
+                taxa[short] = proper
+            elseif notaxa
+                @info "Found a '$short' => '$proper' link without a taxa entry first"
+                taxa[short] = proper
+            else
+                @warn "Missing '$proper' in taxa block, but in 'trees -> translate' block"
+            end
+            if token.kind == T.COMMA
+                token, state = nextskip(tokens, state)
+            end
+        end
+    end
+
+    token, state = nextskip(tokens, state)
+    trees = Dict{String, TREE}()
+    treedata = Dict{String, Dict{String, Any}}()
+    while isTREE(token)
+        token, state = nextskip(tokens, state)
+        token, state, treename = tokensgetkey(token, state, tokens,
+                                              t -> t.kind ∈ [T.LSQUARE, T.EQ])
+        trees[treename] = TREE()
+        addnodes!(trees[treename], collect(values(taxa)))
+        if token.kind == T.LSQUARE
+            token, state, treedata[treename] = parsedict(token, state, tokens)
+            token, state = nextskip(tokens, state)
+        end
+        if !isEQ(token)
+            tokenerror(token, "=")
+        else
+            token, state = nextskip(tokens, state)
+            if token.kind == T.LSQUARE
+                token, state, _ = parsedict(token, state, tokens)
+                token, state = nextskip(tokens, state)
+            end
+        end
+        if token.kind != T.LPAREN
+            tokenerror(token, "(")
+        else
+            token, state = parsenewick(token, state, tokens, trees[treename], taxa)
+        end
+    end
+    if !checktosemi(isEND, token, state, tokens)
+        tokenerror(token, "End;")
+    end
+
+    token, state = nextskip(tokens, state)
+    return token, state, trees, treedata
+end
+
+function parsenexus(token, state, tokens,
+                    ::Type{TREE}) where {NL, BL,
+                                         TREE <: AbstractBranchTree{NL, BL}}
+    trees = missing
+    treedata = missing
+    taxa = Dict{NL, NL}()
+    while isBEGIN(token)
+        token, state = nextskip(tokens, state)
+        if checktosemi(isTAXA, token, state, tokens)
+            token, state = nextskip(tokens, state)
+            token, state = parsetaxa(token, state, tokens, taxa)
+        elseif checktosemi(isTREES, token, state, tokens)
+            token, state = nextskip(tokens, state)
+            token, state, trees, treedata = parsetrees(token, state, tokens, TREE, taxa)
+        else
+            warn("Unexpected nexus block '$(untokenize(token))', skipping...")
+            token, state = nextskip(tokens, state)
+            while !checktosemi(isEND, token, state, tokens) && token.kind != T.ENDMARKER
+                token, state = nextskip(tokens, state)
+            end
+        end
+    end
+    
+    if token.kind != T.ENDMARKER
+        tokenerror(token, "end of file")
+    end
+    return trees, treedata
+end
+
+function parsenexus(tokens::Tokenize.Lexers.Lexer,
+                    ::Type{TREE}) where TREE <: AbstractBranchTree{String, Int}
+    token, state = nextskip(tokens, start(tokens))
+    if token.kind == T.COMMENT && lowercase(untokenize(token)) == "#nexus"
+        token, state = nextskip(tokens, token)
+        return parsenexus(token, state, tokens, TREE)
+    else
+        error("Unexpected $(token.kind) token '$(untokenize(token))' " *
+              "at start of nexus file")
+    end
+end
+
+parsenexus(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractBranchTree =
+    parsenexus(tokenize(io), TREE)
+
+function parsenexus(ios::IOStream, ::Type{TREE}) where TREE <: AbstractBranchTree
+    buf = IOBuffer()
+    print(buf, read(ios, String))
+    seek(buf, 0)
+    return parsenexus(buf, TREE)
+end
+
+parsenexus(inp) = parsenexus(inp, NamedTree)
