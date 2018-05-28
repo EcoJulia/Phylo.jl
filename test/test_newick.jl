@@ -8,15 +8,19 @@ using Compat.Test
     @test ["where", "when it's good", "Not mine", "MyLeaf"] ⊆
         nodenameiter(parsenewick("""((MyLeaf,"when it's good"),
                                      ('Not mine',where));"""))
-    tree = parsenewick("((MyLeaf:4.0,)Parent,(,));")
+    tree = parsenewick("((MyLeaf[&Real=23,'Not real'={5,4}]:4.0,)Parent,(,));")
     branches = branchfilter(tree) do branch
         return src(branch) == "Parent" && dst(branch) == "MyLeaf"
     end
     @test length(branches) == 1
     @test getlength(first(branches)) ≈ 4.0
+    @test getnoderecord(tree, "MyLeaf")["Real"] == 23
+    @test 5 ∈ getnoderecord(tree, "MyLeaf")["Not real"]
+    @test 4 ∈ getnoderecord(tree, "MyLeaf")["Not real"]
     @test_throws ErrorException parsenewick("((,),(,)));")
     @test_throws ErrorException parsenewick("((,),(,))")
     @test_throws ErrorException parsenewick("((,),(,);")
+    @test_throws ErrorException parsenewick("((MyLeaf:-4.0,)Parent,(,));")
 end
 
 @testset "A few simple polytomous trees" begin
