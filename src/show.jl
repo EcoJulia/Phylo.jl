@@ -92,6 +92,14 @@ end
 
 function show(io::IO, object::AbstractTree)
     print(io, "Phylogenetic tree with $(length(_getnodes(object))) nodes and $(length(_getbranches(object))) branches")
+function show(io::IO, object::TreeSet)
+    @printf(io, "PhyloSet with %d trees\n", ntrees(object))
+end
+
+function showall(io::IO, object::TreeSet)
+    show(io, object)
+    println(io, "Trees:")
+    foreach(t -> println(io, t), treenameiter(object))
 end
 
 function showall(io::IO, object::AbstractTree)

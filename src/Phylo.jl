@@ -13,7 +13,7 @@ a simple phylogenetics type.
 """
 module Phylo
 
-import Base: Pair, Tuple, show, showall, start, next, done, eltype, length
+import Base: Pair, Tuple, show, showall, start, next, done, eltype, length, getindex
 import Compat: IteratorSize, IteratorEltype
 
 abstract type AbstractNode end
@@ -110,6 +110,10 @@ export distance, distances, heighttoroot, heightstoroot
 include("Iterators.jl")
 export nodeiter, nodefilter, nodenameiter, nodenamefilter,
     branchiter, branchfilter, branchnameiter, branchnamefilter
+
+# A set of multiple trees
+include("TreeSet.jl")
+export TreeSet, treeiter, treenameiter, treeinfoiter
 
 # Random tree generator
 include("rand.jl")

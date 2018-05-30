@@ -425,7 +425,7 @@ function parsenexus(token, state, tokens,
     if token.kind != T.ENDMARKER
         tokenerror(token, "end of file")
     end
-    return trees, treedata
+    return TreeSet(trees, treedata)
 end
 
 function parsenexus(tokens::Tokenize.Lexers.Lexer,
