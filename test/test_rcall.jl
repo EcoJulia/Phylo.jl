@@ -70,7 +70,7 @@ if Rinstalled
                 @rput rt
                 @test rcopy(rcall(Symbol("all.equal"), rt, jt3))
             end
-            
+
             @testset "Testing with julia rand(Nonultrametric($i))" for i in 5:5:50
                 jt = rand(Nonultrametric(i))
                 rt = RObject(jt)
@@ -88,9 +88,9 @@ if Rinstalled
             end
 
             @testset "Testing reading in nexus trees from disk" begin
-                jtrees, jtreedata = open(parsenexus, "H1N1.trees")
+                jts = open(parsenexus, "H1N1.trees")
                 rtree1 = R"read.nexus('H1N1.trees')$TREE1"
-                jtree1 = jtrees["TREE1"]
+                jtree1 = jts["TREE1"]
                 @test rcopy(rcall(Symbol("all.equal"), jtree1, rtree1))
             end
         end
