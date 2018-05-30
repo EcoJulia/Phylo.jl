@@ -74,7 +74,7 @@ function parsevector(token, state, tokens, ::Type{TY}, sgn) where TY <: Real
             token, state = nextskip(tokens, state)
         end
     end
-    
+
     return token, state, vec
 end
 
@@ -87,8 +87,8 @@ function parsevector(token, state, tokens)
         token, state = nextskip(tokens, state)
     elseif token.kind == T.PLUS
         token, state = nextskip(tokens, state)
-    end        
-    
+    end
+
     if token.kind == T.INTEGER
         return parsevector(token, state, tokens, Int, sgn)
     elseif token.kind == T.FLOAT
@@ -109,7 +109,7 @@ function parsevector(token, state, tokens)
             token, state = nextskip(tokens, state)
         end
     end
-    
+
     return token, state, vec
 end
 
@@ -121,7 +121,7 @@ function parsedict(token, state, tokens)
     else
         token, state = nextskip(tokens, state)
     end
-    
+
     while token.kind != T.RSQUARE && token.kind != T.ENDMARKER
         token, state, key = tokensgetkey(token, state, tokens, isEQorRSQUARE)
         if token.kind != T.RSQUARE # Allow [&R] as a valid (empty) dict
@@ -149,7 +149,7 @@ function parsedict(token, state, tokens)
                 end
             end
             dict[key] = value
-            
+
             token, state = nextskip(tokens, state)
             if token.kind != T.COMMA && token.kind != T.RSQUARE
                 tokenerror(token, ", or ]")
@@ -158,7 +158,7 @@ function parsedict(token, state, tokens)
             end
         end
     end
-    
+
     if token.kind == T.RSQUARE
         token, state = nextskip(tokens, state)
     end
@@ -421,7 +421,7 @@ function parsenexus(token, state, tokens,
             end
         end
     end
-    
+
     if token.kind != T.ENDMARKER
         tokenerror(token, "end of file")
     end
