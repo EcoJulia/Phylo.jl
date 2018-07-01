@@ -16,5 +16,10 @@ using Compat.Test
     for tree in treeiter(ts)
         @test length(getnodenames(tree)) == 19
     end
+    for tree in ts
+        @test length(getbranchnames(tree)) == 18
+    end
+    @test getleafnames(TreeSet(Dict{String, NamedTree}(), Dict{String, Any}())) == String[]
+    @test getbranchnames(TreeSet(Dict{String, NamedTree}(), Dict{String, Any}())) == Int[]
 end
 end

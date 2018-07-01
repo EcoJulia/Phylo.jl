@@ -110,7 +110,7 @@ function _getbranchnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree
     if length(lns) > 1
         error("Inconsistent branch names in TreeSet")
     elseif isempty(lns)
-        return NL[]
+        return BL[]
     end
     return _getbranchnames(first(ts.trees)[2])
 end
