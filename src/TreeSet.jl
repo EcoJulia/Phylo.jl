@@ -33,7 +33,7 @@ struct TreeIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
 end
 treeiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
                     TREESET <: TreeSet{LABEL, NL, BL, TREE}} =
-    TreeIterator{NL, BL, TREE, TREESET}(ts)
+    TreeIterator{LABEL, NL, BL, TREE, TREESET}(ts)
 
 struct TreeNameIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
                     TREESET <: TreeSet{LABEL, NL, BL, TREE}} <: AbstractTreeIterator{TREE}
@@ -41,7 +41,7 @@ struct TreeNameIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
 end
 treenameiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
                     TREESET <: TreeSet{LABEL, NL, BL, TREE}} =
-    TreeNameIterator{NL, BL, TREE, TREESET}(ts)
+    TreeNameIterator{LABEL, NL, BL, TREE, TREESET}(ts)
 
 struct TreeInfoIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
                     TREESET <: TreeSet{LABEL, NL, BL, TREE}} <: AbstractTreeIterator{TREE}
@@ -49,7 +49,7 @@ struct TreeInfoIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
 end
 treeinfoiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
                     TREESET <: TreeSet{LABEL, NL, BL, TREE}} =
-    TreeInfoIterator{NL, BL, TREE, TREESET}(ts)
+    TreeInfoIterator{LABEL, NL, BL, TREE, TREESET}(ts)
 
 eltype(::TreeSet{LABEL, NL, BL, TREE}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}} = TREE
 eltype(::TreeIterator{LABEL, NL, BL, TREE, TREESET}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}} = TREE
