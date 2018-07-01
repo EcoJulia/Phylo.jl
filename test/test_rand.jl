@@ -12,6 +12,7 @@ using Compat.Test
     # Create a tree with named tips
     species = ["Dog", "Cat", "Human"]
     t = rand(Nonultrametric(species))
+    @test ntrees(t) == 1
     @test validate(t)
     @test Set(getleafnames(t)) == Set(species)
 
@@ -32,6 +33,7 @@ end
     @test validate(rand(u))
     @test Set(getleafnames(rand(u))) == Set(getleafnames(rand(u)))
     tree = rand(u)
+    @test ntrees(tree) == 1
     heights = map(x -> getheight(tree, x), getleafnames(tree))
     @test all(h -> h ≈ heights[1], heights)
     species = ["Dog", "Cat", "Human"]
@@ -47,10 +49,12 @@ end
 end
 
 @testset "TestSets" begin
+    @test ntrees(rand(Ultrametric(10), 10)) == 10
     @test length(rand(Ultrametric(10), 10)) == 10
     names = ["One", "Two", "Three"]
     ts = rand(Nonultrametric(names), 20)
     @test length(ts) == 20
+    @test ntrees(ts) == 20
     @test length(getleafnames(ts)) == length(names)
     @test length(getnodenames(ts)) == length(names) * 2 - 1
 end

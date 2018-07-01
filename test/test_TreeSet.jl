@@ -7,11 +7,14 @@ using Compat.Test
     @test length(rand(Ultrametric(10), 10)) ==
         length(rand(Nonultrametric(10), 10))
     ts = rand(Ultrametric(10), 1:10)
+    @test ntrees(ts) == 10
+    @test length(getbranchnames(ts)) == 18
     for name in treenameiter(ts)
+        @test name ∈ 1:10
         @test length(getleafnames(ts[name])) == 10
     end
     for tree in treeiter(ts)
-        @test length(getleafnames(tree)) == 10
+        @test length(getnodenames(tree)) == 19
     end
 end
 end
