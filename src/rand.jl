@@ -25,11 +25,11 @@ struct Nonultrametric{T <: AbstractTree,
     n::Int
     tiplabels::Vector{String}
     rng::RNG
-    
+
     function Nonultrametric{T, RNG}(n::Int, rng::RNG) where {T, RNG}
         return new{T, RNG}(n, map(i -> "tip $i", 1:n), rng)
     end
-    
+
     function Nonultrametric{T, RNG}(tiplabels::Vector{String}, rng::RNG) where {T, RNG}
         return new{T, RNG}(length(tiplabels), tiplabels, rng)
     end
@@ -79,11 +79,11 @@ struct Ultrametric{T <: AbstractTree,
     n::Int
     tiplabels::Vector{String}
     rng::RNG
-    
+
     function Ultrametric{T, RNG}(n::Int, rng::RNG) where {T, RNG}
         return new{T, RNG}(n, map(i -> "tip $i", 1:n), rng)
     end
-    
+
     function Ultrametric{T, RNG}(tiplabels::Vector{String}, rng::RNG) where {T, RNG}
         return new{T, RNG}(length(tiplabels), tiplabels, rng)
     end
@@ -121,4 +121,20 @@ function rand(t::Ultrametric{T, RNG}) where {T, RNG}
         roots = nodenamefilter(isroot, tree)
     end
     return tree
+end
+
+function rand(s::S, treenames) where
+    {TREE <: AbstractTree,
+     S <: Sampleable{Univariate, Phylogenetics{TREE}}}
+    trees = Dict{eltype(treenames), TREE}()
+    for name in treenames
+        trees[name] = rand(s)
+    end
+    return TreeSet(trees, Dict{String, Dict{String, Any}}())
+end
+
+function rand(s::S, n::Int64) where
+    {TREE <: AbstractTree,
+     S <: Sampleable{Univariate, Phylogenetics{TREE}}}
+    return rand(s, 1:n)
 end
