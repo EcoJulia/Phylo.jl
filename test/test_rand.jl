@@ -45,4 +45,13 @@ end
     @test eltype(ul) == BinaryTree{LeafInfo, Vector{Float64}}
     @test length(nodefilter(isinternal, u2)) == numnodes - 2
 end
+
+@testset "TestSets" begin
+    @test length(rand(Ultrametric(10), 10)) == 10
+    names = ["One", "Two", "Three"]
+    ts = rand(Nonultrametric(names), 20)
+    @test length(ts) == 20
+    @test length(getleafnames(ts)) == length(names)
+    @test length(getnodenames(ts)) == length(names) * 2 - 1
+end
 end
