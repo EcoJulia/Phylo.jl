@@ -133,7 +133,7 @@ function rand(s::S, treenames) where
     return TreeSet(trees, Dict{String, Dict{String, Any}}())
 end
 
-function rand(s::S, n::Int64) where
+function rand(s::S, n::Int) where
     {TREE <: AbstractTree,
      S <: Sampleable{Univariate, Phylogenetics{TREE}}}
     return rand(s, 1:n)
