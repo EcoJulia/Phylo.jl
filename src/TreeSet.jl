@@ -3,6 +3,7 @@ import Base.start, Base.next, Base.done, Base.getindex
 import Compat.IteratorSize, Base.length, Compat.IteratorEltype, Base.eltype
 
 import Phylo.API: _nodetype, _branchtype
+import Phylo.API: _getnodenames, _getbranchnames, _getleafnames
 
 mutable struct TreeSet{LABEL, NL, BL, TREE <: AbstractTree{NL, BL}} <: AbstractTree{NL, BL}
     trees::Dict{LABEL, TREE}
@@ -83,3 +84,33 @@ done(ti::TreeNameIterator, state) = done(keys(ti.ts.trees), state)
 done(ti::TreeInfoIterator, state) = done(ti.ts.treeinfo, state)
 
 getindex(ts::TreeSet, idx) = ts.trees[idx]
+
+function _getleafnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
+    lns = unique(map(t -> Set(_getleafnames(t)), values(ts.trees)))
+    if length(lns) > 1
+        error("Inconsistent leaf names in TreeSet")
+    elseif isempty(lns)
+        return NL[]
+    end
+    return _getleafnames(first(ts.trees)[2])
+end
+
+function _getnodenames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
+    lns = unique(map(t -> Set(_getnodenames(t)), values(ts.trees)))
+    if length(lns) > 1
+        error("Inconsistent node names in TreeSet")
+    elseif isempty(lns)
+        return NL[]
+    end
+    return _getnodenames(first(ts.trees)[2])
+end
+
+function _getbranchnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
+    lns = unique(map(t -> Set(_getbranchnames(t)), values(ts.trees)))
+    if length(lns) > 1
+        error("Inconsistent branch names in TreeSet")
+    elseif isempty(lns)
+        return NL[]
+    end
+    return _getbranchnames(first(ts.trees)[2])
+end
