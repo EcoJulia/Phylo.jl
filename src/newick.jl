@@ -1,5 +1,4 @@
-using Compat.@warn
-using Compat.@info
+using Compat: @warn, @info
 using Tokenize
 using Tokenize.Lexers
 using Missings

@@ -2,11 +2,12 @@ module TestShow
 
 using Phylo
 using Compat.Test
+using Compat: @info
 
-info("""
+@info """
 These tests only check that the show() and showall() commands
 do not give warnings or errors, not that they are correct!
-""")
+"""
 
 ntips = 10
 a = IOBuffer()
