@@ -20,8 +20,7 @@ abstract type AbstractNode end
 abstract type AbstractBranch end
 abstract type AbstractTree{NodeLabel, BranchLabel} end
 abstract type AbstractBranchTree{NL, BL} <: AbstractTree{NL, BL} end
-abstract type AbstractInfo end
-export AbstractNode, AbstractBranch, AbstractTree, AbstractInfo
+export AbstractNode, AbstractBranch, AbstractTree
 
 """
     Phylo.API submodule
@@ -41,7 +40,8 @@ export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _nodetype, _branchtype
 export _extractnode, _extractbranch
 export _extractnodename, _extractbranchname
-export _getleafinfo, _setleafinfo!, _getnoderecord, _setnoderecord!
+export _getleafinfo, _setleafinfo!, _leafinfotype
+export _getnoderecord, _setnoderecord!
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
@@ -80,7 +80,8 @@ export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
 export getleafnames, resetleaves
-export getleafinfo, setleafinfo!, getnoderecord, setnoderecord!
+export getleafinfo, setleafinfo!, leafinfotype
+export getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods

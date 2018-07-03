@@ -1,3 +1,6 @@
+using IterableTables
+using Query
+
 """
     getinternalnodes(t::AbstractTree)
 Function to retrieve only the internal nodes from a tree, `t`, which does not
@@ -51,7 +54,12 @@ function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, 
     if length(getchildren(t, root)) < 2
         deletenode!(t, root)
     end
-    map(x -> delete!(t.leafinfos, x), tips)
+    li = @from line in getleafinfo(t) begin
+             @where line[1] ∉ tips
+             @select line
+             @collect leafinfotype(t)
+         end
+    setleafinfo!(t, li)
     return tips
 end
 

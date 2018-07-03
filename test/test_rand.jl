@@ -1,6 +1,8 @@
 module TestRand
 
 using Phylo
+using DataFrames
+
 using Compat.Test
 
 @testset "Nonultrametric()" begin
@@ -16,9 +18,9 @@ using Compat.Test
     @test validate(t)
     @test Set(getleafnames(t)) == Set(species)
 
-    t2 = rand(Nonultrametric{BinaryTree{LeafInfo, Vector{Float64}}}(species))
+    t2 = rand(Nonultrametric{BinaryTree{DataFrame, Vector{Float64}}}(species))
     @test length(getnoderecord(t2, species[1])) == 0
-    t3 = rand(Nonultrametric{BinaryTree{LeafInfo, Vector{String}}}(species))
+    t3 = rand(Nonultrametric{BinaryTree{DataFrame, Vector{String}}}(species))
     map(nodenameiter(t3)) do name
         setnoderecord!(t3, name, nodehistory(t3, name))
     end
@@ -42,9 +44,9 @@ end
     @test Set(getleafnames(t)) == Set(species)
 
     numnodes = 50
-    ul = Ultrametric{BinaryTree{LeafInfo, Vector{Float64}}}(numnodes)
+    ul = Ultrametric{BinaryTree{DataFrame, Vector{Float64}}}(numnodes)
     u2 = rand(ul)
-    @test eltype(ul) == BinaryTree{LeafInfo, Vector{Float64}}
+    @test eltype(ul) == BinaryTree{DataFrame, Vector{Float64}}
     @test length(nodefilter(isinternal, u2)) == numnodes - 2
 end
 

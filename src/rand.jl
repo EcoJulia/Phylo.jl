@@ -49,7 +49,7 @@ Nonultrametric(tiplabels::Vector{String}) = Nonultrametric{NamedTree}(tiplabels)
 
 function rand(t::Nonultrametric{T, RNG}) where {T, RNG}
     t.n >= 2 || error("A tree must have at least 2 tips")
-    tree = T(t.tiplabels)
+    tree = T(t.tiplabels; rootheight = 0.0)
     roots = nodenamefilter(isroot, tree)
     while length(roots) > 1
         children = sample(collect(roots), 2, replace=false)
@@ -103,7 +103,7 @@ Ultrametric(tiplabels::Vector{String}) = Ultrametric{NamedTree}(tiplabels)
 
 function rand(t::Ultrametric{T, RNG}) where {T, RNG}
     t.n >= 2 || error("A tree must have at least 2 tips")
-    tree = T(t.tiplabels)
+    tree = T(t.tiplabels; rootheight = 0.0)
     roots = nodenamefilter(isroot, tree)
     depth = zero(rand(t.rng))
     leaves = getleafnames(tree)

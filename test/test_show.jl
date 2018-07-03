@@ -1,6 +1,8 @@
 module TestShow
 
 using Phylo
+using DataFrames
+
 using Compat.Test
 using Compat: @info
 
@@ -19,7 +21,7 @@ a = IOBuffer()
     @test_nowarn show(a, first(branchiter(nt)))
     @test_nowarn show(a, first(nodenameiter(nt)) => first(nodeiter(nt)))
     @test_nowarn show(a, first(branchnameiter(nt)) => first(nodeiter(nt)))
-    bt = rand(Nonultrametric{BinaryTree{LeafInfo, Vector{String}}}(ntips))
+    bt = rand(Nonultrametric{BinaryTree{DataFrame, Vector{String}}}(ntips))
     @test_nowarn show(a, bt)
     @test_nowarn showall(a, bt)
     @test_nowarn show(a, first(nodeiter(bt)))
