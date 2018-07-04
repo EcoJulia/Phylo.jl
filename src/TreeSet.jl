@@ -113,7 +113,7 @@ function _nleaves(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL
     if length(nls) > 1
         error("Inconsistent leafinfo in TreeSet")
     elseif isempty(nls)
-        return eltype(nls)()
+        return 0
     end
     return first(nls)
 end

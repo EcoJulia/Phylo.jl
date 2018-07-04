@@ -31,7 +31,7 @@ _nleaves(tree::BinaryTree{LI, ND}) where {LI, ND} =
     length(nodefilter(_isleaf, tree))
 
 function BinaryTree(lt::BinaryTree{LI, ND};
-                    copyinfo=true, empty=true) where {LI, ND}
+                    copyinfo=false, empty=true) where {LI, ND}
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
@@ -210,7 +210,7 @@ _nleaves(tree::PolytomousTree{LI, ND}) where {LI, ND} =
     length(nodefilter(_isleaf, tree))
 
 function PolytomousTree(lt::PolytomousTree{LI, ND};
-                        copyinfo=true, empty=true) where {LI, ND}
+                        copyinfo=false, empty=true) where {LI, ND}
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
