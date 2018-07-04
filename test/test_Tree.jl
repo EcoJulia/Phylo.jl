@@ -48,6 +48,7 @@ jdb = table(@NT(species = observations, count = 1:4))
     @test_throws ErrorException PolytomousTree(np)
     @test getleafnames(nb) ⊆ getleafnames(np)
     @test getleafinfo(BinaryTree(df)) == df
+    @test getleafinfo(PolytomousTree(df)) == df
 end
 
 @testset "BinaryTree()" begin
@@ -106,6 +107,13 @@ end
         @collect
     end
     @test sum(counts) == 2
+
+    counts = @from line in getleafinfo(tdf, "Dog") begin
+        @select line.count
+        @collect
+    end
+    @test sum(counts) == 10
+
 end
 
 end

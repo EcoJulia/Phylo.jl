@@ -16,7 +16,7 @@ jdb = table(@NT(species = observations, count = [1, 2, 3, 4]))
     @test length(rand(Ultrametric(ntips), 10)) ==
         length(rand(Nonultrametric(ntips), 10))
     ts = rand(Ultrametric(ntips), 1:10)
-    @test ntrees(ts) == 10
+    @test length(treeiter(ts)) == length(treenameiter(ts)) == ntrees(ts) == 10
     @test length(getbranchnames(ts)) == ntips * 2 - 2
     for name in treenameiter(ts)
         @test name ∈ 1:10
@@ -25,6 +25,7 @@ jdb = table(@NT(species = observations, count = [1, 2, 3, 4]))
     for tree in treeiter(ts)
         @test length(getnodenames(tree)) == ntips * 2 - 1
     end
+
     for tree in ts
         @test length(getbranchnames(tree)) == ntips * 2 - 2
         @test nleaves(tree) == ntips

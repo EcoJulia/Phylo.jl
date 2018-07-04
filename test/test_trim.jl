@@ -1,8 +1,14 @@
 module TestTrim
 
 using Phylo
+using DataFrames
+using JuliaDB
+using IterableTables: getiterator
 using Compat.Test
 
+species = ["Dog", "Cat", "Human"]
+ntips = 10
+df = DataFrame(species = species, count=[10, 20, 3])
 @testset "getinternalnodes()" begin
     # Create a 10 tip tree
     test_tree = rand(Ultrametric(10))
@@ -28,6 +34,10 @@ end
     @test Set(tips) == Set(tips2)
     @test validate(test_tree)
     @test validate(test_tree2)
+
+    tdf = rand(Ultrametric(df))
+    @test ["Dog"] == droptips!(tdf, ["Dog"])
+    @test length(getiterator(getleafinfo(tdf))) == 2
 end
 
 end
