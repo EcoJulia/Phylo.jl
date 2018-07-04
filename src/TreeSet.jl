@@ -86,31 +86,51 @@ done(ti::TreeInfoIterator, state) = done(ti.ts.treeinfo, state)
 getindex(ts::TreeSet, idx) = ts.trees[idx]
 
 function _getleafnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
-    lns = unique(map(t -> Set(_getleafnames(t)), values(ts.trees)))
+    lns = unique(map(t -> _getleafnames(t), values(ts.trees)))
     if length(lns) > 1
         error("Inconsistent leaf names in TreeSet")
     elseif isempty(lns)
         return NL[]
     end
-    return _getleafnames(first(ts.trees)[2])
+    return first(lns)
 end
 
 function _getnodenames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
-    lns = unique(map(t -> Set(_getnodenames(t)), values(ts.trees)))
-    if length(lns) > 1
+    nns = unique(map(t -> _getnodenames(t), values(ts.trees)))
+    if length(nns) > 1
         error("Inconsistent node names in TreeSet")
-    elseif isempty(lns)
+    elseif isempty(nns)
         return NL[]
     end
-    return _getnodenames(first(ts.trees)[2])
+    return first(nns)
 end
 
 function _getbranchnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
-    lns = unique(map(t -> Set(_getbranchnames(t)), values(ts.trees)))
-    if length(lns) > 1
+    bns = unique(map(t -> _getbranchnames(t), values(ts.trees)))
+    if length(bns) > 1
         error("Inconsistent branch names in TreeSet")
-    elseif isempty(lns)
+    elseif isempty(bns)
         return BL[]
     end
-    return _getbranchnames(first(ts.trees)[2])
+    return first(bns)
+end
+
+function _getleafinfo(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
+    lis = unique(map(t -> _getleafinfo(t), values(ts.trees)))
+    if length(lis) > 1
+        error("Inconsistent leafinfo in TreeSet")
+    elseif isempty(lis)
+        return eltype(lis)()
+    end
+    return first(lis)
+end
+
+function _nleaves(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
+    nls = unique(map(t -> _nleaves(t), values(ts.trees)))
+    if length(nls) > 1
+        error("Inconsistent leafinfo in TreeSet")
+    elseif isempty(nls)
+        return eltype(nls)()
+    end
+    return first(nls)
 end
