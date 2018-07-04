@@ -18,8 +18,8 @@ julia> Pkg.add("Phylo")
 ## Project Status
 
 The package is tested against the current Julia `0.6` release, and
-`nightly` on Linux, OS X, and Windows. It is currently broken on
-nightly due to other package failures, but this will (hopefully!) be fixed soon...
+`nightly` (0.7-beta) on Linux, OS X, and Windows. It is currently broken on
+0.7-beta, probably due to other package failures, but this will (hopefully!) be fixed soon...
 
 ## Contributing and Questions
 
@@ -36,9 +36,9 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
  [raise an issue][issues-url] if/when you find problems or missing
  functionality - don't assume that I know! Currently the package can
  be used to make trees manually, to generate random trees using the
- framework from `Distributions`, and to read newick format trees from
+ framework from `Distributions`, and to read newick and nexus format trees from
  files. For instance, to construct a sampler for 5 tip non-ultrametric
- trees, and then generate a random tree of that type:
+ trees, and then generate one or two random tree of that type:
 
 ```julia
 julia> using Phylo
@@ -46,9 +46,12 @@ julia> using Phylo
 julia> nu = Nonultrametric(5);
 
 julia> tree = rand(nu)
-NamedTree phylogenetic tree with 9 nodes and 8 branches
+Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes and 8 branches
 Leaf names:
 String["tip 1", "tip 2", "tip 3", "tip 4", "tip 5"]
+
+julia> trees = rand(nu, ["Tree 1", "Tree 2"])
+TreeSet with 2 trees
 ```
 
 The code also provides iterators, and filtered iterators over the
@@ -57,19 +60,28 @@ branches, nodes, branchnames and nodenames of a tree:
 ```julia
 julia> collect(nodeiter(tree))
 9-element Array{Phylo.BinaryNode{Int64},1}:
- [branch 4]-->[leaf node]
- [branch 5]-->[leaf node]
- [branch 2]-->[leaf node]
- [branch 1]-->[leaf node]
  [branch 8]-->[leaf node]
- [branch 3]-->[internal node]-->[branches 1 and 2]
- [branch 6]-->[internal node]-->[branches 3 and 4]
+ [branch 4]-->[leaf node]
+ [branch 3]-->[leaf node]
+ [branch 1]-->[leaf node]
+ [branch 2]-->[leaf node]
+ [branch 6]-->[internal node]-->[branches 1 and 2]
+ [branch 5]-->[internal node]-->[branches 3 and 4]
  [branch 7]-->[internal node]-->[branches 5 and 6]
  [root node]-->[branches 7 and 8]
 
 julia> collect(nodenamefilter(isroot, tree))
 1-element Array{String,1}:
  "Node 4"
+```
+
+TreeSets are iterators themselves
+
+```julia
+julia> collect(trees)
+2-element Array{Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}},1}:
+ Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes (5 leaves) and 8 branches
+ Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes (5 leaves) and 8 branches
 ```
 
 The current main purpose of this package is to provide a framework for
@@ -106,13 +118,15 @@ And it can read nexus trees from files too:
 julia> ts = open(parsenexus, Pkg.dir("Phylo", "test", "H1N1.trees"))
 Info: Created a tree called 'TREE1'
 Info: Created a tree called 'TREE2'
-PhyloSet with 2 trees
+TreeSet with 2 trees
+Tree names:
+String["TREE2", "TREE1"]
 
 
 julia> ts["TREE1"]
-Phylo.BinaryTree{Phylo.LeafInfo,Dict{String,Any}} phylogenetic tree with 1013 nodes and 1012 branches
+Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 1013 nodes and 1012 branches
 Leaf names:
-String["H1N1_A_MIYAGI_3_2000", "H1N1_A_PARMA_6_2008", "H1N1_A_AKITA_86_2002", "H1N1_A_DAKAR_14_1997", "H1N1_A_EGYPT_84_2001", "H1N1_A_NORWAY_69_2004", "H1N1_A_STPETERSBURG_11_2001", "H1N1_A_CAPETOWN_106_2007", "H1N1_A_SWITZERLAND_5773_2001", "H1N1_A_DENMARK_11_2005"  …  "H1N1_A_HONGKONG_1441_2006", "H1N1_A_BUCURESTI_288_2008", "H1N1_A_EGYPT_186_2006", "H1N1_A_HONGKONG_1134_1998", "H1N1_A_NEWCALEDONIA_20_1999", "H1N1_A_POLAND_W1_2001", "H1N1_A_MADRID_G793_1998", "H1N1_A_NORWAY_1730_2007", "H1N1_A_KALININGRAD_7_2008", "H1N1_A_HONGKONG_2070_1999"]
+String["H1N1_A_MIYAGI_3_2000", "H1N1_A_PARMA_6_2008", "H1N1_A_AKITA_86_2002", "H1N1_A_DAKAR_14_1997", "H1N1_A_EGYPT_84_2001", "H1N1_A_NORWAY_69_2004", "H1N1_A_STPETERSBURG_11_2001", "H1N1_A_CAPETOWN_106_2007", "H1N1_A_SWITZERLAND_5773_2001", "H1N1_A_DENMARK_11_2005"  …  "H1N1_A_HONGKONG_1441_2006", "H1N1_A_BUCURESTI_288_2008", "H1N1_A_EGYPT_186_2006", "H1N1_A_HONGKONG_1134_1998", "H1N1_A_NEWCALEDONIA_20_1999", "H1N1_A_POLAND_W1_2001", "H1N1_A_MADRID_G793_1998", "H1N1_A_NORWAY_1730_2007", "H1N1_A_KALININGRAD_7_2008","H1N1_A_HONGKONG_2070_1999"]
 
 julia> collect(treeinfoiter(ts))
 2-element Array{Dict{String,Any},1}:
@@ -156,9 +170,9 @@ Tip labels:
 Rooted; includes branch lengths.
 
 julia> jt = NamedTree(rt)
-NamedTree phylogenetic tree with 19 nodes and 18 branches
+Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 19 nodes and 18 branches
 Leaf names:
-String["t10", "t8", "t1", "t2", "t6", "t5", "t3", "t4", "t7", "t9"]
+String["t2", "t1", "t5", "t9", "t8", "t3", "t4", "t10", "t7", "t6"]
 
 julia> @rput rt;
 

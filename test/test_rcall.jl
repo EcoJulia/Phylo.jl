@@ -92,6 +92,8 @@ if Rinstalled
                 rtree1 = R"read.nexus('H1N1.trees')$TREE1"
                 jtree1 = jts["TREE1"]
                 @test rcopy(rcall(Symbol("all.equal"), jtree1, rtree1))
+                @test "H1N1_A_MIYAGI_3_2000" ∈ nodenameiter(jtree1)
+                @test collect(keys(first(treeinfoiter(jts)))) == ["lnP"]
             end
         end
     end

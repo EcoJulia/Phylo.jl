@@ -100,12 +100,16 @@ end
 
 function show(io::IO, object::TreeSet)
     @printf(io, "TreeSet with %d trees\n", ntrees(object))
+    println(io, "Tree names:")
+    println(io, collect(treenameiter(object)))
 end
 
 function showall(io::IO, object::TreeSet)
     show(io, object)
-    println(io, "Trees:")
-    foreach(t -> println(io, t), treenameiter(object))
+    for name in treenameiter(object)
+        @printf(io, "\n%s: ", name)
+        println(io, object[name])
+    end
 end
 
 function showall(io::IO, object::AbstractTree)
