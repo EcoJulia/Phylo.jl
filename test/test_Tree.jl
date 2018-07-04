@@ -3,13 +3,15 @@ module TestTrees
 using Phylo
 using DataFrames
 using JuliaDB
+using Query
+
 using Compat.Test
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10
-df = DataFrame(species = species, count=[10, 20, 3])
+df = DataFrame(species = species, count = [10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
-jdb = table(@NT(species = observations))
+jdb = table(@NT(species = observations, count = 1:4))
 @testset "NamedTree()" begin
     ntn = NamedTree(ntips)
     @test length(nodefilter(isroot, ntn)) == ntips
@@ -34,12 +36,17 @@ jdb = table(@NT(species = observations))
     @test noderoute(nt, "Human", "Dog") == ["Human", r, n, "Dog"]
     @test branchroute(nt, "Human", "Dog") == [b3, b4, b1]
     nb = BinaryTree(DataFrame(name=["Human", "Cat"]))
+    @test getleafinfo(nb) === getleafinfo(BinaryTree(nb))
+    @test getleafinfo(nb) !== getleafinfo(BinaryTree(nb; copyinfo = true))
     @test_nowarn addnode!(nb, "Dog")
     @test_warn "LeafInfo names do not match actual leaves of tree" !validate(nb) || error("validate() should have returned false")
     np = PolytomousTree(DataFrame(name=["Human", "Cat"]))
+    @test getleafinfo(np) === getleafinfo(PolytomousTree(np))
+    @test getleafinfo(np) !== getleafinfo(PolytomousTree(np; copyinfo = true))
     @test_nowarn addnode!(np, "Dog")
     @test_warn "LeafInfo names do not match actual leaves of tree" !validate(np) || error("validate() should have returned false")
-    @test getleafnames(nb) == getleafnames(np)
+    @test_throws ErrorException PolytomousTree(np)
+    @test getleafnames(nb) ⊆ getleafnames(np)
     @test getleafinfo(BinaryTree(df)) == df
 end
 
@@ -85,7 +92,20 @@ end
 
     tdf = BinaryTree(df)
     @test nleaves(tdf) == 3
-    @test nleaves(BinaryTree(jdb)) == 2
+    tj = BinaryTree(jdb)
+    @test nleaves(tj) == 2
+
+    counts = @from line in getleafinfo(tj, "Dog") begin
+        @select line.count
+        @collect
+    end
+    @test sum(counts) == 8
+
+    counts = @from line in getleafinfo(tj, "Cat") begin
+        @select line.count
+        @collect
+    end
+    @test sum(counts) == 2
 end
 
 end

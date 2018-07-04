@@ -3,13 +3,14 @@ module TestTreeSet
 using Phylo
 using DataFrames
 using JuliaDB
+
 using Compat.Test
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10
 df = DataFrame(species = species, count=[10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
-jdb = table(@NT(species = observations))
+jdb = table(@NT(species = observations, count = [1, 2, 3, 4]))
 
 @testset "TestSet" begin
     @test length(rand(Ultrametric(ntips), 10)) ==
@@ -42,10 +43,13 @@ jdb = table(@NT(species = observations))
     @test getleafinfo(rand(Nonultrametric(df))) == df
     @test getleafinfo(rand(Nonultrametric(jdb), 2)) == jdb
 
+    @test nodetype(ts) == nodetype(ts[1])
+    @test branchtype(ts) == branchtype(ts[1])
     ts0 = rand(Nonultrametric(ntips), 0)
     @test getleafnames(ts0) == String[]
     @test getnodenames(ts0) == String[]
     @test isempty(getbranchnames(ts0))
     @test isempty(getleafinfo(ts0))
+    @test nleaves(ts0) == 0
 end
 end
