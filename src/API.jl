@@ -445,3 +445,4 @@ function _clearrootheight! end
 function _setnode! end
 function _setbranch! end
 function _leafinfotype end
+function _nleaves end

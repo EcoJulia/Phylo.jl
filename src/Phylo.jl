@@ -46,7 +46,7 @@ export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
 export _validate
-export _getleafnames, _resetleaves!
+export _getleafnames, _resetleaves!, _nleaves
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
@@ -79,7 +79,7 @@ export validate
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, resetleaves
+export getleafnames, resetleaves, nleaves
 export getleafinfo, setleafinfo!, leafinfotype
 export getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!

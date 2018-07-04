@@ -675,3 +675,10 @@ Set the node record for a node of the tree.
 function setnoderecord!(tree::AbstractTree, label, value)
     return _setnoderecord!(tree, label, value)
 end
+
+"""
+    nleaves(::AbstractTree)
+
+Count the number of leaves in the tree.
+"""
+nleaves(tree::AbstractTree) = _nleaves(tree)
