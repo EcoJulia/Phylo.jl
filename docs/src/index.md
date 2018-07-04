@@ -9,9 +9,8 @@
  but not released). Both are currently under development, so please
  [raise an issue](https://github.com/richardreeve/Phylo.jl/issues) if you find any problems. Currently the
  package can be used to make trees manually, and to generate random
- trees using the framework from `Distributions`. For instance, to
- construct a sampler for 5 tip non-ultrametric trees, and then
- generate a random tree of that type:
+ trees using the framework from `Distributions`. For instance, to construct a sampler for 5 tip non-ultrametric
+ trees, and then generate one or two random tree of that type:
 
 ```julia
 julia> using Phylo
@@ -19,9 +18,12 @@ julia> using Phylo
 julia> nu = Nonultrametric(5);
 
 julia> tree = rand(nu)
-NamedTree phylogenetic tree with 9 nodes and 8 branches
+Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes and 8 branches
 Leaf names:
 String["tip 1", "tip 2", "tip 3", "tip 4", "tip 5"]
+
+julia> trees = rand(nu, ["Tree 1", "Tree 2"])
+TreeSet with 2 trees
 ```
 
 The code also provides iterators, and filtered iterators over the
@@ -30,13 +32,13 @@ branches, nodes, branchnames and nodenames of a tree:
 ```julia
 julia> collect(nodeiter(tree))
 9-element Array{Phylo.BinaryNode{Int64},1}:
- [branch 4]-->[leaf node]
- [branch 5]-->[leaf node]
- [branch 2]-->[leaf node]
- [branch 1]-->[leaf node]
  [branch 8]-->[leaf node]
- [branch 3]-->[internal node]-->[branches 1 and 2]
- [branch 6]-->[internal node]-->[branches 3 and 4]
+ [branch 4]-->[leaf node]
+ [branch 3]-->[leaf node]
+ [branch 1]-->[leaf node]
+ [branch 2]-->[leaf node]
+ [branch 6]-->[internal node]-->[branches 1 and 2]
+ [branch 5]-->[internal node]-->[branches 3 and 4]
  [branch 7]-->[internal node]-->[branches 5 and 6]
  [root node]-->[branches 7 and 8]
 
@@ -45,12 +47,22 @@ julia> collect(nodenamefilter(isroot, tree))
  "Node 4"
 ```
 
+TreeSets are iterators themselves
+
+```julia
+julia> collect(trees)
+2-element Array{Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}},1}:
+ Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes (5 leaves) and 8 branches
+ Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes (5 leaves) and 8 branches
+```
+
 The current main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity](https://github.com/richardreeve/Diversity.jl) package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
 
-However, it can also read newick trees:
+It can also read newick trees either from
+strings or files:
 
 ```julia
 julia> using Phylo
@@ -67,10 +79,32 @@ Dict{Int64,Phylo.Branch{String}} with 4 entries:
   3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]
   1 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]
 
-julia> open(parsenewick, tree = open(parsenewick, Pkg.dir("Phylo", "test", "h1n1.trees")))
-NamedTree phylogenetic tree with 1013 nodes and 1012 branches
+julia> tree = open(parsenewick, Pkg.dir("Phylo", "test", "H1N1.newick"))
+Phylo.BinaryTree{Phylo.LeafInfo,Dict{String,Any}} phylogenetic tree with 1013 nodes and 1012 branches
 Leaf names:
-String["407", "153", "1", "54", "101", "371", "41", "464", "65", "475"  …  "336", "145", "36", "95", "414", "138", "294", "353", "232", "306"]
+String["44", "429", "294", "295", "227", "14", "106", "104", "174", "331"  …  "384", "173", "300", "442", "215", "480", "477", "478", "30", "418"]
+```
+And it can read nexus trees from files too:
+
+```julia
+julia> ts = open(parsenexus, Pkg.dir("Phylo", "test", "H1N1.trees"))
+Info: Created a tree called 'TREE1'
+Info: Created a tree called 'TREE2'
+TreeSet with 2 trees
+Tree names:
+String["TREE2", "TREE1"]
+
+
+julia> ts["TREE1"]
+Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 1013 nodes and 1012 branches
+Leaf names:
+String["H1N1_A_MIYAGI_3_2000", "H1N1_A_PARMA_6_2008", "H1N1_A_AKITA_86_2002", "H1N1_A_DAKAR_14_1997", "H1N1_A_EGYPT_84_2001", "H1N1_A_NORWAY_69_2004", "H1N1_A_STPETERSBURG_11_2001", "H1N1_A_CAPETOWN_106_2007", "H1N1_A_SWITZERLAND_5773_2001", "H1N1_A_DENMARK_11_2005"  …  "H1N1_A_HONGKONG_1441_2006", "H1N1_A_BUCURESTI_288_2008", "H1N1_A_EGYPT_186_2006", "H1N1_A_HONGKONG_1134_1998", "H1N1_A_NEWCALEDONIA_20_1999", "H1N1_A_POLAND_W1_2001", "H1N1_A_MADRID_G793_1998", "H1N1_A_NORWAY_1730_2007", "H1N1_A_KALININGRAD_7_2008","H1N1_A_HONGKONG_2070_1999"]
+
+julia> collect(treeinfoiter(ts))
+2-element Array{Dict{String,Any},1}:
+ Dict{String,Any}(Pair{String,Any}("lnP", -1.0))
+ Dict{String,Any}(Pair{String,Any}("lnP", 1.0))
+
 ```
 
 And while we wait for me (or kind [contributors](https://github.com/richardreeve/Phylo.jl/pulls)!) to fill out
