@@ -99,7 +99,7 @@ function show(io::IO, object::AbstractTree)
 end
 
 function show(io::IO, object::TreeSet)
-    @printf(io, "PhyloSet with %d trees\n", ntrees(object))
+    @printf(io, "TreeSet with %d trees\n", ntrees(object))
 end
 
 function showall(io::IO, object::TreeSet)
