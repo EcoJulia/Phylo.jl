@@ -1,7 +1,7 @@
 - v0.3
-   - Allow polytomies
-   - Allow TreeSets containing multiple trees
-   - Add in parsenexus() to parse nexus tree files with one or more trees
+  - Allow polytomies
+  - Allow TreeSets containing multiple trees
+  - Add in parsenexus() to parse nexus tree files with one or more trees
   - Switch Void to Nothing and add Compat for Julia 0.6
 - v0.2.1
   - Remove use of Nullable, replace with Union{T, Void}
