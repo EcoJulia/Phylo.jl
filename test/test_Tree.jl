@@ -2,10 +2,14 @@ module TestTrees
 
 using Phylo
 using DataFrames
+using JuliaDB
 using Compat.Test
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10
+df = DataFrame(species = species, count=[10, 20, 3])
+observations = ["Dog", "Cat", "Dog", "Dog"]
+jdb = table(@NT(species = observations))
 @testset "NamedTree()" begin
     ntn = NamedTree(ntips)
     @test length(nodefilter(isroot, ntn)) == ntips
@@ -36,6 +40,7 @@ ntips = 10
     @test_nowarn addnode!(np, "Dog")
     @test_warn "LeafInfo names do not match actual leaves of tree" !validate(np) || error("validate() should have returned false")
     @test getleafnames(nb) == getleafnames(np)
+    @test getleafinfo(BinaryTree(df)) == df
 end
 
 @testset "BinaryTree()" begin
@@ -77,6 +82,9 @@ end
     show(a, nt)
     show(b, nt3)
     @test a.data == b.data
+
+    @test nleaves(BinaryTree(df)) == 3
+    @test nleaves(BinaryTree(jdb)) == 2
 end
 
 end
