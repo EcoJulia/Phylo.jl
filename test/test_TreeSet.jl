@@ -41,5 +41,11 @@ jdb = table(@NT(species = observations))
         length(unique(observations))
     @test getleafinfo(rand(Nonultrametric(df))) == df
     @test getleafinfo(rand(Nonultrametric(jdb), 2)) == jdb
+
+    ts0 = rand(Nonultrametric(ntips), 0)
+    @test getleafnames(ts0) == String[]
+    @test getnodenames(ts0) == String[]
+    @test isempty(getbranchnames(ts0))
+    @test isempty(getleafinfo(ts0))
 end
 end

@@ -43,28 +43,17 @@ treenameiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
                     TREESET <: TreeSet{LABEL, NL, BL, TREE}} =
     TreeNameIterator{LABEL, NL, BL, TREE, TREESET}(ts)
 
-struct TreeInfoIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
-                    TREESET <: TreeSet{LABEL, NL, BL, TREE}} <: AbstractTreeIterator{TREE}
-    ts::TREESET
-end
-treeinfoiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
-                    TREESET <: TreeSet{LABEL, NL, BL, TREE}} =
-    TreeInfoIterator{LABEL, NL, BL, TREE, TREESET}(ts)
-
 eltype(::TreeSet{LABEL, NL, BL, TREE}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}} = TREE
 eltype(::TreeIterator{LABEL, NL, BL, TREE, TREESET}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}} = TREE
 eltype(tni::TreeNameIterator) = eltype(keys(tni.ts.trees))
-eltype(::TreeInfoIterator) = Dict{String, Any}
 
 length(ts::TreeSet) = length(ts.trees)
 length(ti::TreeIterator) = length(ti.ts.trees)
 length(tni::TreeNameIterator) = length(tni.ts.trees)
-length(tii::TreeInfoIterator) = length(tii.ts.treeinfo)
 
 start(ts::TreeSet) = start(treeiter(ts))
 start(ti::TreeIterator) = start(ti.ts.trees)
 start(tni::TreeNameIterator) = start(keys(tni.ts.trees))
-start(tii::TreeInfoIterator) = start(tii.ts.treeinfo)
 
 next(ts::TreeSet, state) = next(treeiter(ts), state)
 function next(ti::TreeIterator, state)
@@ -73,15 +62,9 @@ function next(ti::TreeIterator, state)
 end
 next(tni::TreeNameIterator, state) = next(keys(tni.ts.trees), state)
 
-function next(tii::TreeInfoIterator, state)
-    v, s = next(tii.ts.treeinfo, state)
-    return v[2], s
-end
-
 done(ts::TreeSet, state) = done(treeiter(ts), state)
 done(ti::TreeIterator, state) = done(ti.ts.trees, state)
 done(ti::TreeNameIterator, state) = done(keys(ti.ts.trees), state)
-done(ti::TreeInfoIterator, state) = done(ti.ts.treeinfo, state)
 
 getindex(ts::TreeSet, idx) = ts.trees[idx]
 

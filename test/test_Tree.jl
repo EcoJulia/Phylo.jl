@@ -83,7 +83,8 @@ end
     show(b, nt3)
     @test a.data == b.data
 
-    @test nleaves(BinaryTree(df)) == 3
+    tdf = BinaryTree(df)
+    @test nleaves(tdf) == 3
     @test nleaves(BinaryTree(jdb)) == 2
 end
 

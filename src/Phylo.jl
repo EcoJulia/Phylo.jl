@@ -114,7 +114,7 @@ export nodeiter, nodefilter, nodenameiter, nodenamefilter,
 
 # A set of multiple trees
 include("TreeSet.jl")
-export TreeSet, treeiter, treenameiter, treeinfoiter
+export TreeSet, treeiter, treenameiter
 
 # Random tree generator
 include("rand.jl")
