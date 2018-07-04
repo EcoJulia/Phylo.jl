@@ -9,13 +9,13 @@ filebase = map(file -> replace(file, r"(.*).jl" => s"\1"),
 testbase = map(file -> replace(file, r"test_(.*).jl" => s"\1"),
                 filter(str -> contains(str, r"^test_.*\.jl$"), readdir()))
 
-info("Running tests for files:")
+@info "Running tests for files:"
 for t in testbase
     println("    = $t.jl")
 end
 println()
 
-info("Running tests...")
+@info "Running tests..."
 for t in testbase
     fn = "test_$t.jl"
     println("    * Testing $t.jl ...")

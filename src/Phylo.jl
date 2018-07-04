@@ -13,15 +13,14 @@ a simple phylogenetics type.
 """
 module Phylo
 
-import Base: Pair, Tuple, show, showall, start, next, done, eltype, length
+import Base: Pair, Tuple, show, showall, start, next, done, eltype, length, getindex
 import Compat: IteratorSize, IteratorEltype
 
 abstract type AbstractNode end
 abstract type AbstractBranch end
 abstract type AbstractTree{NodeLabel, BranchLabel} end
 abstract type AbstractBranchTree{NL, BL} <: AbstractTree{NL, BL} end
-abstract type AbstractInfo end
-export AbstractNode, AbstractBranch, AbstractTree, AbstractInfo
+export AbstractNode, AbstractBranch, AbstractTree
 
 """
     Phylo.API submodule
@@ -33,7 +32,7 @@ ignored.
 module API
 include("API.jl")
 # AbstractTree methods
-export _addbranch!, _deletebranch!, _branch!, _setbranch!
+export _ntrees, _addbranch!, _deletebranch!, _branch!, _setbranch!
 export _addnode!, _addnodes!, _deletenode!, _setnode!
 export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _hasbranch, _getbranch, _getbranches
@@ -41,12 +40,13 @@ export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _nodetype, _branchtype
 export _extractnode, _extractbranch
 export _extractnodename, _extractbranchname
-export _getleafinfo, _setleafinfo!, _getnoderecord, _setnoderecord!
+export _getleafinfo, _setleafinfo!, _leafinfotype
+export _getnoderecord, _setnoderecord!
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
 export _validate
-export _getleafnames, _resetleaves!
+export _getleafnames, _resetleaves!, _nleaves
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
@@ -65,7 +65,7 @@ end
 
 include("Interface.jl")
 # AbstractTree methods
-export nodetype, branchtype, nodenametype, branchnametype
+export ntrees, nodetype, branchtype, nodenametype, branchnametype
 export addbranch!, deletebranch!, branch!
 export addnode!, addnodes!, deletenode!
 export getnodenames, hasnode, getnode, getnodes
@@ -79,8 +79,9 @@ export validate
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, resetleaves
-export getleafinfo, setleafinfo!, getnoderecord, setnoderecord!
+export getleafnames, resetleaves, nleaves
+export getleafinfo, setleafinfo!, leafinfotype
+export getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
@@ -110,6 +111,10 @@ export distance, distances, heighttoroot, heightstoroot
 include("Iterators.jl")
 export nodeiter, nodefilter, nodenameiter, nodenamefilter,
     branchiter, branchfilter, branchnameiter, branchnamefilter
+
+# A set of multiple trees
+include("TreeSet.jl")
+export TreeSet, treeiter, treenameiter
 
 # Random tree generator
 include("rand.jl")

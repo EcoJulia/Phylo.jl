@@ -3,6 +3,10 @@ using Phylo.API
 getnodes(tree::AbstractTree) = _getnodes(tree)
 getbranches(tree::AbstractTree) = _getbranches(tree)
 
+function ntrees(tree::AbstractTree)
+    return _ntrees(tree)
+end
+
 # AbstractTree methods
 """
     nodetype(tree::AbstractTree)
@@ -47,7 +51,7 @@ function addbranch!(tree::AbstractTree, source, destination, length::Float64 = N
     destination != source || error("Branch must connect different nodes")
     _hasbranch(tree, branchname) &&
         error("Tree already has a branch called $branchname")
-    
+
     return _addbranch!(tree, source, destination, length, branchname)
 end
 
@@ -78,7 +82,7 @@ function branch!(tree::AbstractTree, source, length::Float64 = NaN;
         error("Node $destination already present in tree")
     _hasoutboundspace(_getnode(tree, source)) ||
         error("Node $source has no space to add branches")
-    
+
     return _branch!(tree, source, length, destination, branchname)
 end
 
@@ -222,13 +226,13 @@ function validate(tree::T) where {NL, BL, T <: AbstractTree{NL, BL}}
             warn("Inbound branches must exactly match Branch labels")
             return false
         end
-        
+
         if Set(mapreduce(_getoutbounds, append!, BL[], nodeiter(tree))) !=
             Set(keys(branches))
             warn("Node outbound branches must exactly match Branch labels")
             return false
         end
-        
+
         if !(mapreduce(_src, push!, NL[], branchiter(tree)) ⊆
              Set(keys(nodes)))
             warn("Branch sources must be node labels")
@@ -241,7 +245,7 @@ function validate(tree::T) where {NL, BL, T <: AbstractTree{NL, BL}}
             return false
         end
     end
-    
+
     return _validate(tree)
 end
 
@@ -467,7 +471,10 @@ Does the node have a height defined?
 function hasheight end
 
 function hasheight(tree::AbstractTree, nodename)
-    return _hasheight(tree, nodename)
+    return _hasheight(tree, nodename) ||
+        (_hasrootheight(tree) &&
+         mapreduce(b -> haslength(tree, b), &, _hasrootheight(tree),
+                   branchhistory(tree, nodename)))
 end
 
 """
@@ -477,7 +484,8 @@ Return the height of the node.
 """
 function getheight(tree::AbstractTree, nodename)
     return _hasheight(tree, nodename) ? _getheight(tree, nodename) :
-        mapreduce(b -> getlength(tree, b), +, 0.0, branchhistory(tree, nodename))
+        mapreduce(b -> getlength(tree, b), +,
+                  getrootheight(tree), branchhistory(tree, nodename))
 end
 
 """
@@ -634,14 +642,20 @@ retrieve the leaf info for a leaf of the tree.
 function getleafinfo(tree::AbstractTree, label)
     return _getleafinfo(tree, label)
 end
+function getleafinfo(tree::AbstractTree)
+    return _getleafinfo(tree)
+end
+function leafinfotype(tree::AbstractTree)
+    return _leafinfotype(tree)
+end
 
 """
-    setleafinfo!(::AbstractTree, label, value)
+    setleafinfo!(::AbstractTree, table)
 
-Set the leaf info for a leaf of the tree.
+Set the leaf info for the leaves of the tree.
 """
-function setleafinfo!(tree::AbstractTree, label, value)
-    return _setleafinfo!(tree, label, value)
+function setleafinfo!(tree::AbstractTree, table)
+    return _setleafinfo!(tree, table)
 end
 
 """
@@ -661,3 +675,10 @@ Set the node record for a node of the tree.
 function setnoderecord!(tree::AbstractTree, label, value)
     return _setnoderecord!(tree, label, value)
 end
+
+"""
+    nleaves(::AbstractTree)
+
+Count the number of leaves in the tree.
+"""
+nleaves(tree::AbstractTree) = _nleaves(tree)

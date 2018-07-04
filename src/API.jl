@@ -16,6 +16,10 @@ function _newlabel(names::Vector{String}, prefix)
     return name
 end
 
+function _ntrees(::AbstractTree)
+    return 1
+end
+
 function _extractnode(::T, node::N) where {T <: AbstractTree, N <: AbstractNode}
     return node
 end
@@ -427,13 +431,18 @@ AbstractBranch subtype.
 """
 function _setdst! end
 
+#  - _getleafnames()
+function _getleafnames(tree::AbstractTree)
+    return collect(nodenamefilter(_isleaf, tree))
+end
 
 function _getleafinfo end
 function _setleafinfo! end
 function _getnoderecord end
 function _setnoderecord! end
-function _getleafnames end
 function _resetleaves! end
 function _clearrootheight! end
 function _setnode! end
 function _setbranch! end
+function _leafinfotype end
+function _nleaves end

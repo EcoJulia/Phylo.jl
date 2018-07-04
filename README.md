@@ -103,21 +103,22 @@ String["44", "429", "294", "295", "227", "14", "106", "104", "174", "331"  …  
 And it can read nexus trees from files too:
 
 ```julia
-julia> using Phylo
-
-julia> trees, treedata = open(parsenexus, Pkg.dir("Phylo", "test", "H1N1.trees"))
+julia> ts = open(parsenexus, Pkg.dir("Phylo", "test", "H1N1.trees"))
 Info: Created a tree called 'TREE1'
 Info: Created a tree called 'TREE2'
-(Dict("TREE2"=>Phylo.BinaryTree{Phylo.LeafInfo,Dict{String,Any}} phylogenetic tree with 1013 nodes (507 leaves) and 1012 branches,"TREE1"=>Phylo.BinaryTree{Phylo.LeafInfo,Dict{String,Any}} phylogenetic tree with 1013 nodes (507 leaves) and 1012 branches), Dict("TREE2"=>Dict{String,Any}(Pair{String,Any}("lnP", -1.0)),"TREE1"=>Dict{String,Any}(Pair{String,Any}("lnP", 1.0))))
+PhyloSet with 2 trees
 
-julia> trees["TREE1"]
+
+julia> ts["TREE1"]
 Phylo.BinaryTree{Phylo.LeafInfo,Dict{String,Any}} phylogenetic tree with 1013 nodes and 1012 branches
 Leaf names:
 String["H1N1_A_MIYAGI_3_2000", "H1N1_A_PARMA_6_2008", "H1N1_A_AKITA_86_2002", "H1N1_A_DAKAR_14_1997", "H1N1_A_EGYPT_84_2001", "H1N1_A_NORWAY_69_2004", "H1N1_A_STPETERSBURG_11_2001", "H1N1_A_CAPETOWN_106_2007", "H1N1_A_SWITZERLAND_5773_2001", "H1N1_A_DENMARK_11_2005"  …  "H1N1_A_HONGKONG_1441_2006", "H1N1_A_BUCURESTI_288_2008", "H1N1_A_EGYPT_186_2006", "H1N1_A_HONGKONG_1134_1998", "H1N1_A_NEWCALEDONIA_20_1999", "H1N1_A_POLAND_W1_2001", "H1N1_A_MADRID_G793_1998", "H1N1_A_NORWAY_1730_2007", "H1N1_A_KALININGRAD_7_2008", "H1N1_A_HONGKONG_2070_1999"]
 
-julia> treedata["TREE2"]
-Dict{String,Any} with 1 entry:
-  "lnP" => -1.0
+julia> collect(treeinfoiter(ts))
+2-element Array{Dict{String,Any},1}:
+ Dict{String,Any}(Pair{String,Any}("lnP", -1.0))
+ Dict{String,Any}(Pair{String,Any}("lnP", 1.0))
+
 ```
 
 And while we wait for me (or kind [contributors][pr-url]!) to fill out

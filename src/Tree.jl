@@ -1,12 +1,15 @@
 using DataStructures
 using Compat
+using IterableTables: getiterator
+using DataFrames
 
 import Phylo.API: _nodetype, _branchtype, _getnodes, _getbranches
 import Phylo.API: _getnodenames, _getbranchnames, _getleafnames
-import Phylo.API: _getleafinfo, _setleafinfo!, _resetleaves!, _getnoderecord, _setnoderecord!
+import Phylo.API: _getleafinfo, _setleafinfo!, _leafinfotype
+import Phylo.API: _resetleaves!, _getnoderecord, _setnoderecord!
 import Phylo.API: _addnode!, _deletenode!, _addbranch!, _deletebranch!, _validate
 import Phylo.API: _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
-import Phylo.API: _hasheight, _getheight, _setheight!, _getnode, _getbranch, _setnode!, _setbranch!
+import Phylo.API: _getnode, _getbranch, _setnode!, _setbranch!, _nleaves
 
 _branchtype(::AbstractBranchTree{NL, BL}) where {NL, BL} = Branch{NL}
 
@@ -15,15 +18,20 @@ _branchtype(::AbstractBranchTree{NL, BL}) where {NL, BL} = Branch{NL}
 
 Binary phylogenetic tree object with known leaves and per node data
 """
-mutable struct BinaryTree{LI <: AbstractInfo, ND} <: AbstractBranchTree{String, Int}
+mutable struct BinaryTree{LI, ND} <: AbstractBranchTree{String, Int}
     nodes::OrderedDict{String, BinaryNode{Int}}
     branches::Dict{Int, Branch{String}}
-    leafinfos::OrderedDict{String, LI}
+    leafinfos::LI
     noderecords::OrderedDict{String, ND}
     rootheight::Float64
 end
 
-function BinaryTree(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true) where {LI, ND}
+_leafinfotype(::BinaryTree{LI, ND}) where {LI, ND} = LI
+_nleaves(tree::BinaryTree{LI, ND}) where {LI, ND} =
+    length(nodefilter(_isleaf, tree))
+
+function BinaryTree(lt::BinaryTree{LI, ND};
+                    copyinfo=false, empty=true) where {LI, ND}
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
@@ -37,16 +45,16 @@ function BinaryTree(lt::BinaryTree{LI, ND}; copyinfo=true, empty=true) where {LI
         noderecords = deepcopy(lt.noderecords)
         branches = deepcopy(getbranches(lt))
     end
-    return BinaryTree{LI, ND}(nodes, branches, leafinfos, noderecords,
-                            lt.rootheight)
+    return BinaryTree{LI, ND}(nodes, branches,
+                              leafinfos, noderecords, lt.rootheight)
 end
 
 function BinaryTree{LI, ND}(leaves::Vector{String},
                             treetype::Type{BinaryTree{LI, ND}} =
                             BinaryTree{LI, ND};
-                            rootheight::Float64 = NaN) where {LI <: AbstractInfo, ND}
+                            rootheight::Float64 = NaN) where {LI, ND}
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
+    leafinfos = LI()
     noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
     return BinaryTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
                               leafinfos, noderecords, rootheight)
@@ -55,49 +63,63 @@ end
 function BinaryTree{LI, ND}(numleaves::Int = 0,
                             treetype::Type{BinaryTree{LI, ND}} =
                             BinaryTree{LI, ND};
-                            rootheight::Float64 = NaN) where {LI <: AbstractInfo, ND}
+                            rootheight::Float64 = NaN) where {LI, ND}
     leaves = map(num -> "Leaf $num", 1:numleaves)
     nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
+    leafinfos = LI()
     noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
     return BinaryTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
                               leafinfos, noderecords, rootheight)
 end
 
+function BinaryTree{LI, ND}(leafinfos::LI; rootheight::Float64 = NaN) where {LI, ND}
+    leafnames = unique(collect(map(info -> info[1], getiterator(leafinfos))))
+    nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leafnames))
+    branches = Dict{Int, Branch{String}}()
+    noderecords = OrderedDict(map(leaf -> leaf => ND(),
+                                  leafnames))
+    return BinaryTree{LI,
+                      Dict{String, Any}}(nodes, branches, leafinfos,
+                                         noderecords, rootheight)
+end
+
+BinaryTree(leafinfos::LI; rootheight::Float64 = NaN) where LI =
+    BinaryTree{LI, Dict{String, Any}}(leafinfos; rootheight = rootheight)
+
 _nodetype(::BinaryTree) = BinaryNode{Int}
 
-function _getnodes(nt::BinaryTree)
-    return nt.nodes
+function _getnodes(bt::BinaryTree)
+    return bt.nodes
 end
 
-function _getbranches(nt::BinaryTree)
-    return nt.branches
+function _getbranches(bt::BinaryTree)
+    return bt.branches
 end
 
-function _getleafnames(nt::BinaryTree)
-    return keys(nt.leafinfos)
+function _getleafinfo(bt::BinaryTree)
+    return bt.leafinfos
 end
 
-function _getleafinfo(nt::BinaryTree, leaf)
-    return nt.leafinfos[leaf]
+function _getleafinfo(bt::BinaryTree, leafname)
+    return Iterators.filter(info -> info[1] == leafname,
+                            getiterator(bt.leafinfos))
 end
 
-function _setleafinfo!(nt::BinaryTree, leaf, value)
-    nt.leafinfos[leaf] = value
+function _setleafinfo!(bt::BinaryTree, info)
+    bt.leafinfos = info
 end
 
 function _resetleaves!(bt::BinaryTree)
-    bt.leafinfos = OrderedDict(map(name -> name => LeafInfo(),
-                                   nodenamefilter(isleaf, bt)))
+    bt.leafinfos = empty!(bt.leafinfos)
     return bt
 end
 
-function _getnoderecord(nt::BinaryTree, nodename)
-    return nt.noderecords[nodename]
+function _getnoderecord(bt::BinaryTree, nodename)
+    return bt.noderecords[nodename]
 end
 
-function _setnoderecord!(nt::BinaryTree, nodename, value)
-    nt.noderecords[nodename] = value
+function _setnoderecord!(bt::BinaryTree, nodename, value)
+    bt.noderecords[nodename] = value
 end
 
 function _addnode!(tree::BinaryTree{LI, NR}, nodename) where {LI, NR}
@@ -122,13 +144,16 @@ function _deletenode!(tree::BinaryTree, nodename)
 end
 
 function _validate(tree::BinaryTree)
-    if Set(nodenamefilter(isleaf, tree)) != Set(getleafnames(tree))
-        warn("Leaf names do not match actual leaves of tree")
-        return false
+    if length(getiterator(tree.leafinfos)) > 0
+        if Set(map(info -> info[1], getiterator(tree.leafinfos))) !=
+            Set(_getleafnames(tree))
+            warn("LeafInfo names do not match actual leaves of tree")
+            return false
+        end
     end
 
-    if Set(nodenamefilter(hasoutboundspace, tree)) !=
-        Set(nodenamefilter(isleaf, tree))
+    if Set(nodenamefilter(_hasoutboundspace, tree)) !=
+        Set(nodenamefilter(_isleaf, tree))
         warn("Nodes must have two or zero outbound connections.")
         return false
     end
@@ -138,18 +163,6 @@ function _validate(tree::BinaryTree)
         return false
     end
 
-    rootheight = hasrootheight(tree) ? getrootheight(tree) : NaN
-    for leaf in getleafnames(tree)
-        if hasheight(tree, leaf)
-            if isnan(rootheight)
-                rootheight = getheight(tree, leaf) - heighttoroot(tree, leaf)
-            end
-            if !(getheight(tree, leaf) - rootheight ≈ heighttoroot(tree, leaf))
-                warn("Leaf height ($(getheight(tree, leaf))) for $leaf does not match branches")
-                return false
-            end
-        end
-    end
     return true
 end
 
@@ -175,7 +188,7 @@ end
 
 Binary phylogenetic tree object with known leaves
 """
-const NamedTree = NamedBinaryTree = BinaryTree{LeafInfo, Dict{String, Any}}
+const NamedTree = NamedBinaryTree = BinaryTree{DataFrame, Dict{String, Any}}
 
 
 
@@ -184,15 +197,20 @@ const NamedTree = NamedBinaryTree = BinaryTree{LeafInfo, Dict{String, Any}}
 
 Phylogenetic tree object with polytomous branching, and known leaves and per node data
 """
-mutable struct PolytomousTree{LI <: AbstractInfo, ND} <: AbstractBranchTree{String, Int}
+mutable struct PolytomousTree{LI, ND} <: AbstractBranchTree{String, Int}
     nodes::OrderedDict{String, Node{Int}}
     branches::Dict{Int, Branch{String}}
-    leafinfos::OrderedDict{String, LI}
+    leafinfos::LI
     noderecords::OrderedDict{String, ND}
     rootheight::Float64
 end
 
-function PolytomousTree(lt::PolytomousTree{LI, ND}; copyinfo=true, empty=true) where {LI, ND}
+_leafinfotype(::PolytomousTree{LI, ND}) where {LI, ND} = LI
+_nleaves(tree::PolytomousTree{LI, ND}) where {LI, ND} =
+    length(nodefilter(_isleaf, tree))
+
+function PolytomousTree(lt::PolytomousTree{LI, ND};
+                        copyinfo=false, empty=true) where {LI, ND}
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
@@ -210,63 +228,78 @@ function PolytomousTree(lt::PolytomousTree{LI, ND}; copyinfo=true, empty=true) w
                             lt.rootheight)
 end
 
+function PolytomousTree{LI, ND}(leafinfos::LI,
+                                treetype::Type{PolytomousTree{LI, ND}} =
+                                PolytomousTree{LI, Dict{String, Any}};
+                                rootheight::Float64 = NaN) where {LI, ND}
+    leafnames = unique(collect(map(info -> info[1], getiterator(leafinfos))))
+    nodes = OrderedDict(map(leaf -> leaf => Node{Int}(), leafnames))
+    branches = Dict{Int, Branch{String}}()
+    noderecords = OrderedDict(map(leaf -> leaf => ND(), leafnames))
+    return PolytomousTree{LI, ND}(nodes, branches,
+                                  leafinfos, noderecords, rootheight)
+end
+
 function PolytomousTree{LI, ND}(leaves::Vector{String},
-                            treetype::Type{PolytomousTree{LI, ND}} =
-                            PolytomousTree{LI, ND};
-                            rootheight::Float64 = NaN) where {LI <: AbstractInfo, ND}
+                                treetype::Type{PolytomousTree{LI, ND}} =
+                                PolytomousTree{LI, ND};
+                                rootheight::Float64 = NaN) where {LI, ND}
     nodes = OrderedDict(map(leaf -> leaf => Node{Int}(), leaves))
-    leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
+    leafinfos = LI()
     noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
     return PolytomousTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
                               leafinfos, noderecords, rootheight)
 end
 
 function PolytomousTree{LI, ND}(numleaves::Int = 0,
-                            treetype::Type{PolytomousTree{LI, ND}} =
-                            PolytomousTree{LI, ND};
-                            rootheight::Float64 = NaN) where {LI <: AbstractInfo, ND}
+                                treetype::Type{PolytomousTree{LI, ND}} =
+                                PolytomousTree{LI, Dict{String, Any}};
+                                rootheight::Float64 = NaN) where {LI, ND}
     leaves = map(num -> "Leaf $num", 1:numleaves)
     nodes = OrderedDict(map(leaf -> leaf => Node{Int}(), leaves))
-    leafinfos = OrderedDict(map(leaf -> leaf => LI(), leaves))
+    leafinfos = LI()
     noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
     return PolytomousTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
-                              leafinfos, noderecords, rootheight)
+                                  leafinfos, noderecords, rootheight)
 end
+
+PolytomousTree(leafinfos::LI; rootheight::Float64 = NaN) where LI =
+    PolytomousTree{LI, Dict{String, Any}}(leafinfos; rootheight = rootheight)
 
 _nodetype(::PolytomousTree) = Node{Int}
 
-function _getnodes(nt::PolytomousTree)
-    return nt.nodes
+function _getnodes(pt::PolytomousTree)
+    return pt.nodes
 end
 
-function _getbranches(nt::PolytomousTree)
-    return nt.branches
+function _getbranches(pt::PolytomousTree)
+    return pt.branches
 end
 
-function _getleafnames(nt::PolytomousTree)
-    return keys(nt.leafinfos)
+function _getleafinfo(pt::PolytomousTree)
+    return pt.leafinfos
 end
 
-function _getleafinfo(nt::PolytomousTree, leaf)
-    return nt.leafinfos[leaf]
+function _getleafinfo(pt::PolytomousTree, leaf)
+    return Iterators.filter(info -> info[1] == leafname,
+        getiterator(pt.leafinfos))
 end
 
-function _setleafinfo!(nt::PolytomousTree, leaf, value)
-    nt.leafinfos[leaf] = value
+function _setleafinfo!(pt::PolytomousTree, info)
+    pt.leafinfos = info
 end
 
-function _resetleaves!(bt::PolytomousTree)
-    bt.leafinfos = OrderedDict(map(name -> name => LeafInfo(),
-                                   nodenamefilter(isleaf, bt)))
-    return bt
+function _resetleaves!(pt::PolytomousTree)
+    pt.leafinfos = empty!(pt.leafinfos)
+    return pt
 end
 
-function _getnoderecord(nt::PolytomousTree, nodename)
-    return nt.noderecords[nodename]
+function _getnoderecord(pt::PolytomousTree, nodename)
+    return pt.noderecords[nodename]
 end
 
-function _setnoderecord!(nt::PolytomousTree, nodename, value)
-    nt.noderecords[nodename] = value
+function _setnoderecord!(pt::PolytomousTree, nodename, value)
+    pt.noderecords[nodename] = value
 end
 
 function _addnode!(tree::PolytomousTree{LI, NR}, nodename) where {LI, NR}
@@ -291,28 +324,18 @@ function _deletenode!(tree::PolytomousTree, nodename)
 end
 
 function _validate(tree::PolytomousTree)
-    if Set(nodenamefilter(isleaf, tree)) != Set(getleafnames(tree))
-        warn("Leaf names do not match actual leaves of tree")
-        return false
+    if length(getiterator(tree.leafinfos)) > 0
+        if Set(map(info -> info[1], getiterator(tree.leafinfos))) !=
+            Set(_getleafnames(tree))
+            warn("LeafInfo names do not match actual leaves of tree")
+            return false
+        end
     end
-
     if Set(keys(tree.noderecords)) != Set(keys(getnodes(tree)))
         warn("Leaf records do not match node records of tree")
         return false
     end
 
-    rootheight = hasrootheight(tree) ? getrootheight(tree) : NaN
-    for leaf in getleafnames(tree)
-        if hasheight(tree, leaf)
-            if isnan(rootheight)
-                rootheight = getheight(tree, leaf) - heighttoroot(tree, leaf)
-            end
-            if !(getheight(tree, leaf) - rootheight ≈ heighttoroot(tree, leaf))
-                warn("Leaf height ($(getheight(tree, leaf))) for $leaf does not match branches")
-                return false
-            end
-        end
-    end
     return true
 end
 
@@ -336,9 +359,9 @@ end
 """
     NamedPolytomousTree
 
-Binary phylogenetic tree object with known leaves
+Polytomous phylogenetic tree object with known leaves
 """
-const NamedPolytomousTree = PolytomousTree{LeafInfo, Dict{String, Any}}
+const NamedPolytomousTree = PolytomousTree{DataFrame, Dict{String, Any}}
 
 _getnodenames(tree::AbstractTree) = collect(keys(_getnodes(tree)))
 _getbranchnames(tree::AbstractTree) = collect(keys(_getbranches(tree)))
@@ -372,13 +395,6 @@ function _deletebranch!(tree::AbstractBranchTree, label)
     return label
 end
 
-
-#  - _getleafnames()
-function _getleafnames(tree::AbstractTree)
-    return keys(OrderedDict(map(leaf -> leaf=>nothing,
-                         findleaves(tree) ∪ findunattacheds(tree))))
-end
-
 """
     clearrootheight(::AbstractTree)
 
@@ -404,22 +420,4 @@ function _setbranch!(tree::AbstractTree, label, branch)
     _hasbranch(tree, label) &&
         error("Branch $label already exists")
     return _getbranches(tree)[label] = branch
-end
-
-# Interfaces to an info
-# ---------------------
-
-function _hasheight(tree::AbstractBranchTree, label)
-    return _hasheight(getleafinfo(tree, label))
-end
-
-function _getheight(tree::AbstractBranchTree, label)
-    return _getheight(getleafinfo(tree, label))
-end
-
-function _setheight!(tree::AbstractBranchTree, label, height::Float64)
-    ai = getleafinfo(tree, label)
-    _setheight!(ai, height)
-    setleafinfo!(tree, label, ai)
-    return height
 end

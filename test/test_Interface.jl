@@ -1,13 +1,14 @@
 module TestInterface
 
 using Phylo
+using DataFrames
 using Compat.Test
 
 @testset "Build and tear down trees" begin
     @testset "For $TreeType" for TreeType in
         [NamedTree,
-         BinaryTree{LeafInfo, Nullable{Float64}},
-         BinaryTree{LeafInfo, Vector{String}}]
+         BinaryTree{DataFrame, Nullable{Float64}},
+         BinaryTree{DataFrame, Vector{String}}]
 
         species = ["Dog", "Cat", "Human", "Potato", "Apple"]
         tree = TreeType(species)
