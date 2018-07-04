@@ -53,7 +53,7 @@ treeinfoiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
 
 eltype(::TreeSet{LABEL, NL, BL, TREE}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}} = TREE
 eltype(::TreeIterator{LABEL, NL, BL, TREE, TREESET}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}} = TREE
-eltype(::TreeNameIterator) = String
+eltype(tni::TreeNameIterator) = eltype(keys(tni.ts.trees))
 eltype(::TreeInfoIterator) = Dict{String, Any}
 
 length(ts::TreeSet) = length(ts.trees)
