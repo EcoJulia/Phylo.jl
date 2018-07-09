@@ -26,7 +26,6 @@ Rinstalled = false
 try
     skipR && error("Skipping R testing...")
     using RCall
-    include(joinpath(dirname(dirname(@__FILE__)), "src", "rcall.jl"))
     Rinstalled = true
 catch
     if mustCrossvalidate

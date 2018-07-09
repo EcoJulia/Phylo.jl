@@ -131,4 +131,10 @@ include("show.jl")
 include("trim.jl")
 export droptips!, keeptips!
 
+using Requires
+@require RCall begin
+    println("Creating Phylo RCall interface...")
+    include("rcall.jl")
+end
+
 end # module
