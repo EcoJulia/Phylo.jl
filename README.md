@@ -18,13 +18,15 @@ julia> Pkg.add("Phylo")
 ## Project Status
 
 The package is tested against the current Julia `0.6` release, and
-`nightly` (0.7-beta) on Linux, OS X, and Windows. It is currently broken on
-0.7-beta, probably due to other package failures, but this will (hopefully!) be fixed soon...
+`nightly` and `0.7-beta` on Linux, OS X, and Windows. Its dependencies are
+currently broken on nightly and 0.7-beta, so `Phylo` is too, but it will
+(hopefully!) all be up and running soon...
 
 ## Contributing and Questions
 
-Contributions are very welcome, as are feature requests and suggestions. Please open an
-[issue][issues-url] if you encounter any problems or would just like to ask a question.
+Contributions are very welcome, as are feature requests and suggestions.
+Please open an [issue][issues-url] if you encounter any problems or would
+just like to ask a question.
 
 ## Summary
 
