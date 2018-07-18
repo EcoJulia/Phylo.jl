@@ -1,5 +1,5 @@
 using IterableTables
-using Query
+using IterableTables: getiterator
 
 """
     getinternalnodes(t::AbstractTree)
@@ -54,11 +54,9 @@ function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, 
     if length(getchildren(t, root)) < 2
         deletenode!(t, root)
     end
-    li = @from line in getleafinfo(t) begin
-             @where line[1] ∉ tips
-             @select line
-             @collect leafinfotype(t)
-         end
+
+    li = leafinfotype(t)(Iterators.filter(line -> line[1] ∉ tips,
+                                          getiterator(getleafinfo(t))))
     setleafinfo!(t, li)
     return tips
 end

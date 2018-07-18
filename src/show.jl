@@ -1,6 +1,7 @@
 using Phylo
 using Phylo.API
 using Compat
+using Compat.Printf
 
 function show(io::IO, object::AbstractNode, n::String = "")
     node = "node"

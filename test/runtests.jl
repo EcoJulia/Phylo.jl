@@ -5,9 +5,9 @@ using Compat: @info
 #  - src/Source.jl will be matched by test/test_Source.jl
 
 filebase = map(file -> replace(file, r"(.*).jl" => s"\1"),
-                filter(file -> contains(file, r".*\.jl"), readdir("../src")))
+                filter(file -> occursin(r".*\.jl", file), readdir("../src")))
 testbase = map(file -> replace(file, r"test_(.*).jl" => s"\1"),
-                filter(str -> contains(str, r"^test_.*\.jl$"), readdir()))
+                filter(str -> occursin(r"^test_.*\.jl$", str), readdir()))
 
 @info "Running tests for files:"
 for t in testbase

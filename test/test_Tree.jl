@@ -3,9 +3,9 @@ module TestTrees
 using Phylo
 using DataFrames
 using JuliaDB
-using Query
 
 using Compat.Test
+using IterableTables: getiterator
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10
@@ -96,24 +96,14 @@ end
     tj = BinaryTree(jdb)
     @test nleaves(tj) == 2
 
-    counts = @from line in getleafinfo(tj, "Dog") begin
-        @select line.count
-        @collect
-    end
-    @test sum(counts) == 8
+    lij = getiterator(getleafinfo(tj, "Dog"))
+    @test sum(map(line -> line.count, lij)) == 8
 
-    counts = @from line in getleafinfo(tj, "Cat") begin
-        @select line.count
-        @collect
-    end
-    @test sum(counts) == 2
+    lij = getiterator(getleafinfo(tj, "Cat"))
+    @test sum(map(line -> line.count, lij)) == 2
 
-    counts = @from line in getleafinfo(tdf, "Dog") begin
-        @select line.count
-        @collect
-    end
-    @test sum(counts) == 10
-
+    lidf = getiterator(getleafinfo(tdf, "Dog"))
+    @test sum(map(line -> line.count, lidf)) == 10
 end
 
 end
