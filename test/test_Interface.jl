@@ -7,7 +7,7 @@ using Compat.Test
 @testset "Build and tear down trees" begin
     @testset "For $TreeType" for TreeType in
         [NamedTree,
-         BinaryTree{DataFrame, Nullable{Float64}},
+         BinaryTree{DataFrame, Vector{Float64}},
          BinaryTree{DataFrame, Vector{String}}]
 
         species = ["Dog", "Cat", "Human", "Potato", "Apple"]
