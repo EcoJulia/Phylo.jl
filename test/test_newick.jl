@@ -19,7 +19,11 @@ using Compat.Test
     @test 4 ∈ getnoderecord(tree, "MyLeaf")["Not real"]
     @test_throws ErrorException parsenewick("((,),(,)));")
     @test_throws ErrorException parsenewick("((,),(,))")
-    @test_throws ErrorException parsenewick("((,),(,);")
+    if VERSION < v"0.7.0-"
+        @test_throws ErrorException parsenewick("((,),(,);")
+    else
+        @test_throws UndefRefError parsenewick("((,),(,);")
+    end
     @test_throws ErrorException parsenewick("((MyLeaf:-4.0,)Parent,(,));")
 end
 
@@ -36,7 +40,11 @@ end
     @test getlength(first(branches)) ≈ 4.0
     @test_throws ErrorException parsenewick("((,),(,)));", NamedPolytomousTree)
     @test_throws ErrorException parsenewick("((,),(,))", NamedPolytomousTree)
-    @test_throws ErrorException parsenewick("((,),(,);", NamedPolytomousTree)
+    if VERSION < v"0.7.0-"
+        @test_throws ErrorException parsenewick("((,),(,);", NamedPolytomousTree)
+    else
+        @test_throws UndefRefError parsenewick("((,),(,);", NamedPolytomousTree)
+    end
 end
 
 end

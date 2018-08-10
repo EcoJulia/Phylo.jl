@@ -2,7 +2,6 @@ module TestTrim
 
 using Phylo
 using DataFrames
-using JuliaDB
 using IterableTables: getiterator
 using Compat.Test
 
