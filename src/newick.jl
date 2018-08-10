@@ -13,15 +13,15 @@ isWHITESPACE(token) = token.kind == T.WHITESPACE
 isEQ(token) = token.kind == T.EQ
 isEQorRSQUARE(token) = token.kind ∈ [T.EQ, T.RSQUARE]
 isIDENTIFIER(token, text) =
-    (token.kind == T.IDENTIFIER) && (lowercase(untokenize(token)) == text)
-isBEGIN(token) = isIDENTIFIER(token, "begin")
+    (token.kind == T.IDENTIFIER) & (lowercase(untokenize(token)) == text)
+    isBEGIN(token) = (token.kind == T.BEGIN) | isIDENTIFIER(token, "begin")
 isTAXA(token) = isIDENTIFIER(token, "taxa")
 isTREE(token) = isIDENTIFIER(token, "tree")
 isTREES(token) = isIDENTIFIER(token, "trees")
 isDIMENSIONS(token) = isIDENTIFIER(token, "dimensions")
 isTAXLABELS(token) = isIDENTIFIER(token, "taxlabels")
 isTRANSLATE(token) = isIDENTIFIER(token, "translate")
-isEND(token) = isIDENTIFIER(token, "end")
+isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end")
 
 function nextskip(tokens, state)
     token, state = next(tokens, state)
@@ -324,8 +324,17 @@ function parsetaxa(token, state, tokens, taxa)
     token, state = nextskip(tokens, state)
     while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
         name = untokenize(token)
+        if token.kind ∈ [T.STRING, T.CHAR]
+            name = name[2:end-1]
+        end
         token, state = nextskip(tokens, state)
         taxa[name] = name
+        if token.kind == T.LSQUARE
+            while token.kind != T.RSQUARE
+                token, state = nextskip(tokens, state)
+            end
+            token, state = nextskip(tokens, state)
+        end
     end
     if length(taxa) != ntax
         @warn "Taxa list length ($(length(taxa))) and ntax ($ntax) do not match"
@@ -361,9 +370,9 @@ function parsetrees(token, state, tokens,
                 token, state = nextskip(tokens, state)
             end
         end
+        token, state = nextskip(tokens, state)
     end
 
-    token, state = nextskip(tokens, state)
     trees = Dict{String, TREE}()
     treedata = Dict{String, Dict{String, Any}}()
     while isTREE(token)
