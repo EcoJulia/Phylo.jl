@@ -144,7 +144,7 @@ function _deletenode!(tree::BinaryTree, nodename)
 end
 
 function _validate(tree::BinaryTree)
-    if length(getiterator(tree.leafinfos)) > 0
+    if !isempty(tree.leafinfos) && length(getiterator(tree.leafinfos)) > 0
         if Set(map(info -> info[1], getiterator(tree.leafinfos))) !=
             Set(_getleafnames(tree))
             warn("LeafInfo names do not match actual leaves of tree")

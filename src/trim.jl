@@ -30,7 +30,8 @@ function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, 
         map(x -> deletenode!(t, x), nodes)
     end
     # Merge internal nodes that no longer have multiple children
-    while sum(map(x-> length(getchildren(t, x)).< 2, getinternalnodes(t))) > 0
+    while any(map(x -> length(getchildren(t, x)) .< 2,
+                  getinternalnodes(t)))
         inner_nodes = getinternalnodes(t)
         remove_nodes = findall(map(x->length(getchildren(t, x)) .< 2,
                                    inner_nodes))
@@ -57,9 +58,11 @@ function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, 
         deletenode!(t, root)
     end
 
-    li = leafinfotype(t)(Iterators.filter(line -> line[1] ∉ tips,
-                                          getiterator(getleafinfo(t))))
-    setleafinfo!(t, li)
+    if !isempty(getleafinfo(t))
+        li = leafinfotype(t)(Iterators.filter(line -> line[1] ∉ tips,
+                                              getiterator(getleafinfo(t))))
+        setleafinfo!(t, li)
+    end
     return tips
 end
 
