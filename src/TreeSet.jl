@@ -1,5 +1,5 @@
 using Compat
-import Base.start, Base.next, Base.done, Base.getindex
+import Base.getindex
 import Compat.IteratorSize, Base.length, Compat.IteratorEltype, Base.eltype
 
 import Phylo.API: _nodetype, _branchtype
@@ -61,6 +61,18 @@ length(ti::TreeIterator) = length(ti.ts.trees)
 length(tni::TreeNameIterator) = length(tni.ts.trees)
 length(tii::TreeInfoIterator) = length(tii.ts.treeinfo)
 
+if VERSION >= v"0.7.0-"
+import Base.iterate
+iterate(ts::TreeSet) = iterate(treeiter(ts))
+iterate(ts::TreeSet, state) = iterate(treeiter(ts), state)
+iterate(ti::TreeIterator) = iterate(values(ti.ts.trees))
+iterate(ti::TreeIterator, state) = iterate(values(ti.ts.trees), state)
+iterate(tni::TreeNameIterator) = iterate(keys(tni.ts.trees))
+iterate(tni::TreeNameIterator, state) = iterate(keys(tni.ts.trees), state)
+iterate(tii::TreeInfoIterator) = iterate(tii.ts.treeinfo)
+iterate(tii::TreeInfoIterator, state) = iterate(tii.ts.treeinfo, state)
+else
+import Base.start, Base.next, Base.done
 start(ts::TreeSet) = start(treeiter(ts))
 start(ti::TreeIterator) = start(ti.ts.trees)
 start(tni::TreeNameIterator) = start(keys(tni.ts.trees))
@@ -82,7 +94,7 @@ done(ts::TreeSet, state) = done(treeiter(ts), state)
 done(ti::TreeIterator, state) = done(ti.ts.trees, state)
 done(ti::TreeNameIterator, state) = done(keys(ti.ts.trees), state)
 done(ti::TreeInfoIterator, state) = done(ti.ts.treeinfo, state)
-
+end
 getindex(ts::TreeSet, idx) = ts.trees[idx]
 
 function _getleafnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
