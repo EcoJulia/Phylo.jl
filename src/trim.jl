@@ -1,5 +1,6 @@
 using IterableTables
 using IterableTables: getiterator
+using Compat: findall
 
 """
     getinternalnodes(t::AbstractTree)
@@ -8,7 +9,7 @@ include tips or root.
 
 """
 function getinternalnodes(t::AbstractTree)
-    return collect(nodenamefilter(x->!isleaf(x)& !isroot(x), t))
+    return collect(nodenamefilter(x->!isleaf(x) & !isroot(x), t))
 end
 """
     droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
@@ -31,7 +32,8 @@ function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, 
     # Merge internal nodes that no longer have multiple children
     while sum(map(x-> length(getchildren(t, x)).< 2, getinternalnodes(t))) > 0
         inner_nodes = getinternalnodes(t)
-        remove_nodes = find(map(x-> length(getchildren(t, x)).< 2, inner_nodes))
+        remove_nodes = findall(map(x->length(getchildren(t, x)) .< 2,
+                                   inner_nodes))
         for i in remove_nodes
             parent = getparent(t, inner_nodes[i])
             parentbranch = getinbound(getnode(t, inner_nodes[i]))

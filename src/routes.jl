@@ -1,3 +1,5 @@
+using Compat: mapreduce
+
 function _treepast(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
     branches = BL[]
     nodes = NL[node]
@@ -85,7 +87,8 @@ Distance between two nodes on a tree
 """
 function distance(tree::AbstractTree, node1, node2)
     branches = branchroute(tree, node1, node2)
-    return mapreduce(branch -> getlength(tree, branch), +, 0.0, branches)
+    return mapreduce(branch -> getlength(tree, branch), +, branches;
+    init = 0.0)
 end
 
 """
@@ -101,17 +104,17 @@ end
 """
     height(tree::AbstractTree, node)
 
-Height of a node of the tree above the root 
+Height of a node of the tree above the root
 """
 function heighttoroot(tree::AbstractTree, node)
-    return mapreduce(branch -> getlength(tree, branch), +, 0.0,
-                     branchhistory(tree, node))
+    return mapreduce(branch -> getlength(tree, branch), +,
+                     branchhistory(tree, node); init = 0.0)
 end
 
 """
     heights(tree::AbstractTree)
 
-Height of all of the leaves of the tree above the root 
+Height of all of the leaves of the tree above the root
 """
 function heightstoroot(tree::AbstractTree)
     return [heighttoroot(tree, i) for i in nodenamefilter(isleaf, tree)]

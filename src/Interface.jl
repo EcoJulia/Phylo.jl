@@ -1,4 +1,5 @@
 using Phylo.API
+using Compat: mapreduce
 
 getnodes(tree::AbstractTree) = _getnodes(tree)
 getbranches(tree::AbstractTree) = _getbranches(tree)
@@ -220,26 +221,25 @@ function validate(tree::T) where {NL, BL, T <: AbstractTree{NL, BL}}
     branches = _getbranches(tree)
     if !isempty(nodes) || !isempty(branches)
         # We need to validate the connections
-        if Set(mapreduce(_getinbound, push!, BL[],
-                         nodefilter(_hasinbound, tree))) !=
-                             Set(keys(branches))
+        if Set(mapreduce(_getinbound, push!, nodefilter(_hasinbound, tree);
+                         init = BL[])) != Set(keys(branches))
             warn("Inbound branches must exactly match Branch labels")
             return false
         end
 
-        if Set(mapreduce(_getoutbounds, append!, BL[], nodeiter(tree))) !=
-            Set(keys(branches))
+        if Set(mapreduce(_getoutbounds, append!, nodeiter(tree);
+                         init = BL[])) != Set(keys(branches))
             warn("Node outbound branches must exactly match Branch labels")
             return false
         end
 
-        if !(mapreduce(_src, push!, NL[], branchiter(tree)) ⊆
+        if !(mapreduce(_src, push!, branchiter(tree); init = NL[]) ⊆
              Set(keys(nodes)))
             warn("Branch sources must be node labels")
             return false
         end
 
-        if !(mapreduce(_dst, push!, NL[], branchiter(tree)) ⊆
+        if !(mapreduce(_dst, push!, branchiter(tree); init = NL[]) ⊆
              Set(keys(nodes)))
             warn("Branch destinations must be node labels")
             return false
@@ -473,8 +473,8 @@ function hasheight end
 function hasheight(tree::AbstractTree, nodename)
     return _hasheight(tree, nodename) ||
         (_hasrootheight(tree) &&
-         mapreduce(b -> haslength(tree, b), &, _hasrootheight(tree),
-                   branchhistory(tree, nodename)))
+         mapreduce(b -> haslength(tree, b), &, branchhistory(tree, nodename);
+         init = _hasrootheight(tree)))
 end
 
 """
@@ -484,8 +484,8 @@ Return the height of the node.
 """
 function getheight(tree::AbstractTree, nodename)
     return _hasheight(tree, nodename) ? _getheight(tree, nodename) :
-        mapreduce(b -> getlength(tree, b), +,
-                  getrootheight(tree), branchhistory(tree, nodename))
+        mapreduce(b -> getlength(tree, b), +, branchhistory(tree, nodename);
+                  init = getrootheight(tree))
 end
 
 """
