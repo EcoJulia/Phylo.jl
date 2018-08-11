@@ -43,4 +43,4 @@ build_script:
       Pkg.clone(pwd(), \"Phylo\"); Pkg.build(\"Phylo\")"
 
 test_script:
-  - C:\projects\julia\bin\julia -e "try using Pkg end; Pkg.test(\"Phylo\")"
+  - C:\projects\julia\bin\julia -e "(try using Pkg; catch end); Pkg.test(\"Phylo\")"
