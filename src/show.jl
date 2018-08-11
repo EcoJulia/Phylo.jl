@@ -99,21 +99,21 @@ function show(io::IO, object::AbstractTree)
           "$(length(_getbranches(object))) branches")
 end
 
-function show(io::IO, object::TreeSet)
+function showsimple(io::IO, object::TreeSet)
     @printf(io, "TreeSet with %d trees\n", ntrees(object))
     println(io, "Tree names:")
     println(io, collect(treenameiter(object)))
 end
 
-function showall(io::IO, object::TreeSet)
-    show(io, object)
+function show(io::IO, object::TreeSet)
+    showsimple(io, object)
     for name in treenameiter(object)
         @printf(io, "\n%s: ", name)
         println(io, object[name])
     end
 end
 
-function showall(io::IO, object::AbstractTree)
+function showsimple(io::IO, object::AbstractTree)
     println(io, object)
     println(io, "Nodes:")
     println(io, _getnodes(object))
@@ -121,7 +121,7 @@ function showall(io::IO, object::AbstractTree)
     println(io, _getbranches(object))
 end
 
-function show(io::IO, object::TREE) where TREE <: AbstractBranchTree
+function showsimple(io::IO, object::TREE) where TREE <: AbstractBranchTree
     if get(io, :compact, false)
         print(io, "$TREE phylogenetic tree with $(length(_getnodes(object))) " *
               "nodes ($(length(getleafnames(object))) leaves) and " *
@@ -135,8 +135,8 @@ function show(io::IO, object::TREE) where TREE <: AbstractBranchTree
     end
 end
 
-function showall(io::IO, object::BinaryTree{LI, ND}) where {LI, ND}
-    println(io, object)
+function show(io::IO, object::BinaryTree{LI, ND}) where {LI, ND}
+    showsimple(io, object)
     println(io, "Nodes:")
     println(io, _getnodes(object))
     println(io, "Branches:")
@@ -147,16 +147,16 @@ function showall(io::IO, object::BinaryTree{LI, ND}) where {LI, ND}
                          nodenameiter(object))))
 end
 
-function showall(io::IO, object::BinaryTree{LI, Nothing}) where LI
-    println(io, object)
+function show(io::IO, object::BinaryTree{LI, Nothing}) where LI
+    showsimple(io, object)
     println(io, "Nodes:")
     println(io, _getnodes(object))
     println(io, "Branches:")
     println(io, _getbranches(object))
 end
 
-function showall(io::IO, object::PolytomousTree{LI, ND}) where {LI, ND}
-    println(io, object)
+function show(io::IO, object::PolytomousTree{LI, ND}) where {LI, ND}
+    showsimple(io, object)
     println(io, "Nodes:")
     println(io, _getnodes(object))
     println(io, "Branches:")
@@ -167,8 +167,8 @@ function showall(io::IO, object::PolytomousTree{LI, ND}) where {LI, ND}
                          nodenameiter(object))))
 end
 
-function showall(io::IO, object::PolytomousTree{LI, Nothing}) where LI
-    println(io, object)
+function show(io::IO, object::PolytomousTree{LI, Nothing}) where LI
+    showsimple(io, object)
     println(io, "Nodes:")
     println(io, _getnodes(object))
     println(io, "Branches:")

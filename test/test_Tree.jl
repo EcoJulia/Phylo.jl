@@ -84,9 +84,6 @@ end
     nt3 = BinaryTree(nt, empty=false)
     a=IOBuffer()
     b=IOBuffer()
-    showall(a, nt)
-    showall(b, nt3)
-    @test a.data == b.data
     show(a, nt)
     show(b, nt3)
     @test a.data == b.data
