@@ -17,14 +17,20 @@ using Compat.Test
     @test getnoderecord(tree, "MyLeaf")["Real"] == 23
     @test 5 ∈ getnoderecord(tree, "MyLeaf")["Not real"]
     @test 4 ∈ getnoderecord(tree, "MyLeaf")["Not real"]
+    if VERSION < v"0.7.0-"
+        @test_warn "Tree ended but not finished" parsenewick("((,),(,));a")
+    end
     @test_throws ErrorException parsenewick("((,),(,)));")
     @test_throws ErrorException parsenewick("((,),(,))")
-    if VERSION < v"0.7.0-"
-        @test_throws ErrorException parsenewick("((,),(,);")
-    else
-        @test_throws UndefRefError parsenewick("((,),(,);")
-    end
+    @test_throws ErrorException parsenewick("((,),(,);")
     @test_throws ErrorException parsenewick("((MyLeaf:-4.0,)Parent,(,));")
+    tree = open(parsenewick, "H1N1.newick")
+    @test nleaves(tree) == 507
+    @test ntrees(tree) == 1
+    treex = open(parsenexus, "H1N1.trees")
+    @test nleaves(tree) == nleaves(treex) ==
+          nleaves(treex["TREE1"]) == nleaves(treex["TREE2"])
+    @test ntrees(treex) == 2
 end
 
 @testset "A few simple polytomous trees" begin
@@ -40,11 +46,7 @@ end
     @test getlength(first(branches)) ≈ 4.0
     @test_throws ErrorException parsenewick("((,),(,)));", NamedPolytomousTree)
     @test_throws ErrorException parsenewick("((,),(,))", NamedPolytomousTree)
-    if VERSION < v"0.7.0-"
-        @test_throws ErrorException parsenewick("((,),(,);", NamedPolytomousTree)
-    else
-        @test_throws UndefRefError parsenewick("((,),(,);", NamedPolytomousTree)
-    end
+    @test_throws ErrorException parsenewick("((,),(,);", NamedPolytomousTree)
 end
 
 end
