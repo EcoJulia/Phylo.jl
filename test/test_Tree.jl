@@ -39,12 +39,20 @@ jdb = table(@NT(species = observations, count = 1:4))
     @test getleafinfo(nb) === getleafinfo(BinaryTree(nb))
     @test getleafinfo(nb) !== getleafinfo(BinaryTree(nb; copyinfo = true))
     @test_nowarn addnode!(nb, "Dog")
-    @test_warn "LeafInfo names do not match actual leaves of tree" !validate(nb) || error("validate() should have returned false")
+    if VERSION < v"0.7.0-"
+        @test_warn "LeafInfo names do not match actual leaves of tree" !validate(nb) || error("validate() should have returned false")
+    else
+        @test !validate(nb)
+    end
     np = PolytomousTree(DataFrame(name=["Human", "Cat"]))
     @test getleafinfo(np) === getleafinfo(PolytomousTree(np))
     @test getleafinfo(np) !== getleafinfo(PolytomousTree(np; copyinfo = true))
     @test_nowarn addnode!(np, "Dog")
-    @test_warn "LeafInfo names do not match actual leaves of tree" !validate(np) || error("validate() should have returned false")
+    if VERSION < v"0.7.0-"
+        @test_warn "LeafInfo names do not match actual leaves of tree" !validate(np) || error("validate() should have returned false")
+    else
+        @test !validate(np)
+    end
     @test_throws ErrorException PolytomousTree(np)
     @test getleafnames(nb) ⊆ getleafnames(np)
     @test getleafinfo(BinaryTree(df)) == df

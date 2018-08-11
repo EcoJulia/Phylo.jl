@@ -1,5 +1,6 @@
 using DataStructures
 using Compat
+using Compat: @warn
 using IterableTables: getiterator
 using DataFrames
 
@@ -147,19 +148,19 @@ function _validate(tree::BinaryTree)
     if !isempty(tree.leafinfos) && length(getiterator(tree.leafinfos)) > 0
         if Set(map(info -> info[1], getiterator(tree.leafinfos))) !=
             Set(_getleafnames(tree))
-            warn("LeafInfo names do not match actual leaves of tree")
+            @warn "LeafInfo names do not match actual leaves of tree"
             return false
         end
     end
 
     if Set(nodenamefilter(_hasoutboundspace, tree)) !=
         Set(nodenamefilter(_isleaf, tree))
-        warn("Nodes must have two or zero outbound connections.")
+        @warn "Nodes must have two or zero outbound connections."
         return false
     end
 
     if Set(keys(tree.noderecords)) != Set(keys(getnodes(tree)))
-        warn("Leaf records do not match node records of tree")
+        @warn "Leaf records do not match node records of tree"
         return false
     end
 
@@ -327,12 +328,12 @@ function _validate(tree::PolytomousTree)
     if length(getiterator(tree.leafinfos)) > 0
         if Set(map(info -> info[1], getiterator(tree.leafinfos))) !=
             Set(_getleafnames(tree))
-            warn("LeafInfo names do not match actual leaves of tree")
+            @warn "LeafInfo names do not match actual leaves of tree"
             return false
         end
     end
     if Set(keys(tree.noderecords)) != Set(keys(getnodes(tree)))
-        warn("Leaf records do not match node records of tree")
+        @warn "Leaf records do not match node records of tree"
         return false
     end
 
