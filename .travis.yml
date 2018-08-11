@@ -14,12 +14,12 @@ os:
 julia:
   - 0.6
   - 0.7
+  - 1.0
   - nightly
 
 matrix:
   fast_finish: true
   allow_failures:
-    - julia: 0.7
     - julia: nightly
 
 before_install:
@@ -38,9 +38,9 @@ before_install:
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 #  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then JULIA_MUST_CROSSVALIDATE=1 julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia -e '(try using Pkg; true catch; false end || Pkg.init()); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then julia -e '(try using Pkg; true catch; false end || Pkg.init()); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
 
 after_success:
-  - julia -e 'cd(Pkg.dir("Phylo", "test")); include("coverage.jl")'
-  - julia -e 'Pkg.add("Documenter"); cd(Pkg.dir("Phylo")); include(joinpath("docs", "make.jl"))'
+  - julia -e 'try using Pkg end; cd(Pkg.dir("Phylo", "test")); include("coverage.jl")'
+  - julia -e 'try using Pkg end; Pkg.add("Documenter"); cd(Pkg.dir("Phylo")); include(joinpath("docs", "make.jl"))'

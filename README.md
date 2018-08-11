@@ -17,10 +17,9 @@ julia> Pkg.add("Phylo")
 
 ## Project Status
 
-The package is tested against the current Julia `0.6` release, and
-`nightly` and `0.7-beta` on Linux, OS X, and Windows. Its dependencies are
-currently broken on nightly and 0.7-beta, so `Phylo` is too, but it will
-(hopefully!) all be up and running soon...
+The package is tested against the current Julia `0.6` release, `0.7` and `1.0` on Linux, OS X, and Windows. some dependencies are
+currently broken on 0.7 and 1.0, but `Phylo` works without them for now.
+Hopefully it will fully functional soon (currently missing an R interface)...
 
 ## Contributing and Questions
 
