@@ -5,7 +5,9 @@ using Compat: @warn
 mustCrossvalidate = haskey(ENV, "JULIA_MUST_CROSSVALIDATE") && ENV["JULIA_MUST_CROSSVALIDATE"] == "1"
 
 # Only run R on unix or when R is installed because JULIA_MUST_CROSSVALIDATE is set to 1
-skipR = !mustCrossvalidate && !is_unix()
+skipR = !mustCrossvalidate &&
+    !((VERSION < v"0.7.0-" && is_unix()) ||
+      (VERSION >= v"0.7.0-" && Sys.isunix()))
 global success = false
 try
     skipR && error("Skipping R testing...")
