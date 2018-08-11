@@ -2,7 +2,7 @@ module TestTrees
 
 using Phylo
 using DataFrames
-using JuliaDB
+#using JuliaDB
 
 using Compat.Test
 using IterableTables: getiterator
@@ -11,7 +11,9 @@ species = ["Dog", "Cat", "Human"]
 ntips = 10
 df = DataFrame(species = species, count = [10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
-jdb = table(@NT(species = observations, count = 1:4))
+#jdb = table(@NT(species = observations, count = 1:4))
+jdb = DataFrame(species = observations, count = 1:4)
+
 @testset "NamedTree()" begin
     ntn = NamedTree(ntips)
     @test length(nodefilter(isroot, ntn)) == ntips

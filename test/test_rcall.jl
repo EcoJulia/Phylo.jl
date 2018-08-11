@@ -12,7 +12,7 @@ try
     using RCall
     global success = true
 catch
-    if mustCrossvalidate
+    if mustCrossvalidate && VERSION < v"0.7.0-"
         error("R not installed, but JULIA_MUST_CROSSVALIDATE is set")
     else
         @warn "R or appropriate Phylo package not installed, skipping R cross-validation."
