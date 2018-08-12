@@ -131,6 +131,9 @@ include("show.jl")
 include("trim.jl")
 export droptips!, keeptips!
 
+# Example phylogenies
+exampledatapath(filename) = joinpath(@__DIR__, "..", "test", filename)
+
 using Requires
 @require RCall begin
     println("Creating Phylo RCall interface...")
