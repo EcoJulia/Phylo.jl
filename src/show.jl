@@ -10,7 +10,7 @@ function show(io::IO, object::AbstractNode, n::String = "")
     end
     if !_hasinbound(object)
         if _outdegree(object) > 0
-            blank = repeat(" ", length("[root $node]") + (isempty(n) ? 0 : 1))
+            blank = repeat(" ", length(" [root $node]") + (isempty(n) ? 0 : 1))
             for (i, bn) in zip(1:_outdegree(object), _getoutbounds(object))
                 b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
                 if _outdegree(object) == 1
@@ -43,7 +43,7 @@ function show(io::IO, object::AbstractNode, n::String = "")
             print(io, "[branch $inb]-->[leaf $node]")
         elseif _hasinbound(object)
             blank = repeat(" ",
-                           length("[branch $inb]-->[internal $node]") +
+                           length(" [branch $inb]-->[internal $node]") +
                            (isempty(n) ? 0 : 1))
             for (i, bn) in zip(1:_outdegree(object), _getoutbounds(object))
                 b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
@@ -94,83 +94,83 @@ function show(io::IO, p::Pair{BT, B}) where {BT, B <: AbstractBranch}
     println(io, "[node $source]-->[$(_getlength(p[2])) length branch $branch]-->[node $destination]")
 end
 
-function show(io::IO, object::AbstractTree)
-    print(io, "Phylogenetic tree with $(length(_getnodes(object))) nodes and " *
-          "$(length(_getbranches(object))) branches")
-end
-
 function showsimple(io::IO, object::TreeSet)
-    @printf(io, "TreeSet with %d trees\n", ntrees(object))
-    println(io, "Tree names:")
-    println(io, collect(treenameiter(object)))
+    @printf(io, "TreeSet with %d trees, each with %d tips.\n",
+            ntrees(object), nleaves(object))
+    tn = collect(treenameiter(object))
+    if length(tn) < 10
+        println(io, "Tree names are " *
+                join(tn, ", ", " and "))
+    else
+        println(io, "Tree names are " *
+                join(tn[1:5], ", ") *
+                " ... $(length(tn) - 6) missing ... " *
+                "$(tn[end])")
+    end
 end
 
 function show(io::IO, object::TreeSet)
     showsimple(io, object)
     for name in treenameiter(object)
         @printf(io, "\n%s: ", name)
-        println(io, object[name])
+        showsimple(io, object[name])
     end
 end
 
-function showsimple(io::IO, object::AbstractTree)
-    println(io, object)
-    println(io, "Nodes:")
-    println(io, _getnodes(object))
-    println(io, "Branches:")
-    println(io, _getbranches(object))
+function showsimple(io::IO, object::TREE) where TREE <: AbstractBranchTree
+    println(io, "$TREE with $(nleaves(object)) tips, " *
+            "$(length(_getnodes(object))) nodes and " *
+            "$(length(_getbranches(object))) branches.")
+    ln = getleafnames(object)
+    if length(ln) < 10
+        println(io, "Leaf names are " *
+                join(ln, ", ", " and "))
+    else
+        println(io, "Leaf names are " *
+                join(ln[1:5], ", ") *
+                ", ... [$(length(ln) - 6) omitted] ... and " *
+                "$(ln[end])")
+    end
 end
 
-function showsimple(io::IO, object::TREE) where TREE <: AbstractBranchTree
-    if get(io, :compact, false)
-        print(io, "$TREE phylogenetic tree with $(length(_getnodes(object))) " *
-              "nodes ($(length(getleafnames(object))) leaves) and " *
-              "$(length(_getbranches(object))) branches")
-    else
-        println(io,
-                "$TREE phylogenetic tree with $(length(_getnodes(object))) " *
-                "nodes and $(length(_getbranches(object))) branches")
-        println(io, "Leaf names:")
-        println(io, getleafnames(object))
+function show(io::IO, object::TREE) where TREE <: AbstractBranchTree
+    showsimple(io, object)
+    if !get(io, :compact, true)
+        println(io, "Nodes:")
+        println(io, _getnodes(object))
+        println(io, "Branches:")
+        println(io, _getbranches(object))
     end
 end
 
 function show(io::IO, object::BinaryTree{LI, ND}) where {LI, ND}
     showsimple(io, object)
-    println(io, "Nodes:")
-    println(io, _getnodes(object))
-    println(io, "Branches:")
-    println(io, _getbranches(object))
-    println(io, "NodeData:")
-    println(io, Dict(map(nodename ->
-                         nodename => getnoderecord(object, nodename),
-                         nodenameiter(object))))
-end
-
-function show(io::IO, object::BinaryTree{LI, Nothing}) where LI
-    showsimple(io, object)
-    println(io, "Nodes:")
-    println(io, _getnodes(object))
-    println(io, "Branches:")
-    println(io, _getbranches(object))
+    if !get(io, :compact, true)
+        println(io, "Nodes:")
+        println(io, _getnodes(object))
+        println(io, "Branches:")
+        println(io, _getbranches(object))
+        if ND !== Nothing
+            println(io, "NodeData:")
+            println(io, Dict(map(nodename ->
+                                nodename => getnoderecord(object, nodename),
+                                nodenameiter(object))))
+        end
+    end
 end
 
 function show(io::IO, object::PolytomousTree{LI, ND}) where {LI, ND}
     showsimple(io, object)
-    println(io, "Nodes:")
-    println(io, _getnodes(object))
-    println(io, "Branches:")
-    println(io, _getbranches(object))
-    println(io, "NodeData:")
-    println(io, Dict(map(nodename ->
-                         nodename => getnoderecord(object, nodename),
-                         nodenameiter(object))))
-end
-
-function show(io::IO, object::PolytomousTree{LI, Nothing}) where LI
-    showsimple(io, object)
-    println(io, "Nodes:")
-    println(io, _getnodes(object))
-    println(io, "Branches:")
-    println(io, _getbranches(object))
+    if !get(io, :compact, true)
+        println(io, "Nodes:")
+        println(io, _getnodes(object))
+        println(io, "Branches:")
+        println(io, _getbranches(object))
+        if ND !== Nothing
+            println(io, "NodeData:")
+            println(io, Dict(map(nodename ->
+                                nodename => getnoderecord(object, nodename),
+                                nodenameiter(object))))
+        end
+    end
 end

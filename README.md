@@ -2,10 +2,10 @@
 
 *Package for creating and manipulating phylogenies*
 
-| **Documentation**                               | **PackageEvaluator**            | **Build Status of master**                                                    |
-|:-----------------------------------------------:|:------------------------:|:-------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.6-img]][pkg-0.6-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]     |
-| [![][docs-latest-img]][docs-latest-url]         | [![][pkg-1.0-img]][pkg-1.0-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| **Documentation** | **PackageEvaluator** | **Build Status of master** |
+|:-----------------:|:--------------------:|:--------------------------:|
+| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.6-img]][pkg-0.6-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
+| [![][docs-latest-img]][docs-latest-url] | [![Works with 1.0!][pkg-1.0-img]][pkg-1.0-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
 
@@ -32,7 +32,7 @@ on Julia v1.0:
   [0796e94c] + Tokenize v0.5.2
   [4607b0f0] + SuiteSparse
 
-  (v1.0) pkg>
+(v1.0) pkg>
 ```
 
 ## Project Status
@@ -41,7 +41,7 @@ The package is tested against the current Julia v1.0 release, but also
 the previous v0.6 and v0.7 versions on Linux, macOS, and Windows. Some
 dependencies are currently broken on v0.7 and v1.0 (in particular
 interfaces to `JuliaDB` and `RCall`), but `Phylo` works without them for
-now. Hopefully it will fully functional soon (especially the R interface)...
+now. Hopefully the R interface will be back soon...
 
 ## Contributing and Questions
 
@@ -69,12 +69,16 @@ julia> using Phylo
 julia> nu = Nonultrametric(5);
 
 julia> tree = rand(nu)
-Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes and 8 branches
-Leaf names:
-String["tip 1", "tip 2", "tip 3", "tip 4", "tip 5"]
+Phylogenetic tree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 
 julia> trees = rand(nu, ["Tree 1", "Tree 2"])
-TreeSet with 2 trees
+TreeSet with 2 trees, each with 5 tips.
+Tree names are Tree 2 and Tree 1
+
+Tree 2: Phylogenetic tree with 5 tips,9 nodes and 8 branches.
+
+Tree 1: Phylogenetic tree with 5 tips,9 nodes and 8 branches.
 ```
 
 The code also provides iterators, and filtered iterators over the
@@ -82,16 +86,20 @@ branches, nodes, branchnames and nodenames of a tree:
 
 ```julia
 julia> collect(nodeiter(tree))
-9-element Array{Phylo.BinaryNode{Int64},1}:
- [branch 8]-->[leaf node]
+9-element Array{BinaryNode{Int64},1}:
+ [branch 6]-->[leaf node]
+ [branch 1]-->[leaf node]
  [branch 4]-->[leaf node]
  [branch 3]-->[leaf node]
- [branch 1]-->[leaf node]
  [branch 2]-->[leaf node]
- [branch 6]-->[internal node]-->[branches 1 and 2]
- [branch 5]-->[internal node]-->[branches 3 and 4]
- [branch 7]-->[internal node]-->[branches 5 and 6]
- [root node]-->[branches 7 and 8]
+ [branch 5]-->[internal node]-->[branch 1]
+                             -->[branch 2]
+ [branch 7]-->[internal node]-->[branch 3]
+                             -->[branch 4]
+ [branch 8]-->[internal node]-->[branch 5]
+                             -->[branch 6]
+ [root node]-->[branch 7]
+            -->[branch 8]
 
 julia> collect(nodenamefilter(isroot, tree))
 1-element Array{String,1}:
@@ -102,9 +110,13 @@ TreeSets are iterators themselves
 
 ```julia
 julia> collect(trees)
-2-element Array{Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}},1}:
- Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes (5 leaves) and 8 branches
- Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 9 nodes (5 leaves) and 8 branches
+2-element Array{BinaryTree{DataFrames.DataFrame,Dict{String,Any}},1}:
+ Phylogenetic tree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
+
+ Phylogenetic tree with 5 tips,9 nodes and 8 branches.
+Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
+...
 ```
 
 The current main purpose of this package is to provide a framework for
@@ -119,43 +131,44 @@ strings or files:
 julia> using Phylo
 
 julia> simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
-NamedTree phylogenetic tree with 5 nodes and 4 branches
-Leaf names:
-String["Node 2", "Tip", "Node 1"]
+BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 3 tips, 5 nodes and 4 branches.
+Leaf names are Node 1, Tip and Node 2
+
 
 julia> getbranches(simpletree)
-Dict{Int64,Phylo.Branch{String}} with 4 entries:
-  4 => [node "Root"]-->[NaN length branch]-->[node "Node 2"]
-  2 => [node "Internal"]-->[1.0 length branch]-->[node "Tip"]
-  3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]
-  1 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]
+Dict{Int64,Branch{String}} with 4 entries:
+  4 => [node "Root"]-->[NaN length branch]-->[node "Node 2"]…
+  2 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]…
+  3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]…
+  1 => [node "Internal"]-->[1.0 length branch]-->[node "Tip"]…
 
-julia> tree = open(parsenewick, Pkg.dir("Phylo", "test", "H1N1.newick"))
-Phylo.BinaryTree{Phylo.LeafInfo,Dict{String,Any}} phylogenetic tree with 1013 nodes and 1012 branches
-Leaf names:
-String["44", "429", "294", "295", "227", "14", "106", "104", "174", "331"  …  "384", "173", "300", "442", "215", "480", "477", "478", "30", "418"]
+julia> tree = open(parsenewick, Phylo.exampledatapath("H1N1.newick"))
+BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are 44, 429, 294, 295, 227, ... [501 omitted] ... and 418
 ```
 And it can read nexus trees from files too:
 
 ```julia
-julia> ts = open(parsenexus, Pkg.dir("Phylo", "test", "H1N1.trees"))
-Info: Created a tree called 'TREE1'
-Info: Created a tree called 'TREE2'
-TreeSet with 2 trees
-Tree names:
-String["TREE2", "TREE1"]
+julia> ts = open(parsenexus, Phylo.exampledatapath("H1N1.trees"))
+[ Info: Created a tree called 'TREE1'
+[ Info: Created a tree called 'TREE2'
+TreeSet with 2 trees, each with 507 tips.
+Tree names are TREE2 and TREE1
 
+TREE2: BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
+
+TREE1: BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
 
 julia> ts["TREE1"]
-Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 1013 nodes and 1012 branches
-Leaf names:
-String["H1N1_A_MIYAGI_3_2000", "H1N1_A_PARMA_6_2008", "H1N1_A_AKITA_86_2002", "H1N1_A_DAKAR_14_1997", "H1N1_A_EGYPT_84_2001", "H1N1_A_NORWAY_69_2004", "H1N1_A_STPETERSBURG_11_2001", "H1N1_A_CAPETOWN_106_2007", "H1N1_A_SWITZERLAND_5773_2001", "H1N1_A_DENMARK_11_2005"  …  "H1N1_A_HONGKONG_1441_2006", "H1N1_A_BUCURESTI_288_2008", "H1N1_A_EGYPT_186_2006", "H1N1_A_HONGKONG_1134_1998", "H1N1_A_NEWCALEDONIA_20_1999", "H1N1_A_POLAND_W1_2001", "H1N1_A_MADRID_G793_1998", "H1N1_A_NORWAY_1730_2007", "H1N1_A_KALININGRAD_7_2008","H1N1_A_HONGKONG_2070_1999"]
+BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
 
 julia> collect(treeinfoiter(ts))
-2-element Array{Dict{String,Any},1}:
- Dict{String,Any}(Pair{String,Any}("lnP", -1.0))
- Dict{String,Any}(Pair{String,Any}("lnP", 1.0))
-
+2-element Array{Pair{String,Dict{String,Any}},1}:
+ "TREE2" => Dict("lnP"=>-1.0)
+ "TREE1" => Dict("lnP"=>1.0)
 ```
 
 And while we wait for me (or kind [contributors][pr-url]!) to fill out
