@@ -27,13 +27,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo add-apt-repository -y "deb http://cran.rstudio.com/bin/linux/ubuntu $(lsb_release -s -c)/"; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update -qq -y; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install git r-base r-base-dev r-recommended -y --allow-unauthenticated; fi
-
-  # osx
-  # faster than using homebrew/science tap
-  # but no permalink to release download
-  # - if [ "$TRAVIS_OS_NAME" == "osx" ]; then wget "https://cran.rstudio.com/bin/macosx/$(wget -qO- https://cran.rstudio.com/bin/macosx/ | sed -n 's/.*href="\(R-[^"]*.pkg\)".*/\1/p' | head -n 1)"; fi
-  # - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo installer -pkg R-*.pkg -target /; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install git libxml2-dev r-base r-base-dev r-recommended -y --allow-unauthenticated; fi
 
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
@@ -42,5 +36,5 @@ script:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then julia -e '(try using Pkg; true catch; false end || Pkg.init()); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
 
 after_success:
-  - julia -e 'try using Pkg end; cd(Pkg.dir("Phylo", "test")); include("coverage.jl")'
-  - julia -e 'try using Pkg end; Pkg.add("Documenter"); cd(Pkg.dir("Phylo")); include(joinpath("docs", "make.jl"))'
+  - julia -e 'try using Pkg; catch end; using Phylo; cd(Phylo.path()); include("coverage.jl")'
+  - julia -e 'try using Pkg; catch end; Pkg.add("Documenter"); using Phylo; cd(Phylo.path(;dir=".")); include(joinpath("docs", "make.jl"))'

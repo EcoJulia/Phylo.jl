@@ -142,14 +142,14 @@ Dict{Int64,Branch{String}} with 4 entries:
   3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]…
   1 => [node "Internal"]-->[1.0 length branch]-->[node "Tip"]…
 
-julia> tree = open(parsenewick, Phylo.exampledatapath("H1N1.newick"))
+julia> tree = open(parsenewick, Phylo.path("H1N1.newick"))
 BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
 Leaf names are 44, 429, 294, 295, 227, ... [501 omitted] ... and 418
 ```
 And it can read nexus trees from files too:
 
 ```julia
-julia> ts = open(parsenexus, Phylo.exampledatapath("H1N1.trees"))
+julia> ts = open(parsenexus, Phylo.path("H1N1.trees"))
 [ Info: Created a tree called 'TREE1'
 [ Info: Created a tree called 'TREE2'
 TreeSet with 2 trees, each with 507 tips.

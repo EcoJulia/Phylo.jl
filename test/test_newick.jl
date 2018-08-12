@@ -24,7 +24,7 @@ using Compat.Test
     @test_throws ErrorException parsenewick("((,),(,))")
     @test_throws ErrorException parsenewick("((,),(,);")
     @test_throws ErrorException parsenewick("((MyLeaf:-4.0,)Parent,(,));")
-    tree = open(parsenewick, Phylo.exampledatapath("H1N1.newick"))
+    tree = open(parsenewick, Phylo.path("H1N1.newick"))
     @test nleaves(tree) == 507
     @test ntrees(tree) == 1
     treex = open(parsenexus, "H1N1.trees")

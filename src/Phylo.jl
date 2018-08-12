@@ -131,8 +131,8 @@ include("show.jl")
 include("trim.jl")
 export droptips!, keeptips!
 
-# Example phylogenies
-exampledatapath(filename) = joinpath(@__DIR__, "..", "test", filename)
+# Path into package
+path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
 using Requires
 @require RCall begin
