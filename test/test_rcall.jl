@@ -5,15 +5,15 @@ using Compat: @warn
 mustCrossvalidate = haskey(ENV, "JULIA_MUST_CROSSVALIDATE") && ENV["JULIA_MUST_CROSSVALIDATE"] == "1"
 
 # Only run R on unix or when R is installed because JULIA_MUST_CROSSVALIDATE is set to 1
-skipR = !mustCrossvalidate &&
+global skipR = !mustCrossvalidate &&
     !((VERSION < v"0.7.0-" && is_unix()) ||
       (VERSION >= v"0.7.0-" && Sys.isunix()))
-global success = false
 try
     skipR && error("Skipping R testing...")
     using RCall
-    global success = true
+    global skipR = false
 catch
+    global skipR = true
     if mustCrossvalidate && VERSION < v"0.7.0-"
         error("R not installed, but JULIA_MUST_CROSSVALIDATE is set")
     else
@@ -21,6 +21,6 @@ catch
     end
 end
 
-success && include("run_rcall.jl")
+!skipR && include("run_rcall.jl")
 
 end

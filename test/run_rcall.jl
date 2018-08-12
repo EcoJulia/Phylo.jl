@@ -7,12 +7,12 @@ using RCall
 # Create a temporary directory to work in
 libdir = mktempdir();
 
-skipR = false
+global skipR = false
 if !rcopy(R"require(ape)")
     rcall(Symbol(".libPaths"), libdir);
     reval("install.packages(\"ape\", lib=\"$libdir\", " *
           "repos=\"http://cran.r-project.org\")");
-    skipR = !rcopy(R"require(ape, lib.loc=c(\"$libdir\", .libPaths()))") &&
+    global skipR = !rcopy(R"require(ape, lib.loc=c(\"$libdir\", .libPaths()))") &&
         !mustCrossvalidate;
     skipR && @warn "ape R package not installed and would not install, " *
         "skipping R crossvalidation"

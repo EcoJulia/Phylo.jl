@@ -31,8 +31,7 @@ before_install:
 
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then JULIA_MUST_CROSSVALIDATE=1 julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia -e '(try using Pkg; true catch; false end || Pkg.init()); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then JULIA_MUST_CROSSVALIDATE=`julia -e 'print(VERSION > v"0.7.0-" ? 0 : 1)'` julia -e '(try using Pkg; true catch; false end || Pkg.init()); Pkg.clone(pwd()); Pkg.build("Phylo"); (ENV["JULIA_MUST_CROSSVALIDATE"] == "1" && Pkg.add("RCall")); Pkg.test("Phylo", coverage=true)'; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then julia -e '(try using Pkg; true catch; false end || Pkg.init()); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
 
 after_success:
