@@ -135,9 +135,18 @@ export droptips!, keeptips!
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
 using Requires
-@require RCall begin
-    println("Creating Phylo RCall interface...")
-    include("rcall.jl")
+@static if VERSION < v"0.7.0-"
+    @require RCall begin
+        println("Creating Phylo RCall interface...")
+        include("rcall.jl")
+    end
+else
+    function __init__()
+        @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
+            println("Creating Phylo RCall interface...")
+            include("rcall.jl")
+        end
+    end
 end
 
 end # module
