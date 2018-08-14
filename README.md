@@ -40,8 +40,9 @@ on Julia v1.0:
 The package is tested against the current Julia v1.0 release, but also
 the previous v0.6 and v0.7 versions on Linux, macOS, and Windows. Some
 dependencies are currently broken on v0.7 and v1.0 (in particular
-interfaces to `JuliaDB` and `RCall`), but `Phylo` works without them for
-now. Hopefully the R interface will be back soon...
+interfaces to `JuliaDB` for both and `RCall` for v1.0), but `Phylo`
+works without them for now. Hopefully the R interface will be back
+for v1.0 soon...
 
 ## Contributing and Questions
 

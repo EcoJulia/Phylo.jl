@@ -54,7 +54,7 @@ treeinfoiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
 eltype(::TreeSet{LABEL, NL, BL, TREE}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}} = TREE
 eltype(::TreeIterator{LABEL, NL, BL, TREE, TREESET}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}} = TREE
 eltype(tni::TreeNameIterator) = eltype(keys(tni.ts.trees))
-eltype(tii::TreeInfoIterator) = eltype(tii.ts.treeinfo)
+eltype(tii::TreeInfoIterator) = eltype(values(tii.ts.treeinfo))
 
 length(ts::TreeSet) = length(ts.trees)
 length(ti::TreeIterator) = length(ti.ts.trees)
@@ -69,8 +69,8 @@ iterate(ti::TreeIterator) = iterate(values(ti.ts.trees))
 iterate(ti::TreeIterator, state) = iterate(values(ti.ts.trees), state)
 iterate(tni::TreeNameIterator) = iterate(keys(tni.ts.trees))
 iterate(tni::TreeNameIterator, state) = iterate(keys(tni.ts.trees), state)
-iterate(tii::TreeInfoIterator) = iterate(tii.ts.treeinfo)
-iterate(tii::TreeInfoIterator, state) = iterate(tii.ts.treeinfo, state)
+iterate(tii::TreeInfoIterator) = iterate(values(tii.ts.treeinfo))
+iterate(tii::TreeInfoIterator, state) = iterate(values(tii.ts.treeinfo), state)
 else
 import Base.start, Base.next, Base.done
 start(ts::TreeSet) = start(treeiter(ts))

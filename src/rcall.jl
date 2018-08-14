@@ -2,7 +2,7 @@ using Phylo
 using RCall
 using RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
 
-import RCall.rcopy
+import RCall: rcopy
 
 function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     if !isObject(rt) || isS4(rt) || rcopy(rcall_p(:class, rt)) != "phylo"
@@ -21,7 +21,7 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     lengths = dict[:edge_length]
     nontips = nnode
     append!(nodes, addnodes!(tree, nontips))
-    
+
     for edge in 1:size(edges, 1)
         addbranch!(tree,
                    nodes[edges[edge, 1]], nodes[edges[edge, 2]],
