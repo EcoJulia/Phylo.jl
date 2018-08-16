@@ -1,9 +1,8 @@
 using Phylo
-using RCall
-using RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
 using Compat: undef
-
-import RCall: rcopy
+using .RCall
+using .RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
+import .RCall: rcopy
 
 function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     if !isObject(rt) || isS4(rt) || rcopy(rcall_p(:class, rt)) != "phylo"
@@ -33,11 +32,11 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     return tree
 end
 
-import RCall.rcopytype
+import .RCall.rcopytype
 
 rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = NamedTree
 
-import RCall.sexp
+import .RCall.sexp
 
 function sexp(tree::T) where T <: AbstractTree
     validate(tree) || warn("Tree does not internally validate")

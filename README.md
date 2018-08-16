@@ -15,21 +15,21 @@ on Julia v1.0:
 
 ```julia
 (v1.0) pkg> add Phylo
-  Updating registry at `~/.julia/registries/General`
-  Updating git-repo `https://github.com/JuliaRegistries/General.git`
  Resolving package versions...
- Installed Phylo ─ v0.3.1
   Updating `~/.julia/environments/v1.0/Project.toml`
-  [aea672f4] + Phylo v0.3.1
+  [aea672f4] + Phylo v0.3.2
   Updating `~/.julia/environments/v1.0/Manifest.toml`
   [7d9fca2a] + Arpack v0.2.2
+  [9e28174c] + BinDeps v0.8.9
   [31c24e10] + Distributions v0.16.2
   [90014a1f] + PDMats v0.9.4
-  [aea672f4] + Phylo v0.3.1
+  [aea672f4] + Phylo v0.3.2
   [1fd47b50] + QuadGK v2.0.0
   [79098fc4] + Rmath v0.5.0
+  [276daf66] + SpecialFunctions v0.7.0
   [4c63d2b9] + StatsFuns v0.7.0
   [0796e94c] + Tokenize v0.5.2
+  [30578b45] + URIParser v0.4.0
   [4607b0f0] + SuiteSparse
 
 (v1.0) pkg>
