@@ -3,13 +3,18 @@ __precompile__()
 """
     Phylo package
 
-The `Phylo` package provides a standard abstract interface to
+The `Phylo` package provides some simple phylogenetics types (e.g. NamedTree)
+to interface to the `Diversity` package for measuring phylogenetic diversity.
+It also provides an interface to `R` for copying trees to and from that
+language and can read newick and nexus tree files (including `TreeSet`s that
+contain multiple trees).
+
+Finally it also provides a standard abstract interface to
 phylogenetic trees, by defining `AbstractNode`, `AbstractBranch` and
 `AbstractTree` supertypes, and methods to interface to them. It also
 provides (through the `Phylo.API` submodule) methods to
 (re)define to write your own phylogenetic type in a way that will
-interact cleanly with other phylogenetic packages. Finally, it provides
-a simple phylogenetics type.
+interact cleanly with other phylogenetic packages.
 """
 module Phylo
 
@@ -25,7 +30,7 @@ export AbstractNode, AbstractBranch, AbstractTree
 """
     Phylo.API submodule
 
-The `Phylo.API` submodule should be `import[all]`ed if you want to
+The `Phylo.API` submodule should be `import`ed if you want to
 create a new phylogeny, node or branch subtype. Otherwise it can be
 ignored.
 """

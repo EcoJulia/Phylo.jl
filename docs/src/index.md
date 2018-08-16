@@ -139,7 +139,7 @@ julia> include(joinpath(Pkg.dir("Phylo"), "src", "rcall.jl"));
 R> library(ape)
 ```
 
-You can then translate back and forth using `NamedTree` contructors on
+You can then translate back and forth using `rcopy` on
 R `phylo` objects, and `RObject` constructors on julia `NamedTree`
 types to keep them in Julia or `@rput` to move the object into R:
 
@@ -154,14 +154,19 @@ Tip labels:
 
 Rooted; includes branch lengths.
 
-julia> jt = NamedTree(rt)
-NamedTree phylogenetic tree with 19 nodes and 18 branches
+julia> jt = rcopy(NamedTree, rt)
+Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 19 nodes and 18 branches
 Leaf names:
-String["t10", "t8", "t1", "t2", "t6", "t5", "t3", "t4", "t7", "t9"]
+String["t2", "t1", "t5", "t9", "t8", "t3", "t4", "t10", "t7", "t6"]
 
-julia> @rput rt;
+julia rjt = RObject(jt); # manually translate it back to R
 
-julia> @rput jt; # Automatically translates jt back to R
+R> all.equal($rjt, $rt) # check no damage in translations
+[1] TRUE
+
+julia> @rput rt; # Or use macros to pass R object back to R
+
+julia> @rput jt; # And automatically translate jt back to R
 
 R> jt
 

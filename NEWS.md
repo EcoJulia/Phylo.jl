@@ -1,3 +1,5 @@
+- v0.3.2
+  - RCall interface now up and running with 1.0.
 - v0.3.1
   - Working with Julia 0.7 and 1.0!
 - v0.3

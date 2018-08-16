@@ -38,11 +38,7 @@ on Julia v1.0:
 ## Project Status
 
 The package is tested against the current Julia v1.0 release, but also
-the previous v0.6 and v0.7 versions on Linux, macOS, and Windows. Some
-dependencies are currently broken on v0.7 and v1.0 (in particular
-interfaces to `JuliaDB` for both and `RCall` for v1.0), but `Phylo`
-works without them for now. Hopefully the R interface will be back
-for v1.0 soon...
+the previous v0.6 and v0.7 versions on Linux, macOS, and Windows.
 
 ## Contributing and Questions
 
@@ -53,16 +49,17 @@ just like to ask a question.
 ## Summary
 
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
- functionality for generating phylogenetic trees to feed into our
- [Diversity][diversity-url] package to calculate phylogenetic
- diversity. `Phylo` is currently in *alpha*, and is missing much
- functionality that people may desire, so please
- [raise an issue][issues-url] if/when you find problems or missing
- functionality - don't assume that I know! Currently the package can
- be used to make trees manually, to generate random trees using the
- framework from `Distributions`, and to read newick and nexus format trees from
- files. For instance, to construct a sampler for 5 tip non-ultrametric
- trees, and then generate one or two random tree of that type:
+functionality for generating phylogenetic trees to feed into our
+[Diversity][diversity-url] package to calculate phylogenetic
+diversity. `Phylo` is currently in *alpha*, and is missing much
+functionality that people may desire, so please
+[raise an issue][issues-url] if/when you find problems or missing
+functionality - don't assume that I know! Currently the package can
+be used to make trees manually, to generate random trees using the
+framework from `Distributions`, and to read newick and nexus format
+trees from files. For instance, to construct a sampler for 5 tip
+non-ultrametric trees, and then generate one or two random tree of
+that type:
 
 ```julia
 julia> using Phylo
@@ -191,7 +188,7 @@ Creating Phylo RCall interface...
 R> library(ape)
 ```
 
-You can then translate back and forth using `NamedTree` contructors on
+You can then translate back and forth using `rcopy` on
 R `phylo` objects, and `RObject` constructors on julia `NamedTree`
 types to keep them in Julia or `@rput` to move the object into R:
 
@@ -206,14 +203,19 @@ Tip labels:
 
 Rooted; includes branch lengths.
 
-julia> jt = NamedTree(rt)
+julia> jt = rcopy(NamedTree, rt)
 Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 19 nodes and 18 branches
 Leaf names:
 String["t2", "t1", "t5", "t9", "t8", "t3", "t4", "t10", "t7", "t6"]
 
-julia> @rput rt;
+julia rjt = RObject(jt); # manually translate it back to R
 
-julia> @rput jt; # Automatically translates jt back to R
+R> all.equal($rjt, $rt) # check no damage in translations
+[1] TRUE
+
+julia> @rput rt; # Or use macros to pass R object back to R
+
+julia> @rput jt; # And automatically translate jt back to R
 
 R> jt
 

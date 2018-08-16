@@ -10,10 +10,6 @@ global skipR = !mustCrossvalidate &&
       (VERSION >= v"0.7.0-" && Sys.isunix()))
 try
     skipR && error("Skipping R testing...")
-    try using Pkg; catch end
-    if "RCall" ∉ keys(Pkg.installed())
-        Pkg.add("RCall")
-    end
     using RCall
     global skipR = false
 catch

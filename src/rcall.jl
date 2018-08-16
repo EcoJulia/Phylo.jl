@@ -1,6 +1,7 @@
 using Phylo
 using RCall
 using RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
+using Compat: undef
 
 import RCall: rcopy
 
@@ -54,8 +55,8 @@ function sexp(tree::T) where T <: AbstractTree
     push!(nodes, root[1])
     append!(nodes, nontips)
     bi = branchiter(tree)
-    lengths = Vector{Float64}(length(bi))
-    edges = Matrix{Int32}(length(lengths), 2)
+    lengths = Vector{Float64}(undef, length(bi))
+    edges = Matrix{Int32}(undef, length(lengths), 2)
     index = 1
     for branch in bi
         lengths[index] = getlength(branch)
