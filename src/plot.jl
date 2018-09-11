@@ -43,10 +43,13 @@ struct Dendrogram; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; 
 struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
 
 @recipe function f(d::Dendrogram)
+
+    sa = get(plotattributes, :series_annotations, nothing)
     @series begin
         seriestype := :path
         markersize := 0
         markershape := :none
+        series_annotations := nothing
 
         lc = _extend(get(plotattributes, :linecolor, nothing), d.x)
         lc !== nothing && (linecolor := lc)
@@ -57,9 +60,10 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
 
         d.x, d.y
     end
-    if !isempty(d.marker_x)
+    if !isempty(d.marker_x) || sa !== nothing
         @series begin
             seriestype := :scatter
+            sa !== nothing && (series_annotations := sa)
             d.marker_x, d.marker_y
         end
     end
