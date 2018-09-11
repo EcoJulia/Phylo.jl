@@ -4,7 +4,7 @@ using Plots # now necessary for the labels :-(
 
 @recipe function f(tree::Phylo.AbstractTree; treetype = :dendrogram, showtips = true, tipfont = (5,))
 
-    linecolor --> :black
+    #linecolor --> :black
     grid --> false
     framestyle --> :none
     legend --> false
