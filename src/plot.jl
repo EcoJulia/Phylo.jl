@@ -123,7 +123,7 @@ leafiter(tree) = nodenamefilter(isleaf, tree)
 
 
 
-function ladderize!(tree::AbstractTree)
+function Base.sort!(tree::AbstractTree)
     function loc!(clade::String)
         if isleaf(tree, clade)
             return 1
