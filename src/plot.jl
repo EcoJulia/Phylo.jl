@@ -199,3 +199,19 @@ function _circle_transform_segments(xs, ys)
     end
     retx, rety
 end
+
+
+# a function to update a value successively from the root to the tips
+function map_depthfirst(FUN, start, tree, eltype = nothing)
+    root = first(nodenamefilter(isroot, tree))
+    eltype === nothing && (eltype = typeof(FUN(start, root)))
+    ret = Vector{eltype}()
+    function local!(val, node)
+        push!(ret, val)
+        for ch in getchildren(tree, node)
+            local!(FUN(val, node), ch)
+        end
+    end
+    local!(start, root)
+    ret
+end
