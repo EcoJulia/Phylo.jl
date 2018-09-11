@@ -73,10 +73,14 @@ end
 
 @recipe function f(d::Fan)
     adjust(y) = 2pi*y / (length(d.tipannotations) + 1)
+
+    sa = get(plotattributes, :series_annotations, nothing)
     @series begin
         seriestype := :path
         markersize := 0
         markershape := :none
+        series_annotations := nothing
+
         x, y = _circle_transform_segments(d.x, adjust(d.y))
         lc = _extend(get(plotattributes, :linecolor, nothing), x)
         lc !== nothing && (linecolor := lc)
@@ -86,9 +90,10 @@ end
         lz !== nothing && (line_z := lz)
         x, y
     end
-    if !isempty(d.marker_x)
+    if !isempty(d.marker_x) || sa !== nothing
         @series begin
             seriestype := :scatter
+            a !== nothing && (series_annotations := sa)
             _xcirc.(adjust(d.marker_y), d.marker_x), _ycirc.(adjust(d.marker_y), d.marker_x)
         end
     end
