@@ -45,10 +45,14 @@ Add a branch from `source` to `destination` on `tree`.
 """
 function addbranch!(tree::AbstractTree, source, destination, length::Float64 = NaN;
                     branchname = _newbranchlabel(tree))
-    _hasnode(tree, source) && hasoutboundspace(tree, source) ||
-        error("Tree does not have an available source node called $source")
-    _hasnode(tree, destination) && !hasinbound(tree, destination) ||
-        error("Tree does not have an available destination node called $destination")
+    _hasnode(tree, source) ||
+    error("Tree does not have an available source node called $source")
+    hasoutboundspace(tree, source) ||
+    error("$source already has maximum number of outbound connections ($(outdegree(tree, source)))")
+    _hasnode(tree, destination) ||
+        error("Tree does not have a destination node called $destination")
+    !hasinbound(tree, destination) ||
+            error("Tree does not have an available destination node called $destination")
     destination != source || error("Branch must connect different nodes")
     _hasbranch(tree, branchname) &&
         error("Tree already has a branch called $branchname")
