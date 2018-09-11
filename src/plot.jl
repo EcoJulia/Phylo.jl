@@ -121,6 +121,26 @@ end
 
 leafiter(tree) = nodenamefilter(isleaf, tree)
 
+
+
+function ladderize!(tree::AbstractTree)
+    function loc!(clade::String)
+        if isleaf(tree, clade)
+            return 1
+        end
+
+        sizes = map(loc!, getchildren(tree, clade))
+        node = getnode(tree, clade)
+        node.outbounds .= node.outbounds[sortperm(sizes)]
+        sum(sizes) + 1
+    end
+
+    loc!(first(nodenamefilter(isroot, tree)))
+    tree
+end
+
+
+
 function _findxy(tree::Phylo.AbstractTree)
 
     # two convenience recursive functions using captured variables
