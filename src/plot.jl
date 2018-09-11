@@ -90,9 +90,12 @@ end
     end
     aspect_ratio := 1
     mx = maximum(filter(isfinite, d.x))
-    xlim --> (1.3 .* (-mx, mx))
-    ylim --> (1.3 .* (-mx, mx))
-    d.showtips && (annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., text(x[3], :left, rad2deg(adjust(x[2])), d.tipfont...)), d.tipannotations))
+    if d.showtips
+        xlim --> (1.3 .* (-mx, mx))
+        ylim --> (1.3 .* (-mx, mx))
+        annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., text(x[3], :left,
+            rad2deg(adjust(x[2])), d.tipfont...)), d.tipannotations)
+    end
     [],[]
 end
 
