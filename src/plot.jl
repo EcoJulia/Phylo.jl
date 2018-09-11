@@ -47,6 +47,14 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
         seriestype := :path
         markersize := 0
         markershape := :none
+
+        lc = _extend(get(plotattributes, :linecolor, nothing), d.x)
+        lc !== nothing && (linecolor := lc)
+        la = _extend(get(plotattributes, :linealpha, nothing), d.x)
+        la !== nothing && (linealpha := la)
+        lz = _extend(get(plotattributes, :line_z, nothing), d.x)
+        lz !== nothing && (line_z := lz)
+
         d.x, d.y
     end
     if !isempty(d.marker_x)
@@ -66,6 +74,12 @@ end
         markersize := 0
         markershape := :none
         x, y = _circle_transform_segments(d.x, adjust(d.y))
+        lc = _extend(get(plotattributes, :linecolor, nothing), x)
+        lc !== nothing && (linecolor := lc)
+        la = _extend(get(plotattributes, :linealpha, nothing), x)
+        la !== nothing && (linealpha := la)
+        lz = _extend(get(plotattributes, :line_z, nothing), x)
+        lz !== nothing && (line_z := lz)
         x, y
     end
     if !isempty(d.marker_x)
@@ -82,6 +96,16 @@ end
     [],[]
 end
 
+function _extend(tmp, x)
+    tmp isa AbstractVector && abs(length(tmp) - count(isnan, x)) < 2 || return nothing
+    ret = similar(x, eltype(tmp))
+    j = 1 + length(tmp) - count(isnan, x)
+    for i in eachindex(x)
+        ret[i] = tmp[j]
+        isnan(x[i]) && (j += 1)
+    end
+    return ret
+end
 
 leafiter(tree) = nodenamefilter(isleaf, tree)
 
