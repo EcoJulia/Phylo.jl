@@ -1,18 +1,27 @@
 using Compat: mapreduce
 
-function _treepast(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
-    branches = BL[]
-    nodes = NL[node]
-    while hasinbound(tree, node)
-        inbound = getinbound(tree, node)
-        branches = push!(branches, inbound)
-        node = src(tree, inbound)
-        nodes = push!(nodes, node)
+function _treepast(tree::T, nodename::NL) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    branches, nodes = _treepast(tree, getnode(tree, nodename))
+    return (map(b -> getbranchname(tree, b), branches),
+            map(n -> getnodename(tree, n), nodes))
+end
+
+function _treepast(tree::T, node::N) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    branches = B[]
+    nodes = N[node]
+    while _hasinbound(tree, node)
+        inbound = _getinbound(tree, node)
+        push!(branches, inbound)
+        node = _getparent(tree, node)
+        push!(nodes, node)
     end
     return branches, nodes
 end
 
-function _treefuture(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
+function _treefuture(tree::T, node::NL) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     branches = BL[]
     nodestoprocess = NL[node]
     nodesprocessed = NL[]
@@ -32,7 +41,8 @@ end
 
 Find the branch route between a node on a tree and its root
 """
-function branchhistory(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
+function branchhistory(tree::T, node::Union{NL, N}) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     return _treepast(tree, node)[1]
 end
 
@@ -41,7 +51,8 @@ end
 
 Find the node route between a node on a tree and its root
 """
-function nodehistory(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
+function nodehistory(tree::T, node::Union{NL, N}) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     return _treepast(tree, node)[2]
 end
 
@@ -50,7 +61,13 @@ end
 
 Find the branch route between two nodes on a tree
 """
-function branchroute(tree::T, node1::NL, node2::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
+function branchroute(tree::T, node1::NL, node2::NL) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    route = branchroute(tree, getnode(tree, node1), getnode(tree, node2))
+    return map(b -> getbranchname(tree, b), route)
+end
+function branchroute(tree::T, node1::N, node2::N) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     branches1, nodes1 = _treepast(tree, node1)
     branches2, nodes2 = _treepast(tree, node2)
     nodes1[end] == nodes2[end] ||
@@ -65,11 +82,16 @@ end
 
 Find the node route between two nodes on a tree
 """
-function noderoute(tree::T, node1::NL, node2::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
+function noderoute(tree::T, node1::NL, node2::NL) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    route = noderoute(tree, getnode(tree, node1), getnode(tree, node2))
+    return map(n -> getnodename(tree, n), route)
+end
+function noderoute(tree::T, node1::N, node2::N) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     branches1, nodes1 = _treepast(tree, node1)
     branches2, nodes2 = _treepast(tree, node2)
-    nodes1[end] == nodes2[end] ||
-        return error("No route between nodes")
+    nodes1[end] == nodes2[end] || error("No route between nodes")
     common = nodes1[end]
     while min(length(nodes1), length(nodes2)) > 0 && nodes1[end] == nodes2[end]
         common = nodes1[end]
