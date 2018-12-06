@@ -1,10 +1,16 @@
 using Phylo
+using Phylo: Rootedness, Rooted, TreeType
+using Phylo: AbstractNode, AbstractBranch, AbstractTree
 
+# Need to be able to create new node and branch labels
 function _newlabel(ids::Vector{Label}) where Label <: Integer
     return isempty(ids) ? 1 : maximum(ids) + 1
 end
+function _newlabel(ids::Vector{Vector{Label}}) where Label <: Integer
+    return mapreduce(_newlabel, max, 1, ids)
+end
 
-function _newlabel(names::Vector{String}, prefix)
+function _newlabelfree(names::Vector{String}, prefix)
     names = collect(Iterators.filter(n -> length(n) > length(prefix) &&
                                      n[1:length(prefix)]==prefix, names))
     start = length(names) + 1
@@ -13,157 +19,321 @@ function _newlabel(names::Vector{String}, prefix)
         start += 1
         name = prefix * "$start"
     end
-    return name
+    return start
 end
-
-function _ntrees(::AbstractTree)
-    return 1
-end
-
-function _extractnode(::T, node::N) where {T <: AbstractTree, N <: AbstractNode}
-    return node
-end
-
-function _extractnode(tree::T, nodename::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
-    return getnode(tree, nodename)
-end
-
-function _extractnode(::T, pair::Pair{NL, N}) where {NL, BL, T <: AbstractTree{NL, BL},
-                                                     N <: AbstractNode}
-    return pair[2]
-end
-
-function _extractnodename(::T, pair::Pair{NL, N}) where {NL, BL, T <: AbstractTree{NL, BL},
-                                                         N <: AbstractNode}
-    return pair[1]
-end
-
-function _extractbranch(::T, branch::B) where {T <: AbstractTree, B <: AbstractBranch}
-    return branch
-end
-
-function _extractbranch(tree::T, branchname::BL) where {NL, BL, T <: AbstractTree{NL, BL}}
-    return getbranch(tree, branchname)
-end
-
-function _extractbranch(::T, pair::Pair{BL, B}) where {NL, BL, T <: AbstractTree{NL, BL},
-                                                       B <: AbstractBranch}
-    return pair[2]
-end
-
-function _extractbranchname(::T, pair::Pair{BL, B}) where {NL, BL, T <: AbstractTree{NL, BL},
-                                                           B <: AbstractBranch}
-    return pair[1]
-end
-
-# AbstractTree methods
-"""
-    _nodetype(::AbstractTree)
-
-Returns type of nodes in a tree.
-"""
-function _nodetype end
-
-"""
-    _branchtype(::AbstractTree)
-
-Returns type of branches in a tree.
-"""
-function _branchtype end
-
+_newlabel(names::Vector{String}, prefix) =
+    prefix * "$(_newlabelfree(names, prefix))"
+_newlabel(names::Vector{Vector{String}}, prefix) =
+    prefix * "$(mapreduce(_newlabelfree, max, 1, names))"
 
 """
     _newbranchlabel(tree::AbstractTree)
 
-
+Returns a new unique branch name for a tree.
 """
 function _newbranchlabel end
-
-function _newbranchlabel(tree::AbstractTree{NL, String}) where NL
-    return _newlabel(_getbranchnames(tree), "Branch ")
-end
-
-function _newbranchlabel(tree::AbstractTree{NL, I}) where {NL, I <: Integer}
-    return _newlabel(_getbranchnames(tree))
-end
-
-"""
-    _addbranch!(tree::AbstractTree, source, destination;
-                length::Float64 = NaN,
-                branchname = _newbranchlabel(tree))
-
-Must be implemented for any AbstractTree subtype.
-"""
-function _addbranch! end
-
-"""
-    _deletebranch!(tree::AbstractTree, branchname)
-
-Must be implemented for any AbstractTree subtype.
-"""
-function _deletebranch! end
-
-"""
-    _branch!(tree::AbstractTree, source, length::Float64, destination, branchname)
-
-
-"""
-function _branch!(tree::AbstractTree, source, length::Float64, destination, branchname)
-    _addbranch!(tree, source, _addnode!(tree, destination), length, branchname)
-    return destination
-end
+_newbranchlabel(tree::AbstractTree) = _newlabel(getbranchnames(tree))
 
 """
     _newnodelabel(tree::AbstractTree)
 
-
+Returns a new unique node name for a tree.
 """
 function _newnodelabel end
+_newnodelabel(tree::AbstractTree{TT, RT, String, N, B}) where
+    {TT, RT, N, B} = _newlabel(collect(getnodenames(tree)), "Node ")
+_newnodelabel(tree::AbstractTree{TT, RT, I, N, B}) where
+    {TT, RT, I <: Integer, N, B} = _newlabel(collect(getnodenames(tree)))
 
-function _newnodelabel(tree::T) where {BL, T <: AbstractTree{String, BL}}
-    return _newlabel(_getnodenames(tree), "Node ")
-end
+# AbstractTree type methods
+"""
+    _treenametype(::Type{AbstractTree})
 
-function _newnodelabel(tree::T) where {I <: Integer, BL, T <: AbstractTree{I, BL}}
-    return _newlabel(_getnodenames(tree))
-end
+Returns the label type for a tree type. Must be implemented for any tree type.
+"""
+function _treenametype end
+_treenametype(::Type{T}) where
+    {RT, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}} = Int
+
+# AbstractTree methods
+"""
+    _ntrees(::AbstractTree)
+
+Returns the number of trees in an object. Must be implemented for any ManyTrees
+type.
+"""
+function _ntrees end
+_ntrees(tree::AbstractTree{OneTree, RT, NL, N, B}) where
+    {RT, NL, N, B} = 1
+_ntrees(tree::AbstractTree{ManyTrees, RT, NL, N, B}) where
+    {RT, NL, N, B} = length(_gettreenames(tree))
 
 """
-    _getnodenames(tree::AbstractTree)
+    _gettreenames(::AbstractTree)
 
-Must be implemented for any AbstractTree subtype.
+Returns the names for the trees. Must be implemented for any ManyTrees type,
+should be implemented for any OneTree type where they have names.
 """
-function _getnodenames end
+function _gettreenames end
+_gettreenames(tree::AbstractTree{OneTree, RT, NL, N, B}) where
+    {RT, NL, N, B} = [_gettreename(tree)]
+
+"""
+    _gettreenames(::AbstractTree)
+
+Returns the names for the trees. Must be implemented for any ManyTrees type,
+should be implemented for any OneTree type where they have names.
+"""
+function _gettreename end
+_gettreename(tree::AbstractTree{OneTree, RT, NL, N, B}) where
+    {RT, NL, N, B} = 1
+
+"""
+    _getonetree(::AbstractTree)
+    _getonetree(::Pair{Label, AbstractTree})
+    _getonetree(::AbstractTree, id)
+
+Returns a tree - either itself if it is a single tree, or the single tree
+in a set with label id. Must be implemented for any ManyTrees type.
+"""
+function _getonetree end
+_getonetree(tree::AbstractTree{OneTree, RT, NL, N, B}) where
+    {RT, NL, N, B} = tree
+_getonetree(treepair::Pair{Label, T}) where
+    {Label, RT, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}} = treepair[2]
+function _getonetree(tree::T, id) where
+    {RT, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    id isa treenametype(T) || throw(TypeError(:_getonetree, "index argument",
+                                               treenametype(T), id))
+    id ∈ _gettreenames(tree) || throw(BoundsError(tree, id))
+    return tree
+end
 
 """
     _getnodes(tree::AbstractTree)
 
-Must be implemented for any AbstractTree subtype.
+Returns a vector of nodes for a OneTree tree. Either _getnodes() or
+_getnodenames() must be implemented for any OneTree tree type.
 """
 function _getnodes end
+_getnodes(tree::AbstractTree{OneTree, RT, NL, N, B}) where {RT, NL, N, B} =
+    [_getnode(tree, name) for name in _getnodenames(tree)]
 
 """
-    _addnode!(tree::AbstractTree, nodename)
+    _getnodenames(tree::AbstractTree)
+
+Returns a vector of node names for a OneTree tree. Either _getnodes() or
+_getnodenames() must be implemented for any OneTree tree type.
+"""
+function _getnodenames end
+_getnodenames(tree::AbstractTree{OneTree, RT, NL, N, B}) where {RT, NL, N, B} =
+    [_getnodename(tree, node) for node in _getnodes(tree)]
+
+"""
+    _nnodes(::AbstractTree)
+
+Returns the number of nodes (internal nodes and leaves) in a single tree. May
+be implemented for any OneTree tree type (otherwise infers from _getnodes()).
+"""
+_nnodes(tree::AbstractTree{OneTree, RT, NL, N, B}) where {RT, NL, N, B} =
+    length(_getnodes(tree))
+
+"""
+    _getleaves(::AbstractTree)
+
+Returns the leaves (tips) of a single tree. May be implemented for any
+OneTree type (otherwise determined from _getnodes() and _isleaf() functions).
+"""
+function _getleaves end
+_getleaves(tree::AbstractTree{OneTree, RT, NL, N, B}) where {RT, NL, N, B} =
+    filter(_isleaf, _getnodes(tree))
+
+"""
+    _nleaves(::AbstractTree)
+
+Returns the number of leaves (tips) in a tree. May be implemented for any
+OneTree type (otherwise determined from the _getleaves() function).
+"""
+function _nleaves end
+_nleaves(tree::AbstractTree{ManyTrees, RT, NL, N, B}) where {RT, NL, N, B} =
+    _nleaves(_getonetree(tree, _gettreenames(tree)[1]))
+_nleaves(tree::AbstractTree{OneTree, RT, NL, N, B}) where {RT, NL, N, B} =
+    length(_getleaves(tree))
+
+"""
+    _getroots(::AbstractTree)
+    _getroots(::Rooted)
+
+Returns the root(s) of a OneTree tree. May be implemented for any
+OneTree type (otherwise determined from _getnodes() and _isroot() functions).
+"""
+function _getroots end
+_getroots(tree::AbstractTree{ManyTrees, RT, NL, N, B}) where
+    {RT, NL, N, B} = mapreduce(_getroots, append!, _gettrees(tree); init = N[])
+
+"""
+    _getroot(::AbstractTree)
+    _getroot(::Rooted)
+
+Returns the unique root of a rooted tree. May be implemented for any
+OneTree type (otherwise determined from _getroots).
+"""
+function _getroot end
+function _getroot(tree::AbstractTree{OneTree, RT, NL, N, B}) where
+    {RT <: Rooted, NL, N, B}
+    roots = _getroots(tree)
+    @assert length(roots) == 1 "More than one root for tree ($(length(roots)))"
+    return first(roots)
+end
+
+"""
+    _nroots(::AbstractTree)
+
+Returns the number of roots (subtrees) in a OneTree tree. May be implemented
+for any ManyRoots type (otherwise infers from _getroots()).
+"""
+function _nroots end
+_nroots(tree::AbstractTree{OneTree, RT, NL, N, B}) where
+    {RT <: Rooted, NL, N, B} = length(_getroots(tree))
+_nroots(tree::AbstractTree{OneTree, Unrooted, NL, N, B}) where {NL, N, B} = 0
+
+"""
+    _getnode(::AbstractTree, id)
+    _getnode(id)
+
+Returns the node associated with id (which could be a name, a node or a pair)
+from a tree. For some id types, it will be possible to extract the node
+without reference to the tree. Must be implemented for any tree and node label
+type.
+"""
+function _getnode end
+_getnode(::T, node::N) where
+    {TT, RT, NL, N <: AbstractNode{RT, NL}, B,
+     T <: AbstractTree{TT, RT, NL, N, B}} = node
+_getnode(::T, pair::Pair{NL, N}) where
+    {TT, RT, NL, N <: AbstractNode{RT, NL}, B,
+     T <: AbstractTree{TT, RT, NL, N, B}} = pair[2]
+_getnode(pair::Pair{NL, N}) where {RT, NL, N <: AbstractNode{RT, NL}} = pair[2]
+
+"""
+    _getnodename(::AbstractTree, id)
+    _getnodename(id)
+
+Returns the name of a node associated with id (which could be a name,
+a node or a pair) from a tree. For some id and node types, it will be
+able to extract the node name without reference to the tree.
+"""
+function _getnodename end
+_getnodename(::T, pair::Pair{NL, N}) where
+    {RT, NL, N <: AbstractNode{RT, NL}, B,
+     T <: AbstractTree{OneTree, RT, NL, N, B}} = pair[1]
+_getnodename(::T, nodename::NL) where
+    {RT, NL, N, B,
+     T <: AbstractTree{OneTree, RT, NL, N, B}} = nodename
+_getnodename(pair::Pair{NL, N}) where
+    {RT, NL, N <: AbstractNode{RT, NL}} = pair[1]
+
+
+"""
+    _getbranch(::AbstractTree, id)
+    _getbranch(id)
+
+Returns the branch associated with id (which could be a name, a branch or a
+pair) from a tree. For some id types, it will be possible to extract the branch
+without reference to the tree. Must be implemented for any OneTree tree type.
+"""
+function _getbranch end
+_getbranch(::T, branch::B) where
+    {TT, RT, NL, N, B <: AbstractBranch{RT, NL},
+     T <: AbstractTree{TT, RT, NL, N, B}} = branch
+_getbranch(::T, pair::Pair{B}) where
+    {TT, RT, NL, N, B <: AbstractBranch{NL},
+     T <: AbstractTree{TT, RT, NL, N, B}} = pair[2]
+_getbranch(pair::Pair{B}) where
+    {NL, B <: AbstractBranch{NL}} = pair[2]
+
+"""
+    _getbranchname(::AbstractTree, id)
+    _getbranchname(id)
+
+Returns the branch associated with id (which could be a name, a branch or a
+pair) from a tree. For some id and branch types, it will be able to extract
+the branch name without reference to the tree.
+"""
+function _getbranchname end
+_getbranchname(::T, pair::Pair{B}) where
+    {TT, RT, NL, N, B <: AbstractBranch{RT, NL},
+     T <: AbstractTree{TT, RT, NL, N, B}} = pair[1]
+_getbranchname(::T, branchname::Int) where
+    {TT, RT, NL, N, B,
+     T <: AbstractTree{TT, RT, NL, N, B}} = branchname
+_getbranchname(pair::Pair{B}) where
+    {RT, NL, B <: AbstractBranch{RT, NL}} = pair[1]
+
+"""
+    _hasnode(tree::AbstractTree, nodename)
+
+May be implemented for any OneTree tree type.
+"""
+function _hasnode end
+_hasnode(tree::AbstractTree{OneTree, RT, NL, N, B}, nodename::NL) where
+    {RT, NL, N, B} = nodename ∈ _getnodenames(tree)
+
+"""
+    _getbranches(tree::AbstractTree)
+
+Returns a vector of branches for a OneTree tree. Either _getbranches() or
+_getbranchnames() must be implemented for any OneTree tree type.
+"""
+function _getbranches end
+_getbranches(tree::AbstractTree{OneTree, RT, NL, N, B}) where
+    {RT, NL, N, B} =
+    [_getbranch(tree, name) for name in _getbranchnames(tree)]
+
+"""
+    _getbranchnames(tree::AbstractTree)
+
+Returns a vector of branch names for a OneTree tree. Either _getbranches() or
+_getbranchnames() must be implemented for any OneTree tree type.
+"""
+function _getbranchnames end
+_getbranchnames(tree::AbstractTree{OneTree, RT, NL, N, B}) where
+    {RT, NL, N, B} =
+    [_getbranchname(tree, branch) for branch in _getbranches(tree)]
+
+"""
+    _hasbranch(tree::AbstractTree, branchname)
+
+Tests whether a branch name is present in a tree. May be implemented for any
+OneTree tree type.
+"""
+function _hasbranch end
+_hasbranch(tree::AbstractTree{OneTree, RT, NL, N, B}, branchname::NL) where
+    {RT, NL, N, B} = branchname ∈ _getbranchnames(tree)
+
+"""
+    _createbranch!(tree::AbstractTree, source, destination,
+                   length::Float64, data)
+
+Create a new branch and add it to a tree. Must be implemented for any
+AbstractTree subtype.
+"""
+function _createbranch! end
+
+"""
+    _deletebranch!(tree::AbstractTree, branch)
+
+Delete a branch, reoving it from a tree. Must be implemented for any
+AbstractTree subtype.
+"""
+function _deletebranch! end
+
+"""
+    _createnode!(tree::AbstractTree, nodename)
 
 Must be implemented for any AbstractTree subtype.
 """
-function _addnode! end
-
-"""
-    _addnodes!(tree::AbstractTree, nodenames::AbstractVector)
-    _addnodes!(tree:AbstractTree, count::Integer)
-
-
-"""
-function _addnodes! end
-
-function _addnodes!(tree::AbstractTree, nodenames::AbstractVector)
-    return map(name -> _addnode!(tree, name), nodenames)
-end
-
-function _addnodes!(tree::AbstractTree, count::Integer)
-    return map(name -> addnode!(tree), 1:count)
-end
+function _createnode! end
 
 """
     _deletenode!(tree::AbstractTree, nodename)
@@ -171,48 +341,6 @@ end
 Must be implemented for any AbstractTree subtype.
 """
 function _deletenode! end
-
-"""
-    _hasnode(tree::AbstractTree, nodename)
-
-Must be implemented for any AbstractTree subtype.
-"""
-function _hasnode end
-
-"""
-    _getnode(tree::AbstractTree, nodename)
-
-Must be implemented for any AbstractTree subtype.
-"""
-function _getnode end
-
-"""
-    _getbranchnames(tree::AbstractTree)
-
-Must be implemented for any AbstractTree subtype.
-"""
-function _getbranchnames end
-
-"""
-    _getbranches(tree::AbstractTree)
-
-Must be implemented for any AbstractTree subtype.
-"""
-function _getbranches end
-
-"""
-    _hasbranch(tree::AbstractTree, branchname)
-
-Must be implemented for any AbstractTree subtype.
-"""
-function _hasbranch end
-
-"""
-    _getbranch(tree::AbstractTree, branchname)
-
-Must be implemented for any AbstractTree subtype.
-"""
-function _getbranch end
 
 """
     _hasrootheight(::AbstractTree)
@@ -254,60 +382,102 @@ end
 
 # AbstractNode methods
 """
-    _isleaf(node::AbstractNode)
+    _isleaf(tree::AbstractTree, node::AbstractNode)
 
-
+Is the node a leaf? Does not need to be implemented for any node type –
+inferred from _outdegree or _degree - unless tree knows which nodes are
+leaves and not nodes.
 """
+function _isleaf end
+_isleaf(::AbstractTree, node::AbstractNode) = _isleaf(node)
 _isleaf(node::AbstractNode) = _outdegree(node) == 0
+function _isleaf(node::AbstractNode{Unrooted, NL}) where NL
+    _degree(node) == 0 && return true
+    _degree(node) > 1 && return false
+    return missing
+end
 
 """
-    _isroot(node::AbstractNode)
+    _isroot(tree::AbstractTree, node::AbstractNode)
 
-
+Is the node a root node of the tree?
 """
-_isroot(node::AbstractNode) = !_hasinbound(node)
+function _isroot end
+_isroot(::AbstractTree, node::AbstractNode) = _isroot(node)
+_isroot(::AbstractTree, node::AbstractNode{Unrooted, NL}) where NL = false
+_isroot(tree::AbstractTree{TT, RT, NL, N, B}, node::N) where
+    {TT, RT <: Rooted, NL, N, B} = node ∈ _getroots(tree)
 
 """
     _isinternal(node::AbstractNode)
 
-
+Is the node internal to the tree?
 """
-_isinternal(node::AbstractNode) = _outdegree(node) > 0 && _hasinbound(node)
+function _isinternal end
+_isinternal(::AbstractTree, node::AbstractNode) = _isinternal(node)
+_isinternal(node::AbstractNode{RT, NL}) where {RT <: Rooted, NL} =
+    _outdegree(node) > 0 && _hasinbound(node)
+_isinternal(node::AbstractNode{Unrooted, NL}) where NL =
+    _degree(node) < 2 ? false : missing
 
 """
     _isunattached(node::AbstractNode)
 
-
+Does the node currently form its own (sub)tree?
 """
-_isunattached(node::AbstractNode) = _outdegree(node) == 0 && !_hasinbound(node)
+_isunattached(node::AbstractNode) = _degree(node) == 0
 
 """
     _indegree(node::AbstractNode)
 
-
+In degree of node. Can be implemented for rooted nodes, otherwise inferred
+from _hasinbound.
 """
-_indegree(node::AbstractNode) = _hasinbound(node) ? 1 : 0
+function _indegree end
+_indegree(::AbstractTree, node::AbstractNode) = _indegree(node)
+_indegree(node::AbstractNode) = Int(_hasinbound(node))
+_indegree(node::AbstractNode{Unrooted, NL}) where NL =
+    _degree(node) == 0 ? 0 : missing
 
 """
     _hasinboundspace(node::AbstractNode)
 
-
+Is there space for a new inbound connection on a node?
 """
+function _hasinboundspace end
+_hasinboundspace(::AbstractTree, node::AbstractNode) = !_hasinbound(node)
 _hasinboundspace(node::AbstractNode) = !_hasinbound(node)
 
 """
     _outdegree(node::AbstractNode)
 
-Must be implemented for any AbstractNode subtype.
+Out degree of node.
 """
 function _outdegree end
+_outdegree(::AbstractTree, node::AbstractNode) = _outdegree(node)
+_outdegree(node::AbstractNode) = length(_getoutbounds(node))
+_outdegree(node::AbstractNode{Unrooted, NL}) where NL =
+    _degree(node) == 0 ? 0 : missing
 
 """
     _hasoutboundspace(node::AbstractNode)
 
-
+Is there space for a new outbound connection on a node? Must be implemented if
+a node has a limit on the number of outbound connections (eg for a binary tree)
 """
 function _hasoutboundspace end
+_hasoutboundspace(::AbstractTree, node::AbstractNode) = _hasoutboundspace(node)
+_hasoutboundspace(::AbstractNode) = true
+
+"""
+    _degree(node::AbstractNode)
+
+Degree of node. Must be implemented for Unrooted nodes, otherwise can be
+inferred from indegree and outdegree.
+"""
+function _degree end
+_degree(::AbstractTree, node::AbstractNode) = _degree(node)
+_degree(node::AbstractNode) = _indegree(node) + _outdegree(node)
 
 """
     _hasinbound(node::AbstractNode)
@@ -315,48 +485,140 @@ function _hasoutboundspace end
 Must be implemented for any AbstractNode subtype.
 """
 function _hasinbound end
+_hasinbound(::AbstractTree, node::AbstractNode) = _hasinbound(node)
+_hasinbound(node::AbstractNode{Unrooted, NL}) where NL =
+    _degree(node) == 0 ? false : missing
 
 """
     _getinbound(node::AbstractNode)
 
-Must be implemented for any AbstractNode subtype.
+Get the inbound connection. Must be implemented for any rooted AbstractNode subtype.
 """
 function _getinbound end
+_getinbound(::AbstractTree, node::AbstractNode) = _getinbound(node)
+_getinbound(node::AbstractNode{Unrooted, NL}) where NL =
+    error("Can't ask for inbound connection on Unrooted trees")
 
 """
-    _setinbound!(node::AbstractNode, inbound)
+    _getparent(tree::AbstractTree, node)
 
-Must be implemented for any AbstractNode subtype.
+Return the parent node for this node. Can be implemented for Rooted node types.
 """
-function _setinbound! end
+function _getparent end
+_getparent(tree::AbstractTree{OneTree, Unrooted, NL, N, B}, nodename::NL) where
+    {NL, N, B} = error("Can't ask for parent of Unrooted tree")
+_getparent(tree::AbstractTree{OneTree, RT, NL, N, B}, node::N) where
+    {RT <: Rooted, NL, N, B} = _src(tree, _getinbound(tree, node))
 
 """
-    _deleteinbound!(node::AbstractNode, inbound)
+    _addinbound!(node::AbstractNode, inbound)
 
-Must be implemented for any AbstractNode subtype.
+Adds a branch to the input of a rooted node. Must be implemented for any rooted
+AbstractNode subtype.
 """
-function _deleteinbound! end
+function _addinbound! end
+_addinbound!(node::AbstractNode{Unrooted, NL}, branch) where NL =
+    error("Unrooted trees don't have inbound connections")
+
+"""
+    _removeinbound!(node::AbstractNode, inbound)
+
+Removes a branch from the input of a rooted node. Must be implemented for any
+rooted AbstractNode subtype.
+"""
+function _removeinbound! end
+_removeinbound!(node::AbstractNode{Unrooted, NL}, branch) where NL =
+    error("Unrooted trees don't have inbound connections")
 
 """
     _getoutbounds(node::AbstractNode)
 
-Must be implemented for any AbstractNode subtype.
+Returns the outbound connections of a rooted node. Must be implemented for any
+rooted AbstractNode subtype.
 """
 function _getoutbounds end
+_getoutbounds(node::AbstractNode{Unrooted, NL}) where NL =
+    error("Unrooted trees don't have outbound connections")
 
 """
-    _addinbound!(node::AbstractNode, outbound)
+    _addoutbound!(node::AbstractNode, branch)
 
-Must be implemented for any AbstractNode subtype.
+Add an outbound branch to a rooted node. Must be implemented for any Rooted
+AbstractNode subtype.
 """
 function _addoutbound! end
+_addoutbound!(node::AbstractNode{Unrooted, NL}, branch) where NL =
+    error("Unrooted trees don't have inbound and outbound connections")
 
 """
-    _deleteoutbound!(node::AbstractNode, outbound)
+    _removeoutbound!(node::AbstractNode, branch)
 
-Must be implemented for any AbstractNode subtype.
+Remove an outbound branch from a rooted node. Must be implemented for any
+AbstractNode subtype.
 """
-function _deleteoutbound! end
+function _removeoutbound! end
+_removeoutbound!(node::AbstractNode{Unrooted, NL}, branch) where NL =
+    error("Unrooted trees don't have outbound connections")
+
+"""
+    _getchildren(tree::AbstractTree, node)
+    _getchildren(tree::AbstractTree, nodename)
+
+Return the child node(s) for this node. May be implemented for any rooted
+AbstractNode subtype.
+"""
+function _getchildren end
+_getchildren(tree::AbstractTree{OneTree, Unrooted, NL, N, B},
+             nodename::NL) where {NL, N, B} =
+    error("Can't ask for children of Unrooted tree")
+_getchildren(tree::AbstractTree{OneTree, RT, NL, N, B}, node::N) where
+    {RT <: Rooted, NL, N, B} = map(branch -> _dst(tree, branch),
+                                   _getoutbounds(tree, node))
+
+"""
+    _getconnections(tree::AbstractTree, node::AbstractNode)
+
+Returns all of the connections of a node. Must be implemented for any unrooted
+AbstractNode subtype, can be inferred from _getinbound and _getoutbounds for
+a rooted node.
+"""
+function _getconnections end
+_getconnections(tree::AbstractTree, node::AbstractNode) =
+    _hasinbound(node) ?
+    append!([_getinbound(node)], _getoutbounds(node)) : _getoutbounds(node)
+
+"""
+    _getsiblings(tree::AbstractTree, node::AbstractNode)
+
+Returns all of the siblings of a node. Must be implemented for any unrooted
+AbstractNode subtype, can be inferred from _getparent and _getchildren for
+a rooted node.
+"""
+function _getsiblings end
+_getsiblings(node::AbstractNode) =
+    _hasinbound(node) ? append!([_getparent(node)], _getchildren(node)) :
+                        _getchildren(node)
+
+"""
+    _addconnection!(node::AbstractNode, branch)
+
+Add a connection to an unrooted node. Must be implemented for any unrooted
+AbstractNode subtype.
+"""
+function _addconnection! end
+_addconnection!(node::AbstractNode{RT, NL}, branch) where {RT <: Rooted, NL} =
+    error("Direction of connection must be specified for a rooted node")
+
+"""
+    _removeconnection!(node::AbstractNode, branch)
+
+Remove a connection from an unrooted node. Must be implemented for any Unrooted
+AbstractNode subtype.
+"""
+function _removeconnection! end
+_removeconnection!(node::AbstractNode{RT, NL}, branch) where
+    {RT <: Rooted, NL} =
+    error("Direction of connection must be specified for a rooted node")
 
 """
     _hasheight(tree::AbstractTree, nodename)
@@ -389,20 +651,40 @@ end
 
 # AbstractBranch methods
 """
-    _src
+    _src(branch::AbstractBranch)
 
-Return source node for a branch. Must be implemented for any
+Return source node for a branch. Must be implemented for any rooted
 AbstractBranch subtype.
 """
 function _src end
+_src(::AbstractTree, branch::AbstractBranch) = _src(branch)
+_src(branch::B) where {NL, B <: AbstractBranch{Unrooted, NL}} =
+    error("Unrooted branches do not have in and out connections")
 
 """
-    _dst
+    _dst(branch::AbstractBranch)
 
-Return destination node for a branch. Must be implemented for any
+Return destination node for a branch. Must be implemented for any rooted
 AbstractBranch subtype.
 """
 function _dst end
+_dst(::AbstractTree, branch::AbstractBranch) = _dst(branch)
+_dst(branch::B) where {NL, B <: AbstractBranch{Unrooted, NL}} =
+    error("Unrooted branches do not have in and out connections")
+
+"""
+    _conns(branch::AbstractBranch[, exclude::AbstractNode])
+
+Return a vector of connections for a branch, optionally excluding `exclude`
+node. Must be implemented for any Unrooted AbstractBranch subtype, otherwise
+can combine _src and _dst.
+"""
+function _conns end
+_conns(branch::B) where {NL, RT <: Rooted, B <: AbstractBranch{RT, NL}} =
+    [_src(branch), _dst(branch)]
+_conns(branch::B, node::N) where
+    {RT <: Rooted, NL, B <: AbstractBranch{RT, NL}, N <: AbstractNode{RT, NL}} =
+    [_src(branch), _dst(branch)]
 
 """
     _getlength
@@ -415,34 +697,44 @@ function _getlength(::AbstractBranch)
     return NaN
 end
 
-"""
-    _setsrc!
-
-Set source node for a branch. Must be implemented for any
-AbstractBranch subtype.
-"""
-function _setsrc! end
-
-"""
-    _setdst!
-
-Set destination node for a graph. Must be implemented for any
-AbstractBranch subtype.
-"""
-function _setdst! end
-
 #  - _getleafnames()
 function _getleafnames(tree::AbstractTree)
     return collect(nodenamefilter(_isleaf, tree))
 end
 
+"""
+    _leafinfotype(::Type{<:AbstractTree})
+
+Returns the type of the leaf info data.
+"""
+function _leafinfotype end
+_leafinfotype(::Type{<:AbstractTree}) = Void
+
+"""
+    _nodeinfotype(::Type{<:AbstractTree})
+
+Returns the type of the node info data.
+"""
+function _nodeinfotype end
+_nodeinfotype(::Type{<:AbstractTree}) = Void
+
+"""
+    _branchinfotype(::Type{<:AbstractTree})
+
+Returns the type of the branch info data.
+"""
+function _branchinfotype end
+_branchinfotype(::Type{<:AbstractTree}) = Void
+
+function _addnode! end
+function _removenode! end
+function _addbranch! end
+function _removebranch! end
 function _getleafinfo end
 function _setleafinfo! end
-function _getnoderecord end
-function _setnoderecord! end
+function _getnodeinfo end
+function _setnodeinfo! end
+function _getbranchinfo end
+function _setbranchinfo! end
 function _resetleaves! end
 function _clearrootheight! end
-function _setnode! end
-function _setbranch! end
-function _leafinfotype end
-function _nleaves end
