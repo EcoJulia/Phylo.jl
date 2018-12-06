@@ -21,11 +21,24 @@ module Phylo
 import Base: Pair, Tuple, show, eltype, length, getindex
 import Compat: IteratorSize, IteratorEltype
 
-abstract type AbstractNode end
-abstract type AbstractBranch end
-abstract type AbstractTree{NodeLabel, BranchLabel} end
-abstract type AbstractBranchTree{NL, BL} <: AbstractTree{NL, BL} end
-export AbstractNode, AbstractBranch, AbstractTree
+abstract type Rootedness end
+struct Unrooted <: Rootedness end
+abstract type Rooted <: Rootedness end
+struct OneRoot <: Rooted end
+struct ManyRoots <: Rooted end
+export Unrooted, OneRoot, ManyRoots
+
+abstract type TreeType end
+struct OneTree <: TreeType end
+struct ManyTrees <: TreeType end
+export OneTree, ManyTrees
+
+abstract type AbstractNode{RootType <: Rootedness, NodeLabel} end
+abstract type AbstractBranch{RootType <: Rootedness, NodeLabel} end
+
+abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
+                           N <: AbstractNode{RT, NL},
+                           B <: AbstractBranch{RT, NL}} end
 
 """
     Phylo.API submodule
@@ -37,10 +50,12 @@ ignored.
 module API
 include("API.jl")
 # AbstractTree methods
-export _ntrees, _addbranch!, _deletebranch!, _branch!, _setbranch!
-export _addnode!, _addnodes!, _deletenode!, _setnode!
+export _ntrees, _gettrees, _nroots, _getroots, _getroot
+export _treenametype, _gettreenames, _getonetree, _gettreename
+export _createbranch!, _deletebranch!, _addbranch!, _removebranch!
+export _createnode!, _deletenode!, _addnode!, _removenode!
 export _getnodenames, _hasnode, _getnode, _getnodes
-export _getbranchnames, _hasbranch, _getbranch, _getbranches
+export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _nodetype, _branchtype
 export _extractnode, _extractbranch
@@ -55,13 +70,13 @@ export _getleafnames, _resetleaves!, _nleaves
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
-export _indegree, _hasinbound, _getinbound, _setinbound!, _deleteoutbound!
-export _outdegree, _getoutbounds, _addoutbound!, _deleteoutbound!
-export _hasoutboundspace, _hasinboundspace
+export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _degree
+export _hasinbound, _getinbound, _setinbound!, _removeinbound!
+export _getoutbounds, _addoutbound!, _removeoutbound!
+export _getconnections, _addconnection!, _removeconnection!
 
 # AbstractBranch methods
 export _src, _dst, _getlength
-export _setsrc!, _setdst!
 
 # Label names
 export _newnodelabel, _newbranchlabel
@@ -70,11 +85,13 @@ end
 
 include("Interface.jl")
 # AbstractTree methods
-export ntrees, nodetype, branchtype, nodenametype, branchnametype
-export addbranch!, deletebranch!, branch!
-export addnode!, addnodes!, deletenode!
-export getnodenames, hasnode, getnode, getnodes
-export getbranchnames, hasbranch, getbranch, getbranches
+export ntrees, gettrees, nroots, getroots, getroot
+export treenametype, gettreenames, getonetree, gettreename
+export nodetype, branchtype, nodenametype, branchnametype
+export createbranch!, deletebranch!, branch!
+export createnode!, createnodes!, deletenode!
+export getnodenames, getnodename, hasnode, getnode, getnodes
+export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
 export hasrootheight, getrootheight, setrootheight!
 export hasparent, getparent, getancestors
 export haschildren, getchildren, getdescendants
