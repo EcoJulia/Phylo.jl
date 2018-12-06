@@ -124,6 +124,9 @@ export BinaryTree, NamedBinaryTree, NamedTree
 export PolytomousTree, NamedPolytomousTree
 export hasrootheight, getrootheight, setrootheight!, clearrootheight!
 export getrootdistance
+include("LinkTree.jl")
+export LinkBranch, LinkNode, LinkTree
+export RootedTree, ManyRootTree, UnrootedTree
 
 include("routes.jl")
 export branchhistory, branchroute, nodehistory, noderoute
