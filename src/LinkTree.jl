@@ -6,15 +6,14 @@ struct LinkBranch{RT, NL} <: AbstractBranch{RT, NL}
     data::Dict{String, Any}
 end
 
-mutable struct LinkNode{RT, NL,
-                B <: AbstractBranch{RT, NL}} <: AbstractNode{RT, NL}
+mutable struct LinkNode{RT, NL} <: AbstractNode{RT, NL}
     name::NL
-    inbound::Union{Tuple{B, LinkNode{RT, NL, B}}, Missing}
-    other::Vector{Tuple{B, LinkNode{RT, NL, B}}}
+    inbound::Union{AbstractBranch{RT, NL}, Missing}
+    other::Vector{AbstractBranch{RT, NL}}
     data::Dict{String, Any}
 end
 
-mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL, <: LinkBranch{RT, NL}},
+mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
                         B <: LinkBranch{RT, NL}, TD} <:
                AbstractTree{OneTree, RT, NL, N, B}
     name::Union{String, Missing}
@@ -42,19 +41,19 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL, <: LinkBranch{RT, NL}},
     end
 end
 const LB{RT} = LinkBranch{RT, String}
-const LN{RT} = LinkNode{RT, String, LB{RT}}
+const LN{RT} = LinkNode{RT, String}
 const LT{RT, TD} = LinkTree{RT, String, LN{RT}, LB{RT}, TD}
 const RootedTree = LT{OneRoot, Dict{String, Any}}
 const ManyRootTree = LT{ManyRoots, Dict{String, Any}}
 const UnrootedTree = LT{Unrooted, Dict{String, Any}}
 
 # LinkBranch methods
-function LinkBranch(from::LinkNode{RT, NL, B},
-                    to::LinkNode{RT, NL, B},
+function LinkBranch(from::LinkNode{RT, NL},
+                    to::LinkNode{RT, NL},
                     length::Float64 = NaN,
                     data::Dict{String, Any} = Dict{String, Any}()) where
-    {RT, NL, B <: LinkBranch}
-    return B((from, to), length, data)
+    {RT, NL}
+    return LinkBranch{RT, NL}((from, to), length, data)
 end
 
 import Phylo.API._src
@@ -86,93 +85,82 @@ Phylo.API._setbranchinfo!(branch::LinkBranch{RT, NL},
 function LinkNode(tree::T, name::NL,
                   data::Dict{String, Any} = Dict{String, Any}()) where
     {RT, NL, N <: LinkNode, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
-    return N(name, missing, Vector{Tuple{B, LinkNode{RT, NL, B}}}(), data)
+    return N(name, missing, Vector{B}(), data)
 end
 
 import Phylo.API._nodeinfotype
-Phylo.API._nodeinfotype(::Type{LinkNode{RT, NL, B}}) where {RT, NL, B} =
+Phylo.API._nodeinfotype(::Type{LinkNode{RT, NL}}) where {RT, NL} =
     Dict{String, Any}
 
 import Phylo.API._getnodeinfo
-Phylo.API._getnodeinfo(node::LinkNode{RT, NL, B}) where {RT, NL, B} =
+Phylo.API._getnodeinfo(node::LinkNode{RT, NL}) where {RT, NL} =
     node.data
 
 import Phylo.API._setnodeinfo!
-Phylo.API._setnodeinfo!(node::LinkNode{RT, NL, B},
-                        data::Dict{String, Any}) where {RT, NL, B} =
+Phylo.API._setnodeinfo!(node::LinkNode{RT, NL},
+                        data::Dict{String, Any}) where {RT, NL} =
     node.data = data
 
 import Phylo.API._hasinbound
-_hasinbound(node::LinkNode{RT, NL, B}) where {RT <: Rooted, NL, B} =
+_hasinbound(node::LinkNode{RT, NL}) where {RT <: Rooted, NL} =
     !ismissing(node.inbound)
 
 import Phylo.API._degree
-_degree(node::LinkNode{Unrooted, NL, B}) where {NL, B} =
+_degree(node::LinkNode{Unrooted, NL}) where {NL} =
     length(node.other)
 
 import Phylo.API._getinbound
-_getinbound(node::LinkNode) = node.inbound[1]
-
-import Phylo.API._getparent
-_getparent(node::LinkNode) = node.inbound[2]
+_getinbound(node::LinkNode) = node.inbound
 
 import Phylo.API._addinbound!
-function _addinbound!(node::LinkNode{RT, NL, B}, branch::B) where
+function _addinbound!(node::LinkNode{RT, NL}, branch::B) where
          {RT <: Rooted, NL, B <: AbstractBranch{RT, NL}}
     !_hasinbound(node) ||
         error("LinkNode already has an inbound connection")
-    node.inbound = (branch, _dst(branch))
+    node.inbound = branch
 end
 
 import Phylo.API._removeinbound!
-function _removeinbound!(node::LinkNode{RT, NL, B}, branch::B) where
+function _removeinbound!(node::LinkNode{RT, NL}, branch::B) where
     {RT <: Rooted, NL, B <: LinkBranch{RT, NL}}
     _hasinbound(node) ||
         error("Node has no inbound connection")
-    node.inbound[1] === branch ||
+    node.inbound === branch ||
         error("Node has no inbound connection from branch $inbound")
     node.inbound = missing
 end
 
 import Phylo.API._getoutbounds
-_getoutbounds(node::LinkNode{RT, NL, B}) where
-    {RT <: Rooted, NL, B} = map(p -> p[1], node.other)
-
-import Phylo.API._getchildren
-_getchildren(node::LinkNode{RT, NL, B}) where
-    {RT <: Rooted, NL, B} = map(p -> p[2], node.other)
+_getoutbounds(node::LinkNode{RT, NL}) where
+    {RT <: Rooted, NL} = node.other
 
 import Phylo.API._addoutbound!
-function _addoutbound!(node::LinkNode{RT, NL, B}, branch::B) where
+function _addoutbound!(node::LinkNode{RT, NL}, branch::B) where
          {RT <: Rooted, NL, B <: LinkBranch{RT, NL}}
-    push!(node.other, (branch, _dst(branch)))
+    push!(node.other, branch)
 end
 
 import Phylo.API._removeoutbound!
-function _removeoutbound!(node::LinkNode{RT, NL, B}, branch::B) where
+function _removeoutbound!(node::LinkNode{RT, NL}, branch::B) where
          {RT <: Rooted, NL, B <: LinkBranch{RT, NL}}
-    branch ∈ _getoutbounds(node) ? filter!(p -> p[1] !== branch, node.other) :
+    branch ∈ _getoutbounds(node) ? filter!(p -> p !== branch, node.other) :
          error("Node does not have outbound connection to branch $branch")
 end
 
 import Phylo.API._getconnections
-_getconnections(node::LinkNode{Unrooted, NL, B}) where
-    {NL, B} = map(p -> p[1], node.other)
-
-import Phylo.API._getsiblings
-_getsiblings(node::LinkNode{Unrooted, NL, B}) where
-    {NL, B} = map(p -> p[2], node.other)
+_getconnections(node::LinkNode{Unrooted, NL}) where
+    {NL} = node.other
 
 import Phylo.API._addconnection!
-function _addconnection!(node::LinkNode{Unrooted, NL, B}, branch::B) where
+function _addconnection!(node::LinkNode{Unrooted, NL}, branch::B) where
     {NL, B <: LinkBranch{Unrooted, NL}}
-    push!(node.other, (branch, _dst(branch)))
+    push!(node.other, branch)
 end
 
 import Phylo.API._removeconnection!
-function _removeconnection!(node::LinkNode{Unrooted, NL, B}, branch::B) where
+function _removeconnection!(node::LinkNode{Unrooted, NL}, branch::B) where
     {NL, B <: LinkBranch{Unrooted, NL}}
-    outbound ∈ _getoutbounds(node) ? filter!(p -> p[1] != branch, node.other) :
+    outbound ∈ _getoutbounds(node) ? filter!(p -> p !== branch, node.other) :
          error("Node does not have a connection to branch $branch")
 end
 
@@ -207,16 +195,16 @@ _deletenode!(tree::LinkTree{RT, NL, N, B, TD}, name::NL) where
     {RT, NL, N, B, TD} = _deletenode!(tree, tree.nodes[name])
 function _deletenode!(tree::LinkTree{RT, NL, N, B, TD}, node::N) where
     {RT <: Rooted, NL, N, B, TD}
-    _hasinbound(node) && _deletebranch!(tree, node.inbound[1])
+    _hasinbound(node) && _deletebranch!(tree, node.inbound)
     while _outdegree(node) > 0
-        _deletebranch!(tree, node.other[1][1])
+        _deletebranch!(tree, first(node.other))
     end
     _removenode!(tree, node)
 end
 function _deletenode!(tree::LinkTree{Unrooted, NL, N, B, TD}, branch::B) where
     {NL, N, B, TD}
     while _degree(node) > 0
-        _deletebranch!(tree, node.other[1][1])
+        _deletebranch!(tree, first(node.other))
     end
     _removenode!(tree, node)
 end
@@ -277,8 +265,8 @@ _getbranch(tree::LinkTree{RT, NL, N, B, TD}, id::Int) where
 
 import Phylo.API._createbranch!
 function _createbranch!(tree::LinkTree{RT, NL, N, B, TD},
-                        from::LinkNode{RT, NL, B},
-                        to::LinkNode{RT, NL, B},
+                        from::LinkNode{RT, NL},
+                        to::LinkNode{RT, NL},
                         length::Float64 = NaN,
                         data::Dict{String, Any} = Dict{String, Any}()) where
     {RT <: Rooted, NL, N, B, TD}
@@ -288,8 +276,8 @@ function _createbranch!(tree::LinkTree{RT, NL, N, B, TD},
     return _addbranch!(tree, branch)
 end
 function _createbranch!(tree::LinkTree{Unrooted, NL, N, B, TD},
-                        from::LinkNode{Unrooted, NL, B},
-                        to::LinkNode{Unrooted, NL, B},
+                        from::LinkNode{Unrooted, NL},
+                        to::LinkNode{Unrooted, NL},
                         length::Float64 = NaN,
                         data::Dict{String, Any} = Dict{String, Any}()) where
     {NL, N, B, TD}
