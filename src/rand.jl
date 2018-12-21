@@ -93,7 +93,7 @@ tip labels `tiplabels`. Generate random trees by calling rand().
 Currently only works for `NamedTree`s.
 """
 struct Ultrametric{T <: AbstractTree,
-                 RNG <: Sampleable{Univariate, Continuous}} <:
+                   RNG <: Sampleable{Univariate, Continuous}} <:
     Sampleable{Univariate, Phylogenetics{T}}
     n::Int
     tiplabels::Vector{String}
