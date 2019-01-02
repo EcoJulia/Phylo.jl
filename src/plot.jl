@@ -67,7 +67,7 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
             d.marker_x, d.marker_y
         end
     end
-    d.showtips && (annotations := map(x -> (x[1], x[2], text(x[3], :left, d.tipfont...)), d.tipannotations))
+    d.showtips && (annotations := map(x -> (x[1], x[2], (x[3], :left, d.tipfont...)), d.tipannotations))
     [],[]
 end
 
@@ -102,7 +102,7 @@ end
     if d.showtips
         xlim --> (1.3 .* (-mx, mx))
         ylim --> (1.3 .* (-mx, mx))
-        annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., text(x[3], :left,
+        annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., (x[3], :left,
             rad2deg(adjust(x[2])), d.tipfont...)), d.tipannotations)
     end
     [],[]
