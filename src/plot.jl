@@ -1,6 +1,4 @@
 using RecipesBase
-using Phylo
-using Plots # now necessary for the labels :-(
 
 @recipe function f(tree::Phylo.AbstractTree; treetype = :dendrogram, showtips = true, tipfont = (5,))
 
