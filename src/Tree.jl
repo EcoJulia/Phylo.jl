@@ -4,97 +4,93 @@ using Compat: @warn
 using IterableTables: getiterator
 using DataFrames
 
-import Phylo.API: _nodetype, _branchtype, _getnodes, _getbranches
+import Phylo.API: _getnodes, _getbranches
 import Phylo.API: _getnodenames, _getbranchnames, _getleafnames
 import Phylo.API: _getleafinfo, _setleafinfo!, _leafinfotype
 import Phylo.API: _resetleaves!, _getnoderecord, _setnoderecord!
 import Phylo.API: _addnode!, _deletenode!, _addbranch!, _deletebranch!, _validate
 import Phylo.API: _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
-import Phylo.API: _getnode, _getbranch, _setnode!, _setbranch!, _nleaves
-
-_branchtype(::AbstractBranchTree{NL, BL}) where {NL, BL} = Branch{NL}
+import Phylo.API: _getnode, _getbranch, _nleaves
 
 """
     BinaryTree
 
 Binary phylogenetic tree object with known leaves and per node data
 """
-mutable struct BinaryTree{LI, ND} <: AbstractBranchTree{String, Int}
-    nodes::OrderedDict{String, BinaryNode{Int}}
-    branches::Dict{Int, Branch{String}}
+mutable struct BinaryTree{RT <: Rooted, LI, ND} <:
+    AbstractTree{OneTree, RT, String,
+                 BinaryNode{RT, String, Branch{RT, String}},
+                 Branch{RT, String}}
+    nodes::OrderedDict{String, BinaryNode{RT, String, Branch{RT, String}}}
+    branches::Dict{Int, Branch{RT, String}}
     leafinfos::LI
     noderecords::OrderedDict{String, ND}
     rootheight::Float64
 end
 
-_leafinfotype(::BinaryTree{LI, ND}) where {LI, ND} = LI
-_nleaves(tree::BinaryTree{LI, ND}) where {LI, ND} =
-    length(nodefilter(_isleaf, tree))
+_leafinfotype(::Type{BinaryTree{RT, LI, ND}}) where {RT, LI, ND} = LI
+_noderecordtype(::Type{BinaryTree{RT, LI, ND}}) where {RT, LI, ND} = ND
 
-function BinaryTree(lt::BinaryTree{LI, ND};
-                    copyinfo=false, empty=true) where {LI, ND}
+function BinaryTree(lt::BinaryTree{RT, LI, ND};
+                    copyinfo=false) where {RT, LI, ND}
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
     leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos
-    if empty # Empty out everything else
-        nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leafnames))
-        branches = Dict{Int, Branch{String}}()
-        noderecords = OrderedDict(map(leaf -> leaf => ND(), leafnames))
-    else # Make copies of everything
-        nodes = deepcopy(getnodes(lt))
-        noderecords = deepcopy(lt.noderecords)
-        branches = deepcopy(getbranches(lt))
-    end
-    return BinaryTree{LI, ND}(nodes, branches,
-                              leafinfos, noderecords, lt.rootheight)
+    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}() for leaf in leafnames)
+    branches = Dict{Int, Branch{RT, String}}()
+    noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
+    return BinaryTree{RT, LI, ND}(nodes, branches,
+                                  leafinfos, noderecords, lt.rootheight)
 end
 
-function BinaryTree{LI, ND}(leaves::Vector{String},
-                            treetype::Type{BinaryTree{LI, ND}} =
-                            BinaryTree{LI, ND};
-                            rootheight::Float64 = NaN) where {LI, ND}
-    nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
+function BinaryTree{RT, LI, ND}(leafnames::Vector{String},
+                                treetype::Type{BinaryTree{RT, LI, ND}} =
+                                BinaryTree{RT, LI, ND};
+                                rootheight::Float64 = NaN) where {RT, LI, ND}
+    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}() for leaf in leafnames)
     leafinfos = LI()
-    noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
-    return BinaryTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
-                              leafinfos, noderecords, rootheight)
+    noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
+    return BinaryTree{RT, LI, ND}(nodes, Dict{Int, Branch{RT, String}}(),
+                                  leafinfos, noderecords, rootheight)
 end
 
-function BinaryTree{LI, ND}(numleaves::Int = 0,
-                            treetype::Type{BinaryTree{LI, ND}} =
-                            BinaryTree{LI, ND};
-                            rootheight::Float64 = NaN) where {LI, ND}
-    leaves = map(num -> "Leaf $num", 1:numleaves)
-    nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leaves))
-    leafinfos = LI()
-    noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
-    return BinaryTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
-                              leafinfos, noderecords, rootheight)
+function BinaryTree{RT, LI, ND}(numleaves::Int = 0,
+                                treetype::Type{BinaryTree{RT, LI, ND}} =
+                                BinaryTree{LI, ND};
+                                rootheight::Float64 = NaN) where {RT, LI, ND}
+    leafnames = ["Leaf $num" for num in Base.OneTo(numleaves)]
+    return BinaryTree{RT, LI, ND}(leafnames, treetype; rootheight = rootheight)
 end
 
 function BinaryTree{LI, ND}(leafinfos::LI; rootheight::Float64 = NaN) where {LI, ND}
-    leafnames = unique(collect(map(info -> info[1], getiterator(leafinfos))))
-    nodes = OrderedDict(map(leaf -> leaf => BinaryNode{Int}(), leafnames))
-    branches = Dict{Int, Branch{String}}()
-    noderecords = OrderedDict(map(leaf -> leaf => ND(),
-                                  leafnames))
-    return BinaryTree{LI,
-                      Dict{String, Any}}(nodes, branches, leafinfos,
-                                         noderecords, rootheight)
+    leafnames = unique(info[1] for info in getiterator(leafinfos))
+    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}() for leaf in leafnames)
+    branches = Dict{Int, Branch{RT, String}}()
+    noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
+    return BinaryTree{RT, LI, Dict{String, Any}}(nodes, branches, leafinfos,
+                                                 noderecords, rootheight)
 end
 
-BinaryTree(leafinfos::LI; rootheight::Float64 = NaN) where LI =
-    BinaryTree{LI, Dict{String, Any}}(leafinfos; rootheight = rootheight)
-
-_nodetype(::BinaryTree) = BinaryNode{Int}
+BinaryTree{RT}(leafinfos::LI; rootheight::Float64 = NaN) where
+    {RT, LI} =
+    BinaryTree{RT, LI, Dict{String, Any}}(leafinfos;
+                                          rootheight = rootheight)
 
 function _getnodes(bt::BinaryTree)
-    return bt.nodes
+    return values(bt.nodes)
+end
+
+function _getnodenames(bt::BinaryTree)
+    return keys(bt.nodes)
 end
 
 function _getbranches(bt::BinaryTree)
-    return bt.branches
+    return values(bt.branches)
+end
+
+function _getbranchnames(bt::BinaryTree)
+    return keys(bt.branches)
 end
 
 function _getleafinfo(bt::BinaryTree)
@@ -123,23 +119,22 @@ function _setnoderecord!(bt::BinaryTree, nodename, value)
     bt.noderecords[nodename] = value
 end
 
-function _addnode!(tree::BinaryTree{LI, NR}, nodename) where {LI, NR}
-    !_hasnode(tree, nodename) ||
-        error("Node $nodename already present in tree")
-    _setnode!(tree, nodename, BinaryNode{Int}())
-    setnoderecord!(tree, nodename, NR())
+function _addnode!(tree::BinaryTree{RT, LI, NR}, nodename) where {RT, LI, NR}
+    _hasnode(tree, nodename) && error("Node $nodename already present in tree")
+    tree.nodes[nodename] = BinaryNode{RT, String, Branch{RT, String}}()
+    tree.noderecords[nodename] = NR()
     return nodename
 end
 
 function _deletenode!(tree::BinaryTree, nodename)
     node = getnode(tree, nodename)
-    if _hasinbound(node)
-        deletebranch!(tree, _getinbound(node))
+    if _hasinbound(tree, node)
+        deletebranch!(tree, _getinbound(tree, node))
     end
-    for b in _getoutbounds(node)
+    for b in _getoutbounds(tree, node)
         deletebranch!(tree, b)
     end
-    delete!(_getnodes(tree), nodename)
+    delete!(tree.nodes, nodename)
     delete!(tree.noderecords, nodename)
     return nodename
 end
@@ -189,92 +184,97 @@ end
 
 Binary phylogenetic tree object with known leaves
 """
-const NamedTree = NamedBinaryTree = BinaryTree{DataFrame, Dict{String, Any}}
-
-
+const NamedBinaryTree =
+    BinaryTree{ManyRoots, DataFrame, Dict{String, Any}}
 
 """
     PolytomousTree
 
 Phylogenetic tree object with polytomous branching, and known leaves and per node data
 """
-mutable struct PolytomousTree{LI, ND} <: AbstractBranchTree{String, Int}
-    nodes::OrderedDict{String, Node{Int}}
-    branches::Dict{Int, Branch{String}}
+mutable struct PolytomousTree{RT <: Rooted, LI, ND} <:
+    AbstractTree{OneTree, RT, String,
+                 Node{RT, String, Branch{RT, String}},
+                 Branch{RT, String}}
+    nodes::OrderedDict{String, Node{RT, String, Branch{RT, String}}}
+    branches::Dict{Int, Branch{RT, String}}
     leafinfos::LI
     noderecords::OrderedDict{String, ND}
     rootheight::Float64
 end
 
-_leafinfotype(::PolytomousTree{LI, ND}) where {LI, ND} = LI
-_nleaves(tree::PolytomousTree{LI, ND}) where {LI, ND} =
-    length(nodefilter(_isleaf, tree))
+_leafinfotype(::Type{PolytomousTree{RT, LI, ND}}) where {RT, LI, ND} = LI
+_noderecordtype(::Type{PolytomousTree{RT, LI, ND}}) where {RT, LI, ND} = ND
 
-function PolytomousTree(lt::PolytomousTree{LI, ND};
-                        copyinfo=false, empty=true) where {LI, ND}
+function PolytomousTree(lt::PolytomousTree{RT, LI, ND};
+                        copyinfo=false) where {RT, LI, ND}
     validate(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
     leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos
-    if empty # Empty out everything else
-        nodes = OrderedDict(map(leaf -> leaf => Node{Int}(), leafnames))
-        branches = Dict{Int, Branch{String}}()
-        noderecords = OrderedDict(map(leaf -> leaf => ND(), leafnames))
-    else # Make copies of everything
-        nodes = deepcopy(getnodes(lt))
-        noderecords = deepcopy(lt.noderecords)
-        branches = deepcopy(getbranches(lt))
-    end
-    return PolytomousTree{LI, ND}(nodes, branches, leafinfos, noderecords,
-                            lt.rootheight)
-end
-
-function PolytomousTree{LI, ND}(leafinfos::LI,
-                                treetype::Type{PolytomousTree{LI, ND}} =
-                                PolytomousTree{LI, Dict{String, Any}};
-                                rootheight::Float64 = NaN) where {LI, ND}
-    leafnames = unique(collect(map(info -> info[1], getiterator(leafinfos))))
-    nodes = OrderedDict(map(leaf -> leaf => Node{Int}(), leafnames))
+    nodes = OrderedDict(map(leaf -> leaf => Node{RT, String, Branch{RT, String}}(), leafnames))
     branches = Dict{Int, Branch{String}}()
     noderecords = OrderedDict(map(leaf -> leaf => ND(), leafnames))
-    return PolytomousTree{LI, ND}(nodes, branches,
-                                  leafinfos, noderecords, rootheight)
+    return PolytomousTree{RT, LI, ND}(nodes, branches, leafinfos,
+                                      noderecords, lt.rootheight)
 end
 
-function PolytomousTree{LI, ND}(leaves::Vector{String},
-                                treetype::Type{PolytomousTree{LI, ND}} =
+function PolytomousTree{RT, LI, ND}(leafnames::Vector{String},
+                                treetype::Type{PolytomousTree{RT, LI, ND}} =
                                 PolytomousTree{LI, ND};
-                                rootheight::Float64 = NaN) where {LI, ND}
-    nodes = OrderedDict(map(leaf -> leaf => Node{Int}(), leaves))
+                                rootheight::Float64 = NaN) where
+    {RT, LI, ND}
+    nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}()
+                        for leaf in leafnames)
     leafinfos = LI()
-    noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
-    return PolytomousTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
-                              leafinfos, noderecords, rootheight)
+    noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
+    return PolytomousTree{RT, LI, ND}(nodes,
+                                      OrderedDict{Int,
+                                                  Branch{RT, String}}(),
+                                      leafinfos, noderecords,
+                                      rootheight)
 end
 
-function PolytomousTree{LI, ND}(numleaves::Int = 0,
-                                treetype::Type{PolytomousTree{LI, ND}} =
+function PolytomousTree{RT, LI, ND}(numleaves::Int = 0,
+                                treetype::Type{PolytomousTree{RT, LI, ND}} =
                                 PolytomousTree{LI, Dict{String, Any}};
-                                rootheight::Float64 = NaN) where {LI, ND}
-    leaves = map(num -> "Leaf $num", 1:numleaves)
-    nodes = OrderedDict(map(leaf -> leaf => Node{Int}(), leaves))
-    leafinfos = LI()
-    noderecords = OrderedDict(map(leaf -> leaf => ND(), leaves))
-    return PolytomousTree{LI, ND}(nodes, OrderedDict{Int, Branch{String}}(),
-                                  leafinfos, noderecords, rootheight)
+                                rootheight::Float64 = NaN) where
+    {RT, LI, ND}
+    leafnames = ["Leaf $num"  for num in Base.OneTo(numleaves)]
+    return PolytomousTree(leafnames, treetype, rootheight = rootheight)
 end
 
-PolytomousTree(leafinfos::LI; rootheight::Float64 = NaN) where LI =
-    PolytomousTree{LI, Dict{String, Any}}(leafinfos; rootheight = rootheight)
+function PolytomousTree{RT, LI, ND}(leafinfos::LI,
+                                treetype::Type{PolytomousTree{RT, LI, ND}} =
+                                PolytomousTree{RT, LI, Dict{String, Any}};
+                                rootheight::Float64 = NaN) where
+    {RT, LI, ND}
+    leafnames = unique(info[1] for info in getiterator(leafinfos))
+    nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}() for leaf in leafnames)
+    branches = Dict{Int, Branch{String}}()
+    noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
+    return PolytomousTree{RT, LI, ND}(nodes, branches, leafinfos,
+                                      noderecords, rootheight)
+end
 
-_nodetype(::PolytomousTree) = Node{Int}
+PolytomousTree{RT}(leafinfos::LI; rootheight::Float64 = NaN) where {RT, LI} =
+    PolytomousTree{RT, LI, Dict{String, Any}}(leafinfos;
+                                              rootheight = rootheight)
 
 function _getnodes(pt::PolytomousTree)
-    return pt.nodes
+    return values(pt.nodes)
+end
+
+function _getnodenames(pt::PolytomousTree)
+    return keys(pt.nodes)
 end
 
 function _getbranches(pt::PolytomousTree)
-    return pt.branches
+    return values(pt.branches)
+end
+
+function _getbranchnames(pt::PolytomousTree)
+    return keys(pt.branches)
 end
 
 function _getleafinfo(pt::PolytomousTree)
@@ -303,30 +303,29 @@ function _setnoderecord!(pt::PolytomousTree, nodename, value)
     pt.noderecords[nodename] = value
 end
 
-function _addnode!(tree::PolytomousTree{LI, NR}, nodename) where {LI, NR}
-    !_hasnode(tree, nodename) ||
-        error("Node $nodename already present in tree")
-    _setnode!(tree, nodename, Node{Int}())
-    setnoderecord!(tree, nodename, NR())
+function _addnode!(pt::PolytomousTree{RT, LI, NR}, nodename) where {RT, LI, NR}
+    _hasnode(pt, nodename) && error("Node $nodename already present in tree")
+    pt.nodes[nodename] = PolytomousNode{RT, String, Branch{RT, String}}()
+    pt.noderecords[nodename] = NR()
     return nodename
 end
 
-function _deletenode!(tree::PolytomousTree, nodename)
-    node = getnode(tree, nodename)
-    if _hasinbound(node)
-        deletebranch!(tree, _getinbound(node))
+function _deletenode!(pt::PolytomousTree, nodename)
+    node = getnode(pt, nodename)
+    if _hasinbound(pt, node)
+        deletebranch!(pt, _getinbound(pt, node))
     end
-    for b in _getoutbounds(node)
-        deletebranch!(tree, b)
+    for b in _getoutbounds(pt, node)
+        deletebranch!(pt, b)
     end
-    delete!(_getnodes(tree), nodename)
-    delete!(tree.noderecords, nodename)
+    delete!(pt.nodes, nodename)
+    delete!(pt.noderecords, nodename)
     return nodename
 end
 
 function _validate(tree::PolytomousTree)
     if length(getiterator(tree.leafinfos)) > 0
-        if Set(map(info -> info[1], getiterator(tree.leafinfos))) !=
+        if Set(info[1] for info in getiterator(tree.leafinfos)) !=
             Set(_getleafnames(tree))
             @warn "LeafInfo names do not match actual leaves of tree"
             return false
@@ -362,7 +361,8 @@ end
 
 Polytomous phylogenetic tree object with known leaves
 """
-const NamedPolytomousTree = PolytomousTree{DataFrame, Dict{String, Any}}
+const NamedTree = NamedPolytomousTree =
+    PolytomousTree{ManyRoots, DataFrame, Dict{String, Any}}
 
 _getnodenames(tree::AbstractTree) = collect(keys(_getnodes(tree)))
 _getbranchnames(tree::AbstractTree) = collect(keys(_getbranches(tree)))
@@ -371,27 +371,27 @@ _hasnode(tree::AbstractTree, label) = haskey(_getnodes(tree), label)
 #  - _hasbranch()
 _hasbranch(tree::AbstractTree, label) = haskey(_getbranches(tree), label)
 #  - _addbranch!()
-function _addbranch!(tree::AbstractBranchTree, source, destination, length::Float64, label)
+function _addbranch!(tree::PolytomousTree, source, destination, length::Float64, label)
     # Add the new branch
     _setbranch!(tree, label, Branch(source, destination, length))
 
     # Update the associated source and destination nodes
-    _addoutbound!(getnode(tree, source), label)
-    _setinbound!(getnode(tree, destination), label)
+    _addoutbound!(tree, getnode(tree, source), label)
+    _addinbound!(tree, getnode(tree, destination), label)
 
     # Return updated tree
     return label
 end
 #  - _deletebranch!()
-function _deletebranch!(tree::AbstractBranchTree, label)
+function _deletebranch!(tree::PolytomousTree, label)
     # Find the branch
     branch = _getbranch(tree, label)
     # Remove branch reference from its source node
-    _deleteoutbound!(_getnode(tree, _src(branch)), label)
+    _deleteoutbound!(tree, _getnode(tree, _src(tree, branch)), label)
     # Remove branch reference from its destination node
-    _deleteinbound!(_getnode(tree, _dst(branch)), label)
+    _deleteinbound!(tree, _getnode(tree, _dst(tree, branch)), label)
     # Remove branch itself
-    delete!(_getbranches(tree), label)
+    delete!(tree.branches, label)
     # Return the branch label
     return label
 end
@@ -405,20 +405,20 @@ function clearrootheight!(tree::AbstractTree)
     _clearrootheight!(tree)
 end
 
-function _getnode(tree::AbstractTree, label)
-    return _getnodes(tree)[label]
+function _getnode(tree::PolytomousTree, label)
+    return tree.nodes[label]
 end
 
-function _getbranch(tree::AbstractTree, label)
-    return _getbranches(tree)[label]
+function _getbranch(tree::PolytomousTree, label)
+    return tree.branches[label]
 end
 
 function _setnode!(tree::AbstractTree, label, node)
-    return _getnodes(tree)[label] = node
+    return tree.nodes[label] = node
 end
 
 function _setbranch!(tree::AbstractTree, label, branch)
     _hasbranch(tree, label) &&
         error("Branch $label already exists")
-    return _getbranches(tree)[label] = branch
+    return tree.branches[label] = branch
 end
