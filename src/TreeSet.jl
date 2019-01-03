@@ -2,10 +2,11 @@ using Compat
 import Base.getindex
 import Compat.IteratorSize, Base.length, Compat.IteratorEltype, Base.eltype
 
-import Phylo.API: _nodetype, _branchtype
 import Phylo.API: _getnodenames, _getbranchnames, _getleafnames
 
-mutable struct TreeSet{LABEL, NL, BL, TREE <: AbstractTree{NL, BL}} <: AbstractTree{NL, BL}
+mutable struct TreeSet{LABEL, RT, NL, N, B, TREE <:
+                       AbstractTree{OneTree, RT, NL, N, B}} <:
+    AbstractTree{ManyTrees, RT, NL, N, B}
     trees::Dict{LABEL, TREE}
     treeinfo::Dict{String, Dict{String, Any}}
 end
@@ -22,37 +23,43 @@ function IteratorEltype(::Type{TreeSet})
     return HasEltype()
 end
 
-_nodetype(ts::TreeSet) = _nodetype(first(treeiter(ts)))
-_branchtype(ts::TreeSet) = _branchtype(first(treeiter(ts)))
-_branchtype(::TreeSet{LABEL, NL, BL, TREE}) where {LABEL, NL, BL, TREE <: AbstractBranchTree{NL, BL}} = Branch{NL}
 ntrees(ts::TreeSet) = length(ts.trees)
 
-struct TreeIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
-                    TREESET <: TreeSet{LABEL, NL, BL, TREE}} <: AbstractTreeIterator{TREE}
+struct TreeIterator{LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}} <:
+    AbstractTreeIterator{TREE}
     ts::TREESET
 end
-treeiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
-                    TREESET <: TreeSet{LABEL, NL, BL, TREE}} =
-    TreeIterator{LABEL, NL, BL, TREE, TREESET}(ts)
+treeiter(ts::TREESET) where {LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}} =
+    TreeIterator{LABEL, RT, NL, N, B, TREE, TREESET}(ts)
 
-struct TreeNameIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
-                    TREESET <: TreeSet{LABEL, NL, BL, TREE}} <: AbstractTreeIterator{TREE}
+struct TreeNameIterator{LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}} <: AbstractTreeIterator{TREE}
     ts::TREESET
 end
-treenameiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
-                    TREESET <: TreeSet{LABEL, NL, BL, TREE}} =
+treenameiter(ts::TREESET) where {LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}} =
     TreeNameIterator{LABEL, NL, BL, TREE, TREESET}(ts)
 
-struct TreeInfoIterator{LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
-                    TREESET <: TreeSet{LABEL, NL, BL, TREE}} <: AbstractTreeIterator{TREE}
+struct TreeInfoIterator{LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}} <: AbstractTreeIterator{TREE}
     ts::TREESET
 end
-treeinfoiter(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL},
-                    TREESET <: TreeSet{LABEL, NL, BL, TREE}} =
+treeinfoiter(ts::TREESET) where {LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}} =
     TreeInfoIterator{LABEL, NL, BL, TREE, TREESET}(ts)
 
-eltype(::TreeSet{LABEL, NL, BL, TREE}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}} = TREE
-eltype(::TreeIterator{LABEL, NL, BL, TREE, TREESET}) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}} = TREE
+eltype(::TreeSet{LABEL, RT, NL, N, B, TREE}) where
+    {LABEL, RT, NL, N, B,
+     TREE <: AbstractTree{OneTree, RT, NL, N, B}} = TREE
+eltype(::TreeIterator{LABEL, RT, NL, N, B, TREE, TREESET}) where {LABEL, RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}, TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}} = TREE
 eltype(tni::TreeNameIterator) = eltype(keys(tni.ts.trees))
 eltype(tii::TreeInfoIterator) = eltype(values(tii.ts.treeinfo))
 
@@ -97,8 +104,10 @@ done(ti::TreeInfoIterator, state) = done(ti.ts.treeinfo, state)
 end
 getindex(ts::TreeSet, idx) = ts.trees[idx]
 
-function _getleafnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
-    lns = unique(map(t -> _getleafnames(t), values(ts.trees)))
+function _getleafnames(ts::TREESET) where {LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}}
+    lns = unique(_getleafnames(t) for t in values(ts.trees))
     if length(lns) > 1
         error("Inconsistent leaf names in TreeSet")
     elseif isempty(lns)
@@ -107,7 +116,9 @@ function _getleafnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{N
     return first(lns)
 end
 
-function _getnodenames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
+function _getnodenames(ts::TREESET) where {LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}}
     nns = unique(map(t -> _getnodenames(t), values(ts.trees)))
     if length(nns) > 1
         error("Inconsistent node names in TreeSet")
@@ -117,7 +128,9 @@ function _getnodenames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{N
     return first(nns)
 end
 
-function _getbranchnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
+function _getbranchnames(ts::TREESET) where {LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}}
     bns = unique(map(t -> _getbranchnames(t), values(ts.trees)))
     if length(bns) > 1
         error("Inconsistent branch names in TreeSet")
@@ -127,7 +140,9 @@ function _getbranchnames(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree
     return first(bns)
 end
 
-function _getleafinfo(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
+function _getleafinfo(ts::TREESET) where {LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}}
     lis = unique(map(t -> _getleafinfo(t), values(ts.trees)))
     if length(lis) > 1
         error("Inconsistent leafinfo in TreeSet")
@@ -137,8 +152,10 @@ function _getleafinfo(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL
     return first(lis)
 end
 
-function _nleaves(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL}, TREESET <: TreeSet{LABEL, NL, BL, TREE}}
-    nls = unique(map(t -> _nleaves(t), values(ts.trees)))
+function _nleaves(ts::TREESET) where {LABEL, RT, NL, N, B,
+                    TREE <: AbstractTree{OneTree, RT, NL, N, B},
+                    TREESET <: TreeSet{LABEL, RT, NL, N, B, TREE}}
+    nls = unique(_nleaves(t) for t in values(ts.trees))
     if length(nls) > 1
         error("Inconsistent leafinfo in TreeSet")
     elseif isempty(nls)
