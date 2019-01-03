@@ -39,7 +39,7 @@ abstract type AbstractBranch{RootType <: Rootedness, NodeLabel} end
 abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
                            N <: AbstractNode{RT, NL},
                            B <: AbstractBranch{RT, NL}} end
-
+export AbstractTree
 """
     Phylo.API submodule
 
@@ -57,9 +57,6 @@ export _createnode!, _deletenode!, _addnode!, _removenode!
 export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
-export _nodetype, _branchtype
-export _extractnode, _extractbranch
-export _extractnodename, _extractbranchname
 export _getleafinfo, _setleafinfo!, _leafinfotype
 export _getnoderecord, _setnoderecord!
 export _hasheight, _getheight, _setheight!
@@ -114,70 +111,70 @@ export getrootdistance
 #include("Info.jl")
 #export LeafInfo
 
-#include("Branch.jl")
-#export Branch
+include("Branch.jl")
+export Branch
 
-#include("Node.jl")
-#export BinaryNode, Node
+include("Node.jl")
+export BinaryNode, Node
 
-#include("Tree.jl")
-#export BinaryTree, NamedBinaryTree, NamedTree
-#export PolytomousTree, NamedPolytomousTree
+include("Tree.jl")
+export BinaryTree, NamedBinaryTree, NamedTree
+export PolytomousTree, NamedPolytomousTree
 
 #include("LinkTree.jl")
 #export LinkBranch, LinkNode, LinkTree
 
-include("MetaTree.jl")
-export UnrootedMetaTree, RootedMetaTree, SimpleNode, SimpleBranch
-export RootedTree, ManyRootTree, UnrootedTree
+#include("MetaTree.jl")
+#export UnrootedMetaTree, RootedMetaTree, SimpleNode, SimpleBranch
+#export RootedTree, ManyRootTree, UnrootedTree
 
 include("routes.jl")
 export branchhistory, branchroute, nodehistory, noderoute
 export distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
-#include("Iterators.jl")
-#export nodeiter, nodefilter, nodenameiter, nodenamefilter,
-#    branchiter, branchfilter, branchnameiter, branchnamefilter
+include("Iterators.jl")
+export nodeiter, nodefilter, nodenameiter, nodenamefilter,
+    branchiter, branchfilter, branchnameiter, branchnamefilter
 
 # A set of multiple trees
-#include("TreeSet.jl")
-#export TreeSet, treeiter, treenameiter, treeinfoiter
+include("TreeSet.jl")
+export TreeSet, treeiter, treenameiter, treeinfoiter
 
 # Random tree generator
 include("rand.jl")
 export Nonultrametric, Ultrametric
 
 # Read Newick Tree
-#include("newick.jl")
-#export parsenewick, parsenexus
+include("newick.jl")
+export parsenewick, parsenexus
 
 # Display methods expanded
-#include("show.jl")
+include("show.jl")
 
 # Method for trimming trees
-#include("trim.jl")
-#export droptips!, keeptips!
+include("trim.jl")
+export droptips!, keeptips!
 
 # Plot recipes
 include("plot.jl")
 
 # Path into package
-#path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
+path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
-#using Requires
-#@static if VERSION < v"0.7.0-"
-#    @require RCall begin
-#        println("Creating Phylo RCall interface...")
-#        include("rcall.jl")
-#    end
-#else
-#    function __init__()
-#        @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
-#            println("Creating Phylo RCall interface...")
-#            include("rcall.jl")
-#        end
-#    end
-#end
+using Requires
+@static if VERSION < v"0.7.0-"
+    @require RCall begin
+        println("Creating Phylo RCall interface...")
+        include("rcall.jl")
+    end
+else
+    function __init__()
+        @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
+            println("Creating Phylo RCall interface...")
+            include("rcall.jl")
+        end
+    end
+end
 
 end # module

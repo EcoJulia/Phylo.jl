@@ -188,7 +188,8 @@ OneTree type (otherwise determined from _getroots()).
 """
 function _getroot end
 function _getroot(tree::AbstractTree{OneTree, <: Rooted})
-    @assert nroots(tree) == 1 "More than one root for tree ($(length(roots)))"
+    @assert nroots(tree) == 1 "More than one root for tree " *
+    "(found $(length(roots)))"
     return first(_getroots(tree))
 end
 
