@@ -136,6 +136,9 @@ include("show.jl")
 include("trim.jl")
 export droptips!, keeptips!
 
+# Plot recipes
+include("plot.jl")
+
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 

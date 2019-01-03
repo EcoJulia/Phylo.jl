@@ -7,3 +7,4 @@ Missings
 IterableTables
 Requires
 DataFrames
+RecipesBase
