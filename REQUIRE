@@ -8,3 +8,5 @@ IterableTables
 Requires
 DataFrames
 RecipesBase
+LightGraphs
+MetaGraphs
