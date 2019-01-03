@@ -734,12 +734,12 @@ function _leafinfotype end
 _leafinfotype(::Type{<:AbstractTree}) = Void
 
 """
-    _nodeinfotype(::Type{<:AbstractTree})
+    _noderecordtype(::Type{<:AbstractTree})
 
 Returns the type of the node info data.
 """
-function _nodeinfotype end
-_nodeinfotype(::Type{<:AbstractTree}) = Void
+function _noderecordtype end
+_noderecordtype(::Type{<:AbstractTree}) = Void
 
 """
     _branchinfotype(::Type{<:AbstractTree})
@@ -755,8 +755,8 @@ function _addbranch! end
 function _removebranch! end
 function _getleafinfo end
 function _setleafinfo! end
-function _getnodeinfo end
-function _setnodeinfo! end
+function _getnoderecord end
+function _setnoderecord! end
 function _getbranchinfo end
 function _setbranchinfo! end
 function _resetleaves! end
