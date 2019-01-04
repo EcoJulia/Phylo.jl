@@ -68,8 +68,8 @@ import Phylo.API._getlength
 Phylo.API._getlength(branch::LinkBranch{RT, NL}) where {RT, NL} =
     branch.length
 
-import Phylo.API._branchinfotype
-Phylo.API._branchinfotype(::Type{LinkBranch{RT, NL}}) where {RT, NL} =
+import Phylo.API._branchrecordtype
+Phylo.API._branchrecordtype(::Type{LinkBranch{RT, NL}}) where {RT, NL} =
     Dict{String, Any}
 
 import Phylo.API._getbranchinfo
@@ -88,16 +88,16 @@ function LinkNode(tree::T, name::NL,
     return N(name, missing, Vector{B}(), data)
 end
 
-import Phylo.API._nodeinfotype
-Phylo.API._nodeinfotype(::Type{LinkNode{RT, NL}}) where {RT, NL} =
+import Phylo.API._noderecordtype
+Phylo.API._noderecordtype(::Type{LinkNode{RT, NL}}) where {RT, NL} =
     Dict{String, Any}
 
-import Phylo.API._getnodeinfo
-Phylo.API._getnodeinfo(node::LinkNode{RT, NL}) where {RT, NL} =
+import Phylo.API._getnoderecord
+Phylo.API._getnoderecord(node::LinkNode{RT, NL}) where {RT, NL} =
     node.data
 
-import Phylo.API._setnodeinfo!
-Phylo.API._setnodeinfo!(node::LinkNode{RT, NL},
+import Phylo.API._setnoderecord!
+Phylo.API._setnoderecord!(node::LinkNode{RT, NL},
                         data::Dict{String, Any}) where {RT, NL} =
     node.data = data
 
@@ -361,19 +361,19 @@ import Phylo.API._getleafinfo
 _getleafinfo(tree::LinkTree{RT, NL, N, B, TD}) where
     {RT, NL, N, B, TD} = tree.tipdata
 
-import Phylo.API._nodeinfotype
-Phylo.API._nodeinfotype(::Type{LinkTree{RT, NL, N, B, TD}}) where
-    {RT, NL, N, B, TD} = _nodeinfotype(N)
+import Phylo.API._noderecordtype
+Phylo.API._noderecordtype(::Type{LinkTree{RT, NL, N, B, TD}}) where
+    {RT, NL, N, B, TD} = _noderecordtype(N)
 
-import Phylo.API._getnodeinfo
-Phylo.API._getnodeinfo(tree::LinkTree{RT, NL, N, B, TD}, name::NL) where
-    {RT, NL, N, B, TD} = _getnodeinfo(_getnode(tree, name))
-Phylo.API._getnodeinfo(tree::LinkTree{RT, NL, N, B, TD}, node::N) where
-    {RT, NL, N, B, TD} = _getnodeinfo(node)
+import Phylo.API._getnoderecord
+Phylo.API._getnoderecord(tree::LinkTree{RT, NL, N, B, TD}, name::NL) where
+    {RT, NL, N, B, TD} = _getnoderecord(_getnode(tree, name))
+Phylo.API._getnoderecord(tree::LinkTree{RT, NL, N, B, TD}, node::N) where
+    {RT, NL, N, B, TD} = _getnoderecord(node)
 
-import Phylo.API._branchinfotype
-Phylo.API._branchinfotype(::Type{LinkTree{RT, NL, N, B, TD}}) where
-    {RT, NL, N, B, TD} = _branchinfotype(N)
+import Phylo.API._branchrecordtype
+Phylo.API._branchrecordtype(::Type{LinkTree{RT, NL, N, B, TD}}) where
+    {RT, NL, N, B, TD} = _branchrecordtype(N)
 
 import Phylo.API._getbranchinfo
 Phylo.API._getbranchinfo(tree::LinkTree{RT, NL, N, B, TD}, id::Int) where

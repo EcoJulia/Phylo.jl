@@ -3,8 +3,8 @@ using Compat: mapreduce
 function _treepast(tree::T, nodename::NL) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     branches, nodes = _treepast(tree, getnode(tree, nodename))
-    return (map(b -> getbranchname(tree, b), branches),
-            map(n -> getnodename(tree, n), nodes))
+    return [getbranchname(tree, b) for b in branches],
+           [getnodename(tree, n) for n in nodes]
 end
 
 function _treepast(tree::T, node::N) where
@@ -12,8 +12,7 @@ function _treepast(tree::T, node::N) where
     branches = B[]
     nodes = N[node]
     while _hasinbound(tree, node)
-        inbound = _getinbound(tree, node)
-        push!(branches, inbound)
+        push!(branches, _getbranch(tree, _getinbound(tree, node)))
         node = _getparent(tree, node)
         push!(nodes, node)
     end
@@ -30,8 +29,8 @@ function _treefuture(tree::T, node::NL) where
         push!(nodesprocessed, nextnode)
         outbounds = getoutbounds(tree, nextnode)
         append!(branches, outbounds)
-        children = map(branch -> dst(tree, branch), outbounds)
-        append!(nodestoprocess, children)
+        append!(nodestoprocess,
+                _getnode(tree, name) for name in getchildren(tree, nextnode))
     end
     return branches, nodesprocessed
 end
@@ -64,7 +63,7 @@ Find the branch route between two nodes on a tree
 function branchroute(tree::T, node1::NL, node2::NL) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     route = branchroute(tree, getnode(tree, node1), getnode(tree, node2))
-    return map(b -> getbranchname(tree, b), route)
+    return [getbranchname(tree, b) for b in route]
 end
 function branchroute(tree::T, node1::N, node2::N) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
@@ -73,8 +72,9 @@ function branchroute(tree::T, node1::N, node2::N) where
     nodes1[end] == nodes2[end] ||
         return error("No route between nodes")
     common = branches1 ∩ branches2
-    return append!(filter(b -> b ∉ common, branches1),
-                   filter(b -> b ∉ common, reverse(branches2)))
+    nodes1[end] == nodes2[end] || error("No route between nodes in tree")
+    return append!([b for b in branches1 if b ∉ common],
+                   [b for b in reverse(branches2) if b ∉ common])
 end
 
 """
@@ -85,13 +85,13 @@ Find the node route between two nodes on a tree
 function noderoute(tree::T, node1::NL, node2::NL) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     route = noderoute(tree, getnode(tree, node1), getnode(tree, node2))
-    return map(n -> getnodename(tree, n), route)
+    return [getnodename(tree, n) for n in route]
 end
 function noderoute(tree::T, node1::N, node2::N) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     branches1, nodes1 = _treepast(tree, node1)
     branches2, nodes2 = _treepast(tree, node2)
-    nodes1[end] == nodes2[end] || error("No route between nodes")
+    nodes1[end] == nodes2[end] || error("No route between nodes in tree")
     common = nodes1[end]
     while min(length(nodes1), length(nodes2)) > 0 && nodes1[end] == nodes2[end]
         common = nodes1[end]
@@ -119,8 +119,8 @@ end
 Pairwise distances between all leaf nodes on a tree
 """
 function distances(tree::AbstractTree)
-    leaves = nodenamefilter(isleaf, tree)
-    return [distance(tree, i, j) for i in leaves, j in leaves]
+    leaves = getleaves(tree)
+    return [distance(tree, li, lj) for li in leaves, lj in leaves]
 end
 
 """
@@ -139,5 +139,5 @@ end
 Height of all of the leaves of the tree above the root
 """
 function heightstoroot(tree::AbstractTree)
-    return [heighttoroot(tree, i) for i in nodenamefilter(isleaf, tree)]
+    return [heighttoroot(tree, leaf) for leaf in getleaves(tree)]
 end

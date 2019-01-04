@@ -6,13 +6,12 @@ using Compat
 A node of strict binary phylogenetic tree
 """
 mutable struct BinaryNode{RT <: Rooted, NL,
-                          B <: AbstractBranch{RT, NL}} <:
-    AbstractNode{RT, NL}
+                          B <: AbstractBranch{RT, NL}} <: AbstractNode{RT, NL}
     inbound::Union{B, Nothing}
     outbounds::Tuple{Union{B, Nothing}, Union{B, Nothing}}
 
     function BinaryNode{RT, NL, B}(inbound::AbstractVector{B} = B[],
-                           outbounds::AbstractVector{B} = B[]) where
+                                   outbounds::AbstractVector{B} = B[]) where
         {RT, NL, B <: AbstractBranch{RT, NL}}
         length(inbound) <= 1 ||
             error("At most one inbound connection to BinaryNode")
@@ -31,18 +30,23 @@ function _hasinbound(::AbstractTree, node::BinaryNode)
     return node.inbound != nothing
 end
 
-
 import Phylo.API._outdegree
-function _outdegree(::AbstractTree, node::BinaryNode)
+function _outdegree(::AbstractTree{OneTree, RT, NL},
+                    node::BinaryNode{RT, NL}) where {RT <: Rooted, NL}
     return (node.outbounds[1] === nothing ? 0 : 1) +
         (node.outbounds[2] === nothing ? 0 : 1)
 end
 
-
 import Phylo.API._hasoutboundspace
-function _hasoutboundspace(tree::AbstractTree, node::BinaryNode)
-    return _outdegree(tree, node) < 2
-end
+_hasoutboundspace(tree::AbstractTree{OneTree, RT, NL, N, B},
+                  node::N) where {RT <: Rooted, NL,
+                                  N <: BinaryNode{RT, NL}, B} =
+    _outdegree(tree, node) < 2
+_hasoutboundspace(tree::AbstractTree{OneTree, RT, NL, N, B},
+                  node::NL) where {RT <: Rooted, NL,
+                                   N <: BinaryNode{RT, NL}, B} =
+    _outdegree(tree, _getnode(tree, node)) < 2
+
 
 import Phylo.API._getinbound
 function _getinbound(tree::AbstractTree, node::BinaryNode)
@@ -72,10 +76,10 @@ end
 
 import Phylo.API._getoutbounds
 function _getoutbounds(::AbstractTree, node::BinaryNode)
-    return node.outbounds[1] === nothing ?
+    return (node.outbounds[1] === nothing ?
         (node.outbounds[2] === nothing ? T[] : [node.outbounds[2]]) :
         (node.outbounds[2] === nothing ? [node.outbounds[1]] :
-         [node.outbounds[1], node.outbounds[2]])
+         [node.outbounds[1], node.outbounds[2]]))
 end
 
 import Phylo.API._addoutbound!
@@ -96,7 +100,8 @@ function _removeoutbound!(::AbstractTree, node::BinaryNode{RT, NL, B},
         node.outbounds = (node.outbounds[2], nothing) :
         (node.outbounds[2] == outbound ?
          node.outbounds = (node.outbounds[1], nothing) :
-         error("BinaryNode does not have outbound connection to branch $outbound"))
+         error("BinaryNode does not have outbound connection to branch " *
+               "$outbound"))
 end
 
 """
@@ -120,22 +125,21 @@ mutable struct Node{RT <: Rooted, NL, B <: AbstractBranch{RT, NL}} <:
     end
 end
 
-import Phylo.API._hasinbound
 function _hasinbound(::AbstractTree, node::Node)
     return node.inbound != nothing
 end
 
-
-import Phylo.API._outdegree
-function _outdegree(::AbstractTree, node::Node)
+function _outdegree(::AbstractTree{OneTree, RT, NL},
+                    node::Node{RT, NL}) where {RT <: Rooted, NL}
     return length(node.outbounds)
 end
 
-
-import Phylo.API._hasoutboundspace
-function _hasoutboundspace(::AbstractTree, node::Node)
-    return true
-end
+_hasoutboundspace(tree::AbstractTree{OneTree, RT, NL, N, B},
+                  node::N) where {RT <: Rooted, NL,
+                                  N <: Node{RT, NL}, B} = true
+_hasoutboundspace(tree::AbstractTree{OneTree, RT, NL, N, B},
+                  node::NL) where {RT <: Rooted, NL,
+                                   N <: Node{RT, NL}, B} = true
 
 import Phylo.API._getinbound
 function _getinbound(tree::AbstractTree, node::Node)

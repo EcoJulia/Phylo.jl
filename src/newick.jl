@@ -25,25 +25,25 @@ isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end")
 
 function iterateskip(tokens, state = nothing)
     if VERSION < v"0.7.0-"
-    if state !== nothing && done(tokens, state)
-        return nothing
-    end
-    token, state = (state === nothing) ?
-        next(tokens, start(tokens)) : next(tokens, state)
-    while isWHITESPACE(token)
-        token, state = next(tokens, state)
-    end
-    return token, state
+        if state !== nothing && done(tokens, state)
+            return nothing
+        end
+        token, state = (state === nothing) ?
+            next(tokens, start(tokens)) : next(tokens, state)
+        while isWHITESPACE(token)
+            token, state = next(tokens, state)
+        end
+        return token, state
     else
-    result = (state === nothing) ? iterate(tokens) : iterate(tokens, state)
-    result === nothing && return nothing
-    token, state = result
-    while isWHITESPACE(token)
-        result = iterate(tokens, state)
+        result = (state === nothing) ? iterate(tokens) : iterate(tokens, state)
         result === nothing && return nothing
         token, state = result
-    end
-    return token, state
+        while isWHITESPACE(token)
+            result = iterate(tokens, state)
+            result === nothing && return nothing
+            token, state = result
+        end
+        return token, state
     end
 end
 
@@ -220,15 +220,15 @@ function parsedict(token, state, tokens)
 end
 
 function parsenode(token, state, tokens, tree::TREE,
-                   lookup, siblings, istip) where {NL, BL,
-                                                   TREE <: AbstractBranchTree{NL, BL}}
+                   lookup, siblings, istip) where {RT, NL, N, B,
+                                                   TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     myname = ""
     endkinds = [T.SEMICOLON, T.COLON, T.COMMA, T.RPAREN, T.LSQUARE]
     if token.kind ∉ endkinds # We got a nodename
         token, state, name = tokensgetkey(token, state, tokens,
                                           t -> t.kind ∈ endkinds)
         if isempty(lookup)
-            myname = addnode!(tree, name)
+            myname = createnode!(tree, name)
         else
             if istip
                 if haskey(lookup, name)
@@ -236,13 +236,13 @@ function parsenode(token, state, tokens, tree::TREE,
                 else
                     @warn "Wrongly named tip '$name' found in tree " *
                         "with named tips, adding"
-                    myname = addnode!(tree, name)
+                    myname = createnode!(tree, name)
                 end
             else
                 if haskey(lookup, name)
                     myname = lookup[name]
                 else
-                    myname = addnode!(tree, name)
+                    myname = createnode!(tree, name)
                 end
             end
         end
@@ -250,7 +250,7 @@ function parsenode(token, state, tokens, tree::TREE,
         if istip && !isempty(lookup)
             @warn "Anonymous tip found in tree with named tips"
         end
-        myname = addnode!(tree)
+        myname = createnode!(tree)
     end
 
     foundcolon = false
@@ -302,7 +302,7 @@ end
 function parsenewick!(token, state, tokens, tree::TREE,
                      lookup = Dict(), depth = 0,
                      children = Dict{NL, Dict{String, Any}}()) where
-    {NL, BL, TREE <: AbstractBranchTree{NL, BL}}
+    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     mychildren = Dict{NL, Dict{String, Any}}()
     while (token.kind != T.RPAREN) & (token.kind != T.ENDMARKER)
         result = iterateskip(tokens, state)
@@ -327,8 +327,8 @@ function parsenewick!(token, state, tokens, tree::TREE,
     for child in keys(mychildren)
         dict = mychildren[child]
         haskey(dict, "length") ?
-            addbranch!(tree, nodename, child, dict["length"]) :
-            addbranch!(tree, nodename, child)
+            createbranch!(tree, nodename, child, dict["length"]) :
+            createbranch!(tree, nodename, child)
     end
 
     if depth == 0
@@ -348,7 +348,8 @@ function parsenewick!(token, state, tokens, tree::TREE,
 end
 
 function parsenewick(tokens::Tokenize.Lexers.Lexer,
-                     ::Type{TREE}) where TREE <: AbstractBranchTree{String, Int}
+                     ::Type{TREE}) where {RT, N, B,
+                                                     TREE <: AbstractTree{OneTree, RT, String, N, B}}
     result = iterateskip(tokens)
     if result === nothing
         error("Unexpected end of file at start of newick file")
@@ -367,14 +368,14 @@ function parsenewick(tokens::Tokenize.Lexers.Lexer,
     end
 end
 
-parsenewick(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractBranchTree =
+parsenewick(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree =
     parsenewick(tokenize(io), TREE)
 
-parsenewick(s::String, ::Type{TREE}) where TREE <: AbstractBranchTree =
+parsenewick(s::String, ::Type{TREE}) where TREE <: AbstractTree =
     parsenewick(IOBuffer(s), TREE)
 
 
-function parsenewick(ios::IOStream, ::Type{TREE}) where TREE <: AbstractBranchTree
+function parsenewick(ios::IOStream, ::Type{TREE}) where TREE <: AbstractTree
     buf = IOBuffer()
     print(buf, read(ios, String))
     seek(buf, 0)
@@ -447,7 +448,7 @@ function parsetaxa(token, state, tokens, taxa)
 end
 
 function parsetrees(token, state, tokens,
-                    ::Type{TREE}, taxa) where TREE <: AbstractBranchTree{String, Int}
+                    ::Type{TREE}, taxa) where {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
     notaxa = isempty(taxa)
     if isTRANSLATE(token)
         result = iterateskip(tokens, state)
@@ -492,7 +493,7 @@ function parsetrees(token, state, tokens,
                                               t -> t.kind ∈ [T.LSQUARE, T.EQ])
         @info "Created a tree called '$treename'"
         trees[treename] = TREE()
-        addnodes!(trees[treename], collect(values(taxa)))
+        createnodes!(trees[treename], collect(values(taxa)))
         if token.kind == T.LSQUARE
             token, state, treedata[treename] = parsedict(token, state, tokens)
         end
@@ -525,8 +526,8 @@ function parsetrees(token, state, tokens,
 end
 
 function parsenexus(token, state, tokens,
-                    ::Type{TREE}) where {NL, BL,
-                                         TREE <: AbstractBranchTree{NL, BL}}
+                    ::Type{TREE}) where {RT, NL, N, B,
+                                                    TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     trees = missing
     treedata = missing
     taxa = Dict{NL, NL}()
@@ -564,7 +565,8 @@ function parsenexus(token, state, tokens,
 end
 
 function parsenexus(tokens::Tokenize.Lexers.Lexer,
-                    ::Type{TREE}) where TREE <: AbstractBranchTree{String, Int}
+                    ::Type{TREE}) where {RT, NL, N, B,
+                                                    TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     result = iterateskip(tokens)
     result === nothing && return nothing
     token, state = result
@@ -579,10 +581,11 @@ function parsenexus(tokens::Tokenize.Lexers.Lexer,
     end
 end
 
-parsenexus(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractBranchTree =
+parsenexus(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree =
     parsenexus(tokenize(io), TREE)
 
-function parsenexus(ios::IOStream, ::Type{TREE}) where TREE <: AbstractBranchTree
+function parsenexus(ios::IOStream, ::Type{TREE}) where {RT, NL, N, B,
+                                TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     buf = IOBuffer()
     print(buf, read(ios, String))
     seek(buf, 0)

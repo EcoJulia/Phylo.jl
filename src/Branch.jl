@@ -18,8 +18,6 @@ mutable struct Branch{RT, NL} <: AbstractBranch{RT, NL}
     end
 end
 
-const SimpleBranch = Branch{ManyRoots, String}
-
 _src(::AbstractTree, branch::Branch) = branch.source
 _dst(::AbstractTree, branch::Branch) = branch.destination
 _getlength(::AbstractTree, branch::Branch) = branch.length
