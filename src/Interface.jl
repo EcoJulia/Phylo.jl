@@ -86,11 +86,11 @@ retrieve the node info type of a tree.
 noderecordtype(::Type{<: AbstractTree}) = _noderecordtype(T)
 
 """
-    branchinfotype(::Type{<: AbstractTree})
+    branchrecordtype(::Type{<: AbstractTree})
 
 retrieve the branch info type of a tree.
 """
-branchinfotype(::Type{<: AbstractTree}) = _branchinfotype(T)
+branchrecordtype(::Type{<: AbstractTree}) = _branchrecordtype(T)
 
 # AbstractTree methods
 """
@@ -262,7 +262,7 @@ data. `source` and `destination` can be either nodes or nodenames.
 """
 function createbranch!(tree::AbstractTree{OneTree, <: Rooted},
                        source, destination, length::Float64 = NaN;
-                       data = missing)
+                       name::Int = _newbranchlabel(tree), data = missing)
     sn = _getnode(tree, source)
     dn = _getnode(tree, destination)
     _hasnode(tree, sn) ||
@@ -279,11 +279,12 @@ function createbranch!(tree::AbstractTree{OneTree, <: Rooted},
               _getnodename(tree, destination))
     sn !== dn || error("Branch must connect different nodes")
 
-    return _createbranch!(tree, sn, dn, length, data)
+    return ismissing(data) ? _createbranch!(tree, sn, dn, length, name) :
+        _createbranch!(tree, sn, dn, length, name, data)
 end
 function createbranch!(tree::AbstractTree{OneTree, Unrooted},
                        source, destination, length::Float64 = NaN;
-                       data = missing)
+                       name::Int = _newbranchlabel(tree), data = missing)
     sn = _getnode(tree, source)
     dn = _getnode(tree, destination)
     _hasnode(tree, sn) ||
@@ -302,7 +303,8 @@ function createbranch!(tree::AbstractTree{OneTree, Unrooted},
               "$(_degree(tree, dn)))")
     sn !== dn || error("Branch must connect different nodes")
 
-    return _createbranch!(tree, sn, dn, length, data)
+    return ismissing(data) ? _createbranch!(tree, sn, dn, length, name) :
+        _createbranch!(tree, sn, dn, length, name, data)
 end
 
 """
@@ -338,7 +340,8 @@ function createnode!(tree::AbstractTree{OneTree, RT, NL, N, B},
                      data = missing) where {RT, NL, N, B}
     !_hasnode(tree, nodename) ||
         error("Node $nodename already present in tree")
-    return _createnode!(tree, nodename, data)
+    return ismissing(data) ? _createnode!(tree, nodename) :
+        _createnode!(tree, nodename, data)
 end
 
 """
@@ -710,6 +713,13 @@ Retrieve the leaf names from the tree.
 getleafnames(tree::AbstractTree) = _getleafnames(tree)
 
 """
+    getleaves(::AbstractTree)
+
+Retrieve the leaves from the tree.
+"""
+getleaves(tree::AbstractTree) = _getleaves(tree)
+
+"""
     getleafinfo(::AbstractTree, label)
 
 retrieve the leaf info for a leaf of the tree.
@@ -768,29 +778,29 @@ Validate the tree by making sure that it is connected up correctly.
 function validate(tree::T) where
     {TT, RT, NL, N, B, T <: AbstractTree{TT, RT, NL, N, B}}
     nodes = _getnodes(tree)
+    nodenames = _getnodenames(tree)
     branches = _getbranches(tree)
+    branchnames = _getbranchnames(tree)
     if !isempty(nodes) || !isempty(branches)
         # We need to validate the connections
-        if Set(mapreduce(_getinbound, push!, nodefilter(_hasinbound, tree);
-                         init = Int[])) != Set(keys(branches))
+        if Set(_getinbound(tree, node) for node in nodes
+               if _hasinbound(tree, node)) != Set(branches)
             warn("Inbound branches must exactly match Branch labels")
             return false
         end
 
-        if Set(mapreduce(_getoutbounds, append!, nodeiter(tree);
-                         init = Int[])) != Set(keys(branches))
+        if Set(mapreduce(node -> _getoutbounds(tree, node), append!,
+                         nodes; init = Int[])) != Set(branchnames)
             warn("Node outbound branches must exactly match Branch labels")
             return false
         end
 
-        if !(mapreduce(_src, push!, branchiter(tree); init = NL[]) ⊆
-             Set(keys(nodes)))
+        if !(_src(tree, branch) for branch in branches) ⊆ Set(nodenames)
             warn("Branch sources must be node labels")
             return false
         end
 
-        if !(mapreduce(_dst, push!, branchiter(tree); init = NL[]) ⊆
-             Set(keys(nodes)))
+        if !(_dst(tree, branch) for branch in branches) ⊆ Set(nodenames)
             warn("Branch destinations must be node labels")
             return false
         end

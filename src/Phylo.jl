@@ -51,9 +51,8 @@ module API
 include("API.jl")
 # AbstractTree methods
 export _ntrees, _gettrees, _nroots, _getroots, _getroot
-export _treenametype, _gettreenames, _getonetree, _gettreename
-export _createbranch!, _deletebranch!, _addbranch!, _removebranch!
-export _createnode!, _deletenode!, _addnode!, _removenode!
+export _treenametype, _gettreenames, _gettree, _gettreename
+export _createbranch!, _deletebranch!, _createnode!, _deletenode!
 export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
@@ -63,7 +62,7 @@ export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
 export _validate
-export _getleafnames, _resetleaves!, _nleaves
+export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
@@ -98,7 +97,7 @@ export validate
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, resetleaves, nleaves
+export getleafnames, getleaves, resetleaves, nleaves
 export getleafinfo, setleafinfo!, leafinfotype
 export getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
@@ -156,8 +155,10 @@ include("show.jl")
 include("trim.jl")
 export droptips!, keeptips!
 
-# Plot recipes
-include("plot.jl")
+# Plot recipes, only works on Julia v0.7 and up
+@static if VERSION > v"0.7.0-"
+    include("plot.jl")
+end
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
