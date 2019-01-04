@@ -31,7 +31,7 @@ end
 Returns a new unique branch name for a tree.
 """
 function _newbranchlabel end
-_newbranchlabel(tree::AbstractTree) = _newlabel(getbranchnames(tree))
+_newbranchlabel(tree::AbstractTree) = _newlabel(collect(getbranchnames(tree)))
 
 """
     _newnodelabel(tree::AbstractTree)
@@ -145,7 +145,7 @@ _nbranches(tree::AbstractTree{OneTree}) = length(_getbranches(tree))
     _getleafnames(::AbstractTree)
 
 Returns the leaf names of a tree. May be implemented for any
-tree type (otherwise determined from _getnodes() and _isleaf() functions).
+tree type (otherwise determined from _getnodenames() and _isleaf() functions).
 """
 function _getleafnames end
 _getleafnames(tree::AbstractTree{OneTree}) =
@@ -213,12 +213,10 @@ without reference to the tree. Must be implemented for any tree and node label
 type.
 """
 function _getnode end
-_getnode(::T, node::N) where
-    {TT, RT, NL, N <: AbstractNode{RT, NL}, B,
-     T <: AbstractTree{TT, RT, NL, N, B}} = node
-_getnode(::T, pair::Pair{NL, N}) where
-    {TT, RT, NL, N <: AbstractNode{RT, NL}, B,
-     T <: AbstractTree{TT, RT, NL, N, B}} = pair[2]
+_getnode(::AbstractTree{OneTree, RT, NL, N}, node::N) where {RT, NL, N} =
+    node
+_getnode(::AbstractTree{OneTree, RT, NL, N}, pair::Pair{NL, N}) where
+    {RT, NL, N} = pair[2]
 _getnode(pair::Pair{NL, N}) where {RT, NL, N <: AbstractNode{RT, NL}} = pair[2]
 
 """
@@ -230,14 +228,12 @@ a node or a pair) from a tree. For some id and node types, it will be
 able to extract the node name without reference to the tree.
 """
 function _getnodename end
-_getnodename(::T, pair::Pair{NL, N}) where
-    {RT, NL, N <: AbstractNode{RT, NL}, B,
-     T <: AbstractTree{OneTree, RT, NL, N, B}} = pair[1]
-_getnodename(::T, nodename::NL) where
-    {RT, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}} = nodename
-_getnodename(pair::Pair{NL, N}) where
-    {RT, NL, N <: AbstractNode{RT, NL}} = pair[1]
-
+_getnodename(::AbstractTree{OneTree, RT, NL, N, B}, pair::Pair{NL, N}) where
+    {RT, NL, N, B} = pair[1]
+_getnodename(::AbstractTree{OneTree, RT, NL, N, B}, nodename::NL) where
+    {RT, NL, N, B} = nodename
+_getnodename(pair::Pair{NL, N}) where {RT, NL, N <: AbstractNode{RT, NL}} =
+    pair[1]
 
 """
     _getbranch(::AbstractTree, id)
@@ -248,14 +244,12 @@ pair) from a tree. For some id types, it will be possible to extract the branch
 without reference to the tree. Must be implemented for any OneTree tree type.
 """
 function _getbranch end
-_getbranch(::T, branch::B) where
-    {TT, RT, NL, N, B <: AbstractBranch{RT, NL},
-     T <: AbstractTree{TT, RT, NL, N, B}} = branch
-_getbranch(::T, pair::Pair{Int, B}) where
-    {TT, RT, NL, N, B <: AbstractBranch{NL},
-     T <: AbstractTree{TT, RT, NL, N, B}} = pair[2]
-_getbranch(pair::Pair{Int, B}) where
-    {NL, B <: AbstractBranch{NL}} = pair[2]
+_getbranch(::AbstractTree{OneTree, RT, NL, N, B}, branch::B) where
+    {RT, NL, N, B} = branch
+_getbranch(::AbstractTree{OneTree, RT, NL, N, B}, pair::Pair{Int, B}) where
+    {RT, NL, N, B} = pair[2]
+_getbranch(pair::Pair{Int, B}) where {RT, NL, B <: AbstractBranch{RT, NL}} =
+    pair[2]
 
 """
     _getbranchname(::AbstractTree, id)
@@ -266,12 +260,10 @@ pair) from a tree. For some id and branch types, it will be able to extract
 the branch name without reference to the tree.
 """
 function _getbranchname end
-_getbranchname(::T, pair::Pair{Int, B}) where
-    {TT, RT, NL, N, B <: AbstractBranch{RT, NL},
-     T <: AbstractTree{TT, RT, NL, N, B}} = pair[1]
-_getbranchname(::T, branchname::Int) where
-    {TT, RT, NL, N, B,
-     T <: AbstractTree{TT, RT, NL, N, B}} = branchname
+_getbranchname(::AbstractTree{OneTree, RT, NL, N, B}, branchname::Int) where
+    {RT, NL, N, B} = branchname
+_getbranchname(::AbstractTree{OneTree, RT, NL, N, B}, pair::Pair{Int, B}) where
+    {RT, NL, N, B} = pair[1]
 _getbranchname(pair::Pair{Int, B}) where
     {RT, NL, B <: AbstractBranch{RT, NL}} = pair[1]
 
@@ -281,7 +273,6 @@ _getbranchname(pair::Pair{Int, B}) where
 May be implemented for any OneTree tree type.
 """
 function _hasnode end
-_hasnode(::AbstractTree{OneTree}, _) = false
 _hasnode(tree::AbstractTree{OneTree, RT, NL, N, B}, nodename::NL) where
     {RT, NL, N, B} = nodename ∈ _getnodenames(tree)
 _hasnode(tree::AbstractTree{OneTree, RT, NL, N, B}, node::N) where
@@ -377,6 +368,13 @@ function _getrootheight end
 function _setrootheight! end
 
 """
+    _clearrootheight!(::AbstractTree)
+
+
+"""
+function _clearrootheight! end
+
+"""
     _validate(::AbstractTree)
 
 
@@ -395,7 +393,8 @@ inferred from _outdegree or _degree - unless tree knows which nodes are
 leaves and not nodes.
 """
 function _isleaf end
-_isleaf(tree::AbstractTree, node) = _outdegree(tree, node) == 0
+_isleaf(tree::AbstractTree{OneTree, <: Rooted}, node) where
+    {NL, N, B} = _outdegree(tree, _getnode(tree, node)) == 0
 function _isleaf(tree::AbstractTree{OneTree, Unrooted}, node)
     _degree(tree, node) == 0 && return true
     _degree(tree, node) > 1 && return false
@@ -408,10 +407,10 @@ end
 Is the node a root node of the tree?
 """
 function _isroot end
-_isroot(tree::AbstractTree{OneTree, <: Rooted, NL, N, B}, node::N) where
-    {NL, N, B} = _indegree(tree, node) == 0
-_isroot(tree::AbstractTree{OneTree,  <: Rooted, NL, N, B}, node::NL) where
-    {NL, N, B} = _isroot(tree, _getnode(tree, node))
+_isroot(tree::AbstractTree{OneTree, <: Rooted, NL, N}, node::N) where {NL, N} =
+    !_hasinbound(tree, node)
+_isroot(tree::AbstractTree{OneTree, <: Rooted, NL}, node::NL) where NL =
+    _isroot(tree, _getnode(tree, node))
 _isroot(tree::AbstractTree{OneTree, Unrooted}, node) = false
 
 """
@@ -420,7 +419,8 @@ _isroot(tree::AbstractTree{OneTree, Unrooted}, node) = false
 Is the node internal to the tree?
 """
 function _isinternal end
-_isinternal(tree::AbstractTree, node::AbstractNode) = _isinternal(tree, node)
+_isinternal(tree::AbstractTree{OneTree, RT, NL}, node::NL) where {RT, NL} =
+    _isinternal(tree, _getnode(tree, node))
 _isinternal(tree::AbstractTree, node::AbstractNode{<: Rooted}) =
     _outdegree(tree, node) > 0 && _hasinbound(tree, node)
 _isinternal(tree::AbstractTree, node::AbstractNode{Unrooted}) =
@@ -431,7 +431,8 @@ _isinternal(tree::AbstractTree, node::AbstractNode{Unrooted}) =
 
 Does the node currently form its own (sub)tree?
 """
-_isunattached(tree::AbstractTree, node::AbstractNode) = _degree(node) == 0
+_isunattached(tree::AbstractTree, node) =
+    _degree(tree, _getnode(tree, node)) == 0
 
 """
     _indegree(tree::AbstractTree, node::AbstractNode)
@@ -459,8 +460,8 @@ _hasinboundspace(tree::AbstractTree, node::AbstractNode) =
 Out degree of node.
 """
 function _outdegree end
-_outdegree(tree::AbstractTree{OneTree, RT}, node::AbstractNode{RT}) where
-    RT <: Rooted = length(_getoutbounds(tree, node))
+_outdegree(tree::AbstractTree{OneTree, <: Rooted}, node::AbstractNode) =
+    length(_getoutbounds(tree, node))
 _outdegree(tree::AbstractTree{OneTree, Unrooted},
            node::AbstractNode{Unrooted}) =
     _degree(tree, node) == 0 ? 0 : missing
@@ -472,7 +473,6 @@ Is there space for a new outbound connection on a node? Must be implemented if
 a node has a limit on the number of outbound connections (eg for a binary tree)
 """
 function _hasoutboundspace end
-_hasoutboundspace(::AbstractTree, ::AbstractNode) = true
 
 """
     _hasspace(tree::AbstractTree, node::AbstractNode)
@@ -482,7 +482,7 @@ a node has a limit on the number of connections (eg for a binary tree)
 """
 function _hasspace end
 _hasspace(::AbstractTree{OneTree}, ::AbstractNode) =
-    _hasinboundspace(tree, node) || _hasoutboundspace(tree, node)
+    _hasinboundspace(tree, node) | _hasoutboundspace(tree, node)
 _hasspace(::AbstractTree{OneTree, Unrooted}, ::AbstractNode) = true
 
 """
@@ -501,6 +501,8 @@ _degree(tree::AbstractTree, node::AbstractNode) =
 Must be implemented for any AbstractNode subtype.
 """
 function _hasinbound end
+_hasinbound(tree::AbstractTree{OneTree, <: Rooted, NL}, name::NL) where NL =
+    _hasinbound(tree, _getnode(tree, name))
 _hasinbound(tree::AbstractTree{OneTree, Unrooted},
             node::AbstractNode{Unrooted}) =
     _degree(tree, node) == 0 ? false : missing
@@ -513,6 +515,8 @@ Get the inbound connection. Must be implemented for any rooted AbstractNode subt
 function _getinbound end
 _getinbound(::AbstractTree{OneTree, Unrooted}, ::AbstractNode{Unrooted}) =
     error("Can't ask for inbound connection on Unrooted trees")
+_getinbound(tree::AbstractTree{OneTree, <: Rooted, NL}, name::NL) where NL =
+    _getinbound(tree, _getnode(tree, name))
 
 """
     _getparent(tree::AbstractTree, node)
@@ -523,7 +527,10 @@ function _getparent end
 _getparent(tree::AbstractTree{OneTree, Unrooted}, _) =
     error("Can't ask for parent of Unrooted tree")
 _getparent(tree::AbstractTree{OneTree, RT, NL, N, B}, node::N) where
-    {RT <: Rooted, NL, N, B} = _src(tree, _getinbound(tree, node))
+    {RT <: Rooted, NL, N, B} = _getnode(tree,
+                                        _src(tree, _getinbound(tree, node)))
+_getparent(tree::AbstractTree{OneTree, <: Rooted, NL}, name::NL) where NL =
+    _getnodename(tree, _getparent(tree, _getnode(tree, name)))
 
 """
     _addinbound!(tree::AbstractTree, node::AbstractNode, inbound)
@@ -584,12 +591,15 @@ Return the child node(s) for this node. May be implemented for any rooted
 AbstractNode subtype.
 """
 function _getchildren end
-_getchildren(::AbstractTree{OneTree, Unrooted, NL, N, B},
-             ::NL) where {NL, N, B} =
+_getchildren(::AbstractTree{OneTree, Unrooted}, _) =
     error("Can't ask for children of Unrooted tree")
+_getchildren(tree::AbstractTree{OneTree, <: Rooted, NL}, name::NL) where NL =
+    [_getnodename(tree, _dst(tree, branch))
+     for branch in _getoutbounds(tree, _getnode(tree, name))]
+
 _getchildren(tree::AbstractTree{OneTree, RT, NL, N, B}, node::N) where
     {RT <: Rooted, NL, N, B} =
-    [_dst(tree, branch) for branch in _getoutbounds(tree, node)]
+    [_getnode(tree, _dst(tree, branch)) for branch in _getoutbounds(tree, node)]
 
 """
     _getconnections(tree::AbstractTree, node::AbstractNode)
@@ -599,10 +609,14 @@ AbstractNode subtype, can be inferred from _getinbound and _getoutbounds for
 a rooted node.
 """
 function _getconnections end
-_getconnections(tree::AbstractTree, node::AbstractNode) =
+_getconnections(tree::AbstractTree{OneTree}, node::AbstractNode) =
     _hasinbound(tree, node) ?
         append!([_getinbound(tree, node)], _getoutbounds(tree, node)) :
         _getoutbounds(tree, node)
+_getconnections(tree::AbstractTree{OneTree, <: Rooted, NL}, name::NL) where NL =
+    _hasinbound(tree, name) ?
+        append!([_getinbound(tree, name)], _getoutbounds(tree, name)) :
+        _getoutbounds(tree, name)
 
 """
     _getsiblings(tree::AbstractTree, node::AbstractNode)
@@ -618,6 +632,13 @@ _getsiblings(tree::AbstractTree{OneTree, <: Rooted}, node::AbstractNode) =
         _getchildren(tree, node)
 _getsiblings(tree::AbstractTree{OneTree, Unrooted}, node::AbstractNode) =
     [_conn(tree, branch, node) for branch in _getconnections(tree, node)]
+_getsiblings(tree::AbstractTree{OneTree, <: Rooted, NL}, name::NL) where NL =
+    _hasinbound(tree, name) ?
+        append!([_getparent(tree, name)], _getchildren(tree, name)) :
+        _getchildren(tree, name)
+_getsiblings(tree::AbstractTree{OneTree, Unrooted, NL}, name::NL) where NL =
+    [_getnodename(tree, _conn(tree, branch, _getnode(tree, name)))
+     for branch in _getconnections(tree, name)]
 
 """
     _addconnection!(tree::AbstractTree, node::AbstractNode, branch)
@@ -732,7 +753,7 @@ _getlength(::AbstractTree, ::AbstractBranch) = NaN
 Returns the type of the leaf info data.
 """
 function _leafinfotype end
-_leafinfotype(::Type{<:AbstractTree}) = Void
+_leafinfotype(::Type{<:AbstractTree}) = Nothing
 
 """
     _noderecordtype(::Type{<:AbstractTree})
@@ -740,20 +761,16 @@ _leafinfotype(::Type{<:AbstractTree}) = Void
 Returns the type of the node info data.
 """
 function _noderecordtype end
-_noderecordtype(::Type{<:AbstractTree}) = Void
+_noderecordtype(::Type{<:AbstractTree}) = Nothing
 
 """
-    _branchinfotype(::Type{<:AbstractTree})
+    _branchrecordtype(::Type{<:AbstractTree})
 
 Returns the type of the branch info data.
 """
-function _branchinfotype end
-_branchinfotype(::Type{<:AbstractTree}) = Void
+function _branchrecordtype end
+_branchrecordtype(::Type{<:AbstractTree}) = Nothing
 
-function _addnode! end
-function _removenode! end
-function _addbranch! end
-function _removebranch! end
 function _getleafinfo end
 function _setleafinfo! end
 function _getnoderecord end
@@ -761,4 +778,3 @@ function _setnoderecord! end
 function _getbranchinfo end
 function _setbranchinfo! end
 function _resetleaves! end
-function _clearrootheight! end
