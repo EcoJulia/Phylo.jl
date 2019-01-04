@@ -34,7 +34,7 @@ struct Nonultrametric{T <: AbstractTree,
     end
 
     function Nonultrametric{T, RNG}(n::Int, rng::RNG) where {T, RNG}
-        return new{T, RNG}(n, map(i -> "tip $i", 1:n), rng, missing)
+        return new{T, RNG}(n, ["tip $i" for i in Base.OneTo(n)], rng, missing)
     end
 
     function Nonultrametric{T, RNG}(tiplabels::Vector{String}, rng::RNG) where {T, RNG}
@@ -57,11 +57,11 @@ function Nonultrametric{T}(leafinfo) where T <: AbstractTree
 end
 
 Nonultrametric(info::LI) where LI =
-    Nonultrametric{RootedTree}(info)
+    Nonultrametric{NamedTree}(info)
 
-Nonultrametric(n::Int) = Nonultrametric{RootedTree}(n)
+Nonultrametric(n::Int) = Nonultrametric{NamedTree}(n)
 Nonultrametric(tiplabels::Vector{String}) =
-    Nonultrametric{RootedTree}(tiplabels)
+    Nonultrametric{NamedTree}(tiplabels)
 
 function rand(t::Nonultrametric{T, RNG}) where {T, RNG}
     t.n >= 2 || error("A tree must have at least 2 tips")
@@ -105,7 +105,7 @@ struct Ultrametric{T <: AbstractTree,
     end
 
     function Ultrametric{T, RNG}(n::Int, rng::RNG) where {T, RNG}
-        return new{T, RNG}(n, map(i -> "tip $i", 1:n), rng, missing)
+        return new{T, RNG}(n, ["tip $i" for i in Base.OneTo(n)], rng, missing)
     end
 
     function Ultrametric{T, RNG}(tiplabels::Vector{String}, rng::RNG) where {T, RNG}
@@ -127,11 +127,10 @@ function Ultrametric{T}(leafinfo) where T <: AbstractTree
                                        Exponential(), leafinfo)
 end
 
-Ultrametric(info::LI) where LI =
-    Ultrametric{RootedTree}(info)
+Ultrametric(info::LI) where LI = Ultrametric{NamedTree}(info)
 
-Ultrametric(n::Int) = Ultrametric{RootedTree}(n)
-Ultrametric(tiplabels::Vector{String}) = Ultrametric{RootedTree}(tiplabels)
+Ultrametric(n::Int) = Ultrametric{NamedTree}(n)
+Ultrametric(tiplabels::Vector{String}) = Ultrametric{NamedTree}(tiplabels)
 
 function rand(t::Ultrametric{T, RNG}) where {T, RNG}
     t.n >= 2 || error("A tree must have at least 2 tips")
@@ -141,21 +140,21 @@ function rand(t::Ultrametric{T, RNG}) where {T, RNG}
         tree = T(t.leafinfo; rootheight = 0.0)
     end
     depth = zero(rand(t.rng))
-    leaves = collect(getnodenames(tree))
+    leaves = getleaves(tree)
     while nroots(tree) > 1
-        show(nroots(tree))
+        # show(nroots(tree))
         roots = getroots(tree)
         tocoalesce = collect(roots)
         coalescers = sample(tocoalesce, 2, replace=false)
-        show(map(n -> getnodename(tree, n), coalescers))
+        # show(getnodename(tree, n) for n in coalescers)
         parent = createnode!(tree)
         depth += rand(t.rng) * 2.0 / length(tocoalesce)
-        c1 = filter(x -> coalescers[1] ∈ nodehistory(tree, x), leaves)
-        d1 = map(x -> getheight(tree, x), c1)
-        c2 = filter(x -> coalescers[2] ∈ nodehistory(tree, x), leaves)
-        d2 = map(x -> getheight(tree, x), c2)
-        createbranch!(tree, parent, coalescers[1], depth - d1[1])
-        createbranch!(tree, parent, coalescers[2], depth - d2[1])
+        d1 = first(getheight(tree, x) for x in leaves
+                   if coalescers[1] ∈ nodehistory(tree, x))
+        d2 = first(getheight(tree, x) for x in leaves
+                   if coalescers[2] ∈ nodehistory(tree, x))
+        createbranch!(tree, parent, coalescers[1], depth - d1)
+        createbranch!(tree, parent, coalescers[2], depth - d2)
     end
     return tree
 end

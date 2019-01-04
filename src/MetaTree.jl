@@ -17,8 +17,8 @@ SimpleBranch{RT, NL}(edge::SimpleEdge{Int}) where {RT, NL} =
 abstract type MetaTree{RT, NL, TD} <:
     AbstractTree{OneTree, RT, NL, SimpleNode{RT, NL}, SimpleBranch{RT, NL}} end
 
-_nodeinfotype(::Type{<:MetaTree}) = Dict{Symbol, Any}
-_branchinfotype(::Type{<:MetaTree}) = Dict{Symbol, Any}
+_noderecordtype(::Type{<:MetaTree}) = Dict{Symbol, Any}
+_branchrecordtype(::Type{<:MetaTree}) = Dict{Symbol, Any}
 
 mutable struct UnrootedMetaTree{NL, TD} <: MetaTree{Unrooted, NL, TD}
     mg::MetaGraph{Int, Float64}
@@ -38,6 +38,22 @@ end
 const RootedTree = RootedMetaTree{OneRoot, String, Dict{String, Any}}
 const ManyRootTree = RootedMetaTree{ManyRoots, String, Dict{String, Any}}
 const UnrootedTree = UnrootedMetaTree{String, Dict{String, Any}}
+function RootedTree(n::Int = 0)
+    tree = RootedTree(MetaDiGraph(), Vector{SimpleNode{OneRoot, String}}(),
+                      missing, missing, Dict{String, Any}())
+    set_indexing_prop!(tree.mg, :name)
+    createnodes!(tree, n)
+
+    return tree
+end
+function RootedTree(names::Vector{String})
+    tree = RootedTree(MetaDiGraph(), Vector{SimpleNode{OneRoot, String}}(),
+                      missing, missing, Dict{String, Any}())
+    set_indexing_prop!(tree.mg, :name)
+    createnodes!(tree, names)
+
+    return tree
+end
 
 import Phylo.API._nnodes
 _nnodes(tree::MetaTree) = nv(tree.mg)
@@ -160,17 +176,17 @@ _getconnections(tree::RootedMetaTree{RT, NL, TD}, node::NL) where {RT, NL, TD} =
      for branch in _getconnections(tree, _getnode(tree, node))]
 
 import Phylo.API._addinbound!
-_addinbound!(::RootedMetaTree, node) = Void()
+_addinbound!(::RootedMetaTree, node) = Nothing()
 import Phylo.API._removeinbound!
-_removeinbound!(::RootedMetaTree, node) = Void()
+_removeinbound!(::RootedMetaTree, node) = Nothing()
 import Phylo.API._addoutbound!
-_addoutbound!(::RootedMetaTree, node) = Void()
+_addoutbound!(::RootedMetaTree, node) = Nothing()
 import Phylo.API._removeoutbound!
-_removeoutbound!(::RootedMetaTree, node) = Void()
+_removeoutbound!(::RootedMetaTree, node) = Nothing()
 import Phylo.API._addconnection!
-_addconnection!(::UnrootedMetaTree, node) = Void()
+_addconnection!(::UnrootedMetaTree, node) = Nothing()
 import Phylo.API._removeconnection!
-_removeconnection!(::UnrootedMetaTree, node) = Void()
+_removeconnection!(::UnrootedMetaTree, node) = Nothing()
 
 import Phylo.API._createbranch!
 function _createbranch!(tree::MetaTree{RT, NL, TD},
@@ -209,7 +225,7 @@ import Phylo.API._createnode!
 function _createnode!(tree::T, nodename::NL, data) where
     {RT, NL, TD, T <: MetaTree{RT, NL, TD}}
     if ismissing(data)
-        add_vertex!(tree.mg, nodeinfotype(T)())
+        add_vertex!(tree.mg, noderecordtype(T)())
     else
         add_vertex!(tree.mg, data)
     end
