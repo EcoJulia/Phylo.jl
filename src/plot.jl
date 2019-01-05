@@ -40,7 +40,7 @@ end
 struct Dendrogram; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
 struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
 
-@recipe function f(d::Dendrogram)
+@recipe function f(dend::Dendrogram)
 
     sa = get(plotattributes, :series_annotations, nothing)
     @series begin
@@ -49,28 +49,28 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
         markershape := :none
         series_annotations := nothing
 
-        lc = _extend(get(plotattributes, :linecolor, nothing), d.x)
+        lc = _extend(get(plotattributes, :linecolor, nothing), dend.x)
         lc !== nothing && (linecolor := lc)
-        la = _extend(get(plotattributes, :linealpha, nothing), d.x)
+        la = _extend(get(plotattributes, :linealpha, nothing), dend.x)
         la !== nothing && (linealpha := la)
-        lz = _extend(get(plotattributes, :line_z, nothing), d.x)
+        lz = _extend(get(plotattributes, :line_z, nothing), dend.x)
         lz !== nothing && (line_z := lz)
 
-        d.x, d.y
+        dend.x, dend.y
     end
-    if !isempty(d.marker_x) || sa !== nothing
+    if !isempty(dend.marker_x) || sa !== nothing
         @series begin
             seriestype := :scatter
             sa !== nothing && (series_annotations := sa)
-            d.marker_x, d.marker_y
+            dend.marker_x, dend.marker_y
         end
     end
-    d.showtips && (annotations := map(x -> (x[1], x[2], (x[3], :left, d.tipfont...)), d.tipannotations))
+    dend.showtips && (annotations := map(x -> (x[1], x[2], (x[3], :left, dend.tipfont...)), dend.tipannotations))
     [],[]
 end
 
-@recipe function f(d::Fan)
-    adjust(y) = 2pi*y / (length(d.tipannotations) + 1)
+@recipe function f(fan::Fan)
+    adjust(y) = 2pi*y / (length(fan.tipannotations) + 1)
 
     sa = get(plotattributes, :series_annotations, nothing)
     @series begin
@@ -79,7 +79,7 @@ end
         markershape := :none
         series_annotations := nothing
 
-        x, y = _circle_transform_segments(d.x, adjust(d.y))
+        x, y = _circle_transform_segments(fan.x, adjust(fan.y))
         lc = _extend(get(plotattributes, :linecolor, nothing), x)
         lc !== nothing && (linecolor := lc)
         la = _extend(get(plotattributes, :linealpha, nothing), x)
@@ -88,20 +88,20 @@ end
         lz !== nothing && (line_z := lz)
         x, y
     end
-    if !isempty(d.marker_x) || sa !== nothing
+    if !isempty(fan.marker_x) || sa !== nothing
         @series begin
             seriestype := :scatter
             a !== nothing && (series_annotations := sa)
-            _xcirc.(adjust(d.marker_y), d.marker_x), _ycirc.(adjust(d.marker_y), d.marker_x)
+            _xcirc.(adjust(fan.marker_y), fan.marker_x), _ycirc.(adjust(fan.marker_y), fan.marker_x)
         end
     end
     aspect_ratio := 1
-    mx = maximum(filter(isfinite, d.x))
-    if d.showtips
+    mx = maximum(filter(isfinite, fan.x))
+    if fan.showtips
         xlim --> (1.5 .* (-mx, mx))
         ylim --> (1.5 .* (-mx, mx))
         annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., (x[3], :left,
-            rad2deg(adjust(x[2])), d.tipfont...)), d.tipannotations)
+            rad2deg(adjust(x[2])), fan.tipfont...)), fan.tipannotations)
     end
     [],[]
 end
