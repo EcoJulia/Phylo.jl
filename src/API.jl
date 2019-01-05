@@ -393,8 +393,8 @@ inferred from _outdegree or _degree - unless tree knows which nodes are
 leaves and not nodes.
 """
 function _isleaf end
-_isleaf(tree::AbstractTree{OneTree, <: Rooted}, node) where
-    {NL, N, B} = _outdegree(tree, _getnode(tree, node)) == 0
+_isleaf(tree::AbstractTree{OneTree, <: Rooted}, node) =
+    _outdegree(tree, _getnode(tree, node)) == 0
 function _isleaf(tree::AbstractTree{OneTree, Unrooted}, node)
     _degree(tree, node) == 0 && return true
     _degree(tree, node) > 1 && return false
