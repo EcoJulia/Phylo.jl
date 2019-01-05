@@ -149,10 +149,10 @@ function rand(t::Ultrametric{T, RNG}) where {T, RNG}
         # show(getnodename(tree, n) for n in coalescers)
         parent = createnode!(tree)
         depth += rand(t.rng) * 2.0 / length(tocoalesce)
-        d1 = first(getheight(tree, x) for x in leaves
-                   if coalescers[1] ∈ nodehistory(tree, x))
-        d2 = first(getheight(tree, x) for x in leaves
-                   if coalescers[2] ∈ nodehistory(tree, x))
+        d1 = getheight(tree, leaves[findfirst(x -> coalescers[1] ∈
+                                              nodehistory(tree, x), leaves)])
+        d2 = getheight(tree, leaves[findfirst(x -> coalescers[2] ∈
+                                              nodehistory(tree, x), leaves)])
         createbranch!(tree, parent, coalescers[1], depth - d1)
         createbranch!(tree, parent, coalescers[2], depth - d2)
     end
