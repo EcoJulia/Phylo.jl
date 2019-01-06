@@ -41,9 +41,9 @@ using Compat.Test
         who = getparent(tree, species[1])
         b = getinbound(tree, species[1])
         node1 = getnode(tree, species[1])
-        @test !isunattached(node1) &&
-            hasoutboundspace(node1) && !hasinboundspace(node1) &&
-            outdegree(node1) == 0 && indegree(node1) == 1
+        @test !isunattached(tree, node1) &&
+            hasoutboundspace(tree, node1) && !hasinboundspace(tree, node1) &&
+            outdegree(tree, node1) == 0 && indegree(tree, node1) == 1
         @test hasbranch(tree, b)
         @test dst(getbranch(tree, b)) == species[1]
         @test src(getbranch(tree, b)) == who
@@ -55,8 +55,8 @@ using Compat.Test
             outdegree(tree, species[1]) == 0 &&
             indegree(tree, species[1]) == 0
         @test_throws ErrorException getbranch(tree, b)
-        branches = collect(Iterators.filter(name -> name != b, branches))
-        @test Set(branches) == Set(getbranchnames(tree))
+        branches = [name for name in branches if name != b]
+        @test Set(branches) == Set(getbranches(tree))
         b3 = getinbound(tree, species[2])
         source = src(tree, b3)
         destination = dst(tree, b3)
