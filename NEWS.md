@@ -1,3 +1,5 @@
+- v0.3.3
+  - Enable plotting
 - v0.3.2
   - RCall interface now up and running with 1.0.
 - v0.3.1
