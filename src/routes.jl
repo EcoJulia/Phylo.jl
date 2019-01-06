@@ -1,36 +1,45 @@
 using Compat: mapreduce
 
-function _treepast(tree::T, nodename::NL) where
+function _treehistory(tree::T, nodename::NL) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
-    branches, nodes = _treepast(tree, getnode(tree, nodename))
+    branches, nodes = _treehistory(tree, getnode(tree, nodename))
     return [getbranchname(tree, b) for b in branches],
            [getnodename(tree, n) for n in nodes]
 end
 
-function _treepast(tree::T, node::N) where
+function _treehistory(tree::T, node::N) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     branches = B[]
-    nodes = N[node]
-    while _hasinbound(tree, node)
-        push!(branches, _getbranch(tree, _getinbound(tree, node)))
-        node = _getparent(tree, node)
-        push!(nodes, node)
-    end
-    return branches, nodes
-end
-
-function _treefuture(tree::T, node::NL) where
-    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
-    branches = BL[]
-    nodestoprocess = NL[node]
-    nodesprocessed = NL[]
+    nodestoprocess = N[node]
+    nodesprocessed = N[]
     while !isempty(nodestoprocess)
         nextnode = pop!(nodestoprocess)
         push!(nodesprocessed, nextnode)
-        outbounds = getoutbounds(tree, nextnode)
-        append!(branches, outbounds)
-        append!(nodestoprocess,
-                _getnode(tree, name) for name in getchildren(tree, nextnode))
+        if hasinbound(tree, nextnode)
+            push!(branches, getinbound(tree, nextnode))
+            push!(nodestoprocess, getparent(tree, nextnode))
+        end
+    end
+    return branches, nodesprocessed
+end
+
+function _treefuture(tree::T, nodename::NL) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    branches, nodes = _treefuture(tree, getnode(tree, nodename))
+    return [getbranchname(tree, b) for b in branches],
+           [getnodename(tree, n) for n in nodes]
+end
+
+function _treefuture(tree::T, node::N) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    branches = B[]
+    nodestoprocess = N[node]
+    nodesprocessed = N[]
+    while !isempty(nodestoprocess)
+        nextnode = pop!(nodestoprocess)
+        push!(nodesprocessed, nextnode)
+        append!(branches, getoutbounds(tree, nextnode))
+        append!(nodestoprocess, getchildren(tree, nextnode))
     end
     return branches, nodesprocessed
 end
@@ -42,7 +51,7 @@ Find the branch route between a node on a tree and its root
 """
 function branchhistory(tree::T, node::Union{NL, N}) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
-    return _treepast(tree, node)[1]
+    return _treehistory(tree, node)[1]
 end
 
 """
@@ -52,7 +61,27 @@ Find the node route between a node on a tree and its root
 """
 function nodehistory(tree::T, node::Union{NL, N}) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
-    return _treepast(tree, node)[2]
+    return _treehistory(tree, node)[2]
+end
+
+"""
+    branchfuture(tree::AbstractTree, node)
+
+Find the branches between a node on a tree and its leaves
+"""
+function branchfuture(tree::T, node::Union{NL, N}) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    return _treefuture(tree, node)[1]
+end
+
+"""
+    nodefuture(tree::AbstractTree, node)
+
+Find the nodes between a node on a tree and its leaves
+"""
+function nodefuture(tree::T, node::Union{NL, N}) where
+    {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+    return _treefuture(tree, node)[2]
 end
 
 """
@@ -67,8 +96,8 @@ function branchroute(tree::T, node1::NL, node2::NL) where
 end
 function branchroute(tree::T, node1::N, node2::N) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
-    branches1, nodes1 = _treepast(tree, node1)
-    branches2, nodes2 = _treepast(tree, node2)
+    branches1, nodes1 = _treehistory(tree, node1)
+    branches2, nodes2 = _treehistory(tree, node2)
     nodes1[end] == nodes2[end] ||
         return error("No route between nodes")
     common = branches1 ∩ branches2
@@ -89,8 +118,8 @@ function noderoute(tree::T, node1::NL, node2::NL) where
 end
 function noderoute(tree::T, node1::N, node2::N) where
     {RT <: Rooted, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
-    branches1, nodes1 = _treepast(tree, node1)
-    branches2, nodes2 = _treepast(tree, node2)
+    branches1, nodes1 = _treehistory(tree, node1)
+    branches2, nodes2 = _treehistory(tree, node2)
     nodes1[end] == nodes2[end] || error("No route between nodes in tree")
     common = nodes1[end]
     while min(length(nodes1), length(nodes2)) > 0 && nodes1[end] == nodes2[end]
