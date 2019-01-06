@@ -746,6 +746,7 @@ subtype.
 """
 function _getlength end
 _getlength(::AbstractTree, ::AbstractBranch) = NaN
+_getlength(tree::AbstractTree, bn::Int) = _getlength(tree, _getbranch(tree, bn))
 
 """
     _leafinfotype(::Type{<:AbstractTree})

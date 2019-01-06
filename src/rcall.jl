@@ -20,12 +20,12 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     nnode = dict[:Nnode]
     lengths = dict[:edge_length]
     nontips = nnode
-    append!(nodes, addnodes!(tree, nontips))
+    append!(nodes, createnodes!(tree, nontips))
 
     for edge in 1:size(edges, 1)
-        addbranch!(tree,
-                   nodes[edges[edge, 1]], nodes[edges[edge, 2]],
-                   lengths[edge])
+        createbranch!(tree,
+                      nodes[edges[edge, 1]], nodes[edges[edge, 2]],
+                      lengths[edge])
     end
 
     validate(tree) || warn("Tree does not internally validate")
@@ -41,8 +41,8 @@ import .RCall.sexp
 function sexp(tree::T) where T <: AbstractTree
     validate(tree) || warn("Tree does not internally validate")
 
-    tipnames = collect(nodenamefilter(isleaf, tree))
-    root = collect(nodenamefilter(isroot, tree))
+    tipnames = getleafnames(tree)
+    root = [getnodename(tree, node) for node in getroots(tree)]
     if (length(root) != 1)
         error("Can't currently translate tree with > 1 roots")
     end
@@ -58,8 +58,8 @@ function sexp(tree::T) where T <: AbstractTree
     edges = Matrix{Int32}(undef, length(lengths), 2)
     index = 1
     for branch in bi
-        lengths[index] = getlength(branch)
-        edges[index, :] = indexin([src(branch), dst(branch)], nodes)
+        lengths[index] = getlength(tree, branch)
+        edges[index, :] = indexin([src(tree, branch), dst(tree, branch)], nodes)
         index += 1
     end
     tor[:edge] = edges

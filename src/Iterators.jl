@@ -39,8 +39,7 @@ end
 
 Returns an iterator over the nodes of any tree.
 """
-nodeiter(tree::T) where T <: AbstractTree =
-    NodeIterator{T}(tree, nothing)
+nodeiter(tree::T) where T <: AbstractTree = NodeIterator{T}(tree, nothing)
 
 """
     nodefilter(filterfn::Function, tree::AbstractTree)
@@ -51,7 +50,7 @@ Returns an iterator over the nodes of any tree, where the
 nodefilter(filterfn::Function, tree::T) where T <: AbstractTree =
     NodeIterator{T}(tree, filterfn)
 
-eltype(ni::NodeIterator{T}) where T <: AbstractTree = nodetype(ni.tree)
+eltype(ni::NodeIterator{T}) where T <: AbstractTree = nodetype(T)
 
 struct NodeNameIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
     tree::T
@@ -75,7 +74,7 @@ Returns an iterator over the nodenames of any tree, where the
 nodenamefilter(filterfn::Function, tree::T) where T <: AbstractTree =
     NodeNameIterator{T}(tree, filterfn)
 
-eltype(ni::NodeNameIterator{T}) where T <: AbstractTree = nodenametype(ni.tree)
+eltype(ni::NodeNameIterator{T}) where T <: AbstractTree = nodenametype(T)
 
 struct BranchIterator{T <: AbstractTree} <: AbstractBranchIterator{T}
     tree::T
@@ -99,7 +98,7 @@ Returns an iterator over the branches of any tree, where the
 branchfilter(filterfn::Function, tree::T) where T <: AbstractTree =
     BranchIterator{T}(tree, filterfn)
 
-eltype(bi::BranchIterator{T}) where T <: AbstractTree = branchtype(bi.tree)
+eltype(bi::BranchIterator{T}) where T <: AbstractTree = branchtype(T)
 
 struct BranchNameIterator{T <: AbstractTree} <: AbstractBranchIterator{T}
     tree::T
@@ -123,7 +122,7 @@ the `AbstractBranch` is filtered by the function `filterfn`.
 branchnamefilter(filterfn::Function, tree::T) where T <: AbstractTree =
     BranchNameIterator{T}(tree, filterfn)
 
-eltype(bi::BranchNameIterator{T}) where T <: AbstractTree = branchnametype(bi.tree)
+eltype(bi::BranchNameIterator{T}) where T <: AbstractTree = branchnametype(T)
 
 @static if VERSION >= v"0.7.0"
 import Base.iterate
