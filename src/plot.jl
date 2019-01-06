@@ -161,7 +161,7 @@ function _findxy(tree::Phylo.AbstractTree)
     end
 
     root = getnodename(tree, getroot(tree))
-    height = Dict(tip => float(i) for (i, tip) in enumerate(nodefuture(tree, root) ∩ getleafnames(tree)))
+    height = Dict(tip => float(i) for (i, tip) in enumerate(nodefuture(tree, root)) if isleaf(tree, tip))
     sizehint!(height, nnodes(tree))
     findheights!(root)
 
