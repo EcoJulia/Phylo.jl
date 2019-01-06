@@ -26,6 +26,9 @@ _gettrees(ts::TreeSet) = values(ts.trees)
 import Phylo.API: _gettreenames
 _gettreenames(ts::TreeSet) = keys(ts.trees)
 
+gettreeinfo(ts::TreeSet) = ts.treeinfo
+gettreeinfo(ts::TreeSet, name) = ts.treeinfo[name]
+
 import Phylo.API: _gettree
 _gettree(ts::TreeSet, name) = ts.trees[name]
 
