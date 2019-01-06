@@ -67,16 +67,19 @@ julia> using Phylo
 julia> nu = Nonultrametric(5);
 
 julia> tree = rand(nu)
-Phylogenetic tree with 5 tips, 9 nodes and 8 branches.
+PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
 Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
+
 
 julia> trees = rand(nu, ["Tree 1", "Tree 2"])
 TreeSet with 2 trees, each with 5 tips.
 Tree names are Tree 2 and Tree 1
 
-Tree 2: Phylogenetic tree with 5 tips,9 nodes and 8 branches.
+Tree 2: PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 
-Tree 1: Phylogenetic tree with 5 tips,9 nodes and 8 branches.
+Tree 1: PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 ```
 
 The code also provides iterators, and filtered iterators over the
