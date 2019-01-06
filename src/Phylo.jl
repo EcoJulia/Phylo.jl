@@ -128,7 +128,8 @@ export PolytomousTree, NamedPolytomousTree
 #export RootedTree, ManyRootTree, UnrootedTree
 
 include("routes.jl")
-export branchhistory, branchroute, nodehistory, noderoute
+export branchhistory, branchfuture, branchroute
+export nodehistory, nodefuture, noderoute
 export distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
