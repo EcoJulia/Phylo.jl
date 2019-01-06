@@ -11,7 +11,7 @@ using RecipesBase
 
     d, h, n = _findxy(tree)
     adj = 0.03maximum(values(d))
-    tipannotations = map(x->(d[x] + adj, h[x], x), leafiter(tree))
+    tipannotations = map(x->(d[x] + adj, h[x], x), getleafnames(tree))
 
     x, y = Float64[], Float64[]
     for node ∈ n
@@ -117,10 +117,6 @@ function _extend(tmp, x)
     return ret
 end
 
-leafiter(tree) = nodenamefilter(isleaf, tree)
-
-
-
 function Base.sort!(tree::AbstractTree)
     function loc!(clade::String)
         if isleaf(tree, clade)
@@ -164,15 +160,15 @@ function _findxy(tree::Phylo.AbstractTree)
         end
     end
 
-    root = first(nodenamefilter(isroot, tree))
-    height = Dict(tip => float(i) for (i, tip) in enumerate(leafiter(tree)))
-    sizehint!(height, length(nodeiter(tree)))
+    root = getnodename(tree, getroot(tree))
+    height = Dict(tip => float(i) for (i, tip) in enumerate(nodefuture(tree, root) ∩ getleafnames(tree)))
+    sizehint!(height, nnodes(tree))
     findheights!(root)
 
     depth = Dict{String, Float64}(root => 0)
     names = String[]
-    sizehint!(depth, length(nodeiter(tree)))
-    sizehint!(names, length(nodeiter(tree)))
+    sizehint!(depth, nnodes(tree))
+    sizehint!(names, nnodes(tree))
     finddepths!(root)
 
     depth, height, names
