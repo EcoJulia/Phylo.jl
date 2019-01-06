@@ -1,3 +1,7 @@
+- v0.4.0
+  - Now with plotting!
+  - New interface to allow an easier changeover of tree, node and branch types
+  - Defaults to polytomies
 - v0.3.2
   - RCall interface now up and running with 1.0.
 - v0.3.1
