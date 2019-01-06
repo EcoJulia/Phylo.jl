@@ -790,17 +790,17 @@ function validate(tree::T) where
         end
 
         if Set(mapreduce(node -> _getoutbounds(tree, node), append!,
-                         nodes; init = Int[])) != Set(branchnames)
+                         nodes; init = B[])) != Set(branches)
             warn("Node outbound branches must exactly match Branch labels")
             return false
         end
 
-        if !(_src(tree, branch) for branch in branches) ⊆ Set(nodenames)
+        if !(Set(_src(tree, branch) for branch in branches) ⊆ Set(nodenames))
             warn("Branch sources must be node labels")
             return false
         end
 
-        if !(_dst(tree, branch) for branch in branches) ⊆ Set(nodenames)
+        if !(Set(_dst(tree, branch) for branch in branches) ⊆ Set(nodenames))
             warn("Branch destinations must be node labels")
             return false
         end
