@@ -1,4 +1,4 @@
-import Phylo.API: _src, _dst, _getlength
+import Phylo.API: _src, _dst, _getlength, _getbranchname
 
 """
     Branch
@@ -6,21 +6,23 @@ import Phylo.API: _src, _dst, _getlength
     A branch connecting two AbstractNodes of a phylogenetic tree
 """
 mutable struct Branch{RT, NL} <: AbstractBranch{RT, NL}
+    name::Int
     source::NL
     destination::NL
     length::Float64
 
-    function Branch{RT}(source::NL, destination::NL,
+    function Branch{RT}(name::Int, source::NL, destination::NL,
                         length::Float64 = NaN) where {RT, NL}
         length >= 0.0 || isnan(length) ||
             error("Branch length must be positive or NaN (no recorded length), not $length")
-        new{RT, NL}(source, destination, length)
+        new{RT, NL}(name, source, destination, length)
     end
 end
 
 _src(::AbstractTree, branch::Branch) = branch.source
 _dst(::AbstractTree, branch::Branch) = branch.destination
 _getlength(::AbstractTree, branch::Branch) = branch.length
+_getbranchname(::AbstractTree, branch::Branch) = branch.name
 
 function checkbranch(id::Int, branch::Branch{<: Rooted}, tree::AbstractTree)
     return id > 0 &&

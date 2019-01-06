@@ -7,10 +7,12 @@ A node of strict binary phylogenetic tree
 """
 mutable struct BinaryNode{RT <: Rooted, NL,
                           B <: AbstractBranch{RT, NL}} <: AbstractNode{RT, NL}
+    name::NL
     inbound::Union{B, Nothing}
     outbounds::Tuple{Union{B, Nothing}, Union{B, Nothing}}
 
-    function BinaryNode{RT, NL, B}(inbound::AbstractVector{B} = B[],
+    function BinaryNode{RT, NL, B}(name::NL,
+                                   inbound::AbstractVector{B} = B[],
                                    outbounds::AbstractVector{B} = B[]) where
         {RT, NL, B <: AbstractBranch{RT, NL}}
         length(inbound) <= 1 ||
@@ -21,7 +23,7 @@ mutable struct BinaryNode{RT <: Rooted, NL,
         n_out = length(outbounds) == 0 ? (nothing, nothing) :
             (length(outbounds) == 1 ? (outbounds[1], nothing) :
              (outbounds[1], outbounds[2]))
-        new{RT, NL, B}(n_in, n_out)
+        new{RT, NL, B}(name, n_in, n_out)
     end
 end
 
@@ -104,6 +106,9 @@ function _removeoutbound!(::AbstractTree, node::BinaryNode{RT, NL, B},
                "$outbound"))
 end
 
+import Phylo.API._getnodename
+_getnodename(::AbstractTree, node::BinaryNode) = node.name
+
 """
     Node{RT, NL, T}(AbstractVector{T}, AbstractVector{T}) <: AbstractNode
 
@@ -111,17 +116,19 @@ A node of potentially polytomous phylogenetic tree
 """
 mutable struct Node{RT <: Rooted, NL, B <: AbstractBranch{RT, NL}} <:
     AbstractNode{RT, NL}
+    name::NL
     inbound::Union{B, Nothing}
     outbounds::Vector{B}
 
-    function Node{RT, NL, B}(inbound::AbstractVector{B} = B[],
-                     outbounds::AbstractVector{B} = B[]) where
+    function Node{RT, NL, B}(name::NL,
+                             inbound::AbstractVector{B} = B[],
+                             outbounds::AbstractVector{B} = B[]) where
         {RT, NL, B <: AbstractBranch{RT, NL}}
         length(inbound) <= 1 ||
             error("At most one inbound connection to Node")
         n_in = length(inbound) == 0 ? nothing : inbound[1]
         n_out = outbounds
-        new{RT, NL, B}(n_in, n_out)
+        new{RT, NL, B}(name, n_in, n_out)
     end
 end
 
@@ -185,3 +192,6 @@ function _removeoutbound!(::AbstractTree, node::Node{RT, NL, B},
     outbound ∈ node.outbounds ? filter!(n -> n != outbound, node.outbounds) :
          error("Node does not have outbound connection to branch $outbound")
 end
+
+import Phylo.API._getnodename
+_getnodename(::AbstractTree, node::Node) = node.name

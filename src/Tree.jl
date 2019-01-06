@@ -64,16 +64,11 @@ _hasnode(tree::AbstractBranchTree, name::String) = haskey(tree.nodes, name)
 import Phylo.API: _getnode
 _getnode(tree::AbstractBranchTree, name::String) = tree.nodes[name]
 
-import Phylo.API: _getnodename
-function _getnodename(bt::AbstractBranchTree{RT, N}, node::N) where {RT, N}
-    return first(pair[1] for pair in bt.nodes if pair[2]===node)
-end
-
 import Phylo.API: _createnode!
 function _createnode!(tree::AbstractBranchTree{RT, N, B, LI, ND},
                       name::String, data::ND = ND()) where {RT, N, B, LI, ND}
     _hasnode(tree, name) && error("Node $name already present in tree")
-    tree.nodes[name] = N()
+    tree.nodes[name] = N(name)
     _setnoderecord!(tree, name, data)
     return name
 end
@@ -110,18 +105,12 @@ _hasbranch(tree::AbstractBranchTree, name::Int) = haskey(tree.branches, name)
 import Phylo.API: _getbranch
 _getbranch(tree::AbstractBranchTree, name::Int) = tree.branches[name]
 
-import Phylo.API: _getbranchname
-function _getbranchname(bt::AbstractBranchTree{RT, N, B},
-                        branch::B) where {RT, N, B}
-    return first(pair[1] for pair in bt.branches if pair[2]===branch)
-end
-
 import Phylo.API: _createbranch!
 function _createbranch!(tree::AbstractBranchTree{RT}, source, destination,
                         length::Float64, name::Int,
                         data::Nothing = nothing) where RT
     # Add the new branch
-    branch = Branch{RT}(_getnodename(tree, source),
+    branch = Branch{RT}(name, _getnodename(tree, source),
                         _getnodename(tree, destination), length)
     tree.branches[name] = branch
 
