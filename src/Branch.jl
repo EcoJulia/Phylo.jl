@@ -13,7 +13,7 @@ mutable struct Branch{RT, NL} <: AbstractBranch{RT, NL}
     function Branch{RT}(source::NL, destination::NL,
                         length::Float64 = NaN) where {RT, NL}
         length >= 0.0 || isnan(length) ||
-            error("Branch length must be positive or NaN (no recorded length)")
+            error("Branch length must be positive or NaN (no recorded length), not $length")
         new{RT, NL}(source, destination, length)
     end
 end

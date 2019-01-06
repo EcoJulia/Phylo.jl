@@ -599,7 +599,7 @@ Return the names of the outbound branches from this node.
 """
 function getoutbounds end
 getoutbounds(tree::AbstractTree{OneTree, <:Rooted}, node) =
-    _getoutbounds(tree, nodename)
+    _getoutbounds(tree, node)
 
 """
     getchildren(tree::AbstractTree, node)
