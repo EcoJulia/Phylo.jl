@@ -146,3 +146,6 @@ function _nleaves(ts::TREESET) where {LABEL, NL, BL, TREE <: AbstractTree{NL, BL
     end
     return first(nls)
 end
+
+import Base.keys
+keys(ts::TreeSet) = keys(ts.trees)
