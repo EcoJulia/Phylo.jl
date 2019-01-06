@@ -207,7 +207,7 @@ function BinaryTree(lt::BinaryTree{RT, LI, ND};
     leafnames = getleafnames(lt)
     # Leaf records are conserved across trees, as could be invariant?
     leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos
-    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}()
+    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
     branches = Dict{Int, Branch{RT, String}}()
     noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
@@ -219,7 +219,7 @@ function BinaryTree{RT, LI, ND}(leafnames::Vector{String},
                                 treetype::Type{BinaryTree{RT, LI, ND}} =
                                 BinaryTree{RT, LI, ND};
                                 rootheight::Float64 = NaN) where {RT, LI, ND}
-    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}()
+    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
     leafinfos = LI()
     noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
@@ -238,7 +238,7 @@ end
 function BinaryTree{LI, ND}(leafinfos::LI;
                             rootheight::Float64 = NaN) where {LI, ND}
     leafnames = unique(info[1] for info in getiterator(leafinfos))
-    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}()
+    nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
     branches = Dict{Int, Branch{RT, String}}()
     noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
@@ -278,7 +278,7 @@ function PolytomousTree(lt::PolytomousTree{RT, LI, ND};
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
     leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos
-    nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}()
+    nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
     branches = Dict{Int, Branch{String}}()
     noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
@@ -291,7 +291,7 @@ function PolytomousTree{RT, LI, ND}(leafnames::Vector{String},
                                         PolytomousTree{RT, LI, ND};
                                     rootheight::Float64 = NaN) where
     {RT, LI, ND}
-    nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}()
+    nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
     leafinfos = LI()
     noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
@@ -317,7 +317,7 @@ function PolytomousTree{RT, LI, ND}(leafinfos::LI,
                                     rootheight::Float64 = NaN) where
     {RT, LI, ND}
     leafnames = unique(info[1] for info in getiterator(leafinfos))
-    nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}()
+    nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
     branches = Dict{Int, Branch{String}}()
     noderecords = OrderedDict(leaf => ND() for leaf in leafnames)
