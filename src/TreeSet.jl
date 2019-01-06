@@ -68,3 +68,6 @@ function _nleaves(ts::TREESET) where {LABEL, RT, NL, N, B,
     end
     return first(nls)
 end
+
+import Base.keys
+keys(ts::TreeSet) = keys(ts.trees)
