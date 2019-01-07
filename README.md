@@ -35,7 +35,7 @@ on Julia v1.0:
 (v1.0) pkg>
 ```
 
-Note some features are [currently broken](https://github.com/JuliaLang/julia/issues/30612#issuecomment-452068910) on the binary release of Julia v1.0.3 for linux. Unfortunately, this appears to be a bug in the Julia release. The current workarounds are to remain on Julia v1.0.2 or to use the Julia v1.1.0-rc1 release candidate (found [here](https://julialang.org/downloads/)).
+Note some features are [currently broken](https://github.com/JuliaLang/julia/issues/30612#issuecomment-451774694) on the binary release of Julia v1.0.3 for linux. Unfortunately, this appears to be a bug in the Julia release. The current workarounds are to remain on Julia v1.0.2 or to use the Julia [v1.1.0-rc1 release candidate](https://julialang.org/downloads/).
 
 ## Project Status
 
