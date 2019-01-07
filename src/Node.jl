@@ -164,11 +164,11 @@ function _addinbound!(tree::AbstractTree, node::Node{RT, NL, B},
 end
 
 import Phylo.API._removeinbound!
-function _removeinbound!(::AbstractTree,
+function _removeinbound!(tree::AbstractTree,
                          node::Node{RT, NL, B},
                          inbound::B) where
     {RT, NL, B <: AbstractBranch}
-    _hasinbound(node) || error("Node has no inbound connection")
+    _hasinbound(tree, node) || error("Node has no inbound connection")
     node.inbound == inbound ||
         error("Node has no inbound connection from branch $inbound")
     node.inbound = nothing
