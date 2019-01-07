@@ -33,6 +33,8 @@ on Julia v1.0:
   [4607b0f0] + SuiteSparse
 
 (v1.0) pkg>
+
+Note some features are [currently broken](https://github.com/JuliaLang/julia/issues/30612#issuecomment-452068910) on the binary release of Julia v1.0.3 for linux. Unfortunately, this appears to be a bug in the Julia release. The current workarounds are to remain on Julia v1.0.2 or to use the Julia v1.1.0-rc1 release candidate (found [here](https://julialang.org/downloads/)).
 ```
 
 ## Project Status
@@ -82,43 +84,27 @@ Tree 1: PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 5 t
 Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 ```
 
-The code also provides iterators, and filtered iterators over the
-branches, nodes, branchnames and nodenames of a tree:
+The code also provides iterators, and filtered iterators over the branches,
+nodes, branchnames and nodenames of a tree, though this may soon be superseded
+by a simpler strategy.
 
 ```julia
 julia> collect(nodeiter(tree))
-9-element Array{BinaryNode{Int64},1}:
- [branch 6]-->[leaf node]
- [branch 1]-->[leaf node]
- [branch 4]-->[leaf node]
- [branch 3]-->[leaf node]
- [branch 2]-->[leaf node]
- [branch 5]-->[internal node]-->[branch 1]
-                             -->[branch 2]
- [branch 7]-->[internal node]-->[branch 3]
-                             -->[branch 4]
- [branch 8]-->[internal node]-->[branch 5]
-                             -->[branch 6]
- [root node]-->[branch 7]
-            -->[branch 8]
+9-element Array{Node{ManyRoots,String,Branch{ManyRoots,String}},1}:
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 1", Branch{ManyRoots,String}(7, "Node 4", "tip 1", 1.1281538707050067), Branch{ManyRoots,String}[])
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 2", Branch{ManyRoots,String}(1, "Node 1", "tip 2", 1.4283209045962866), Branch{ManyRoots,String}[])
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 3", Branch{ManyRoots,String}(4, "Node 2", "tip 3", 0.6551342237894014), Branch{ManyRoots,String}[])
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 4", Branch{ManyRoots,String}(2, "Node 1", "tip 4", 0.0029623552238387534), Branch{ManyRoots,String}[])
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 5", Branch{ManyRoots,String}(3, "Node 2", "tip 5", 0.25029135145968845), Branch{ManyRoots,String}[])
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("Node 1", Branch{ManyRoots,String}(5, "Node 3", "Node 1", 0.3763450182758717), Branch{ManyRoots,String}[Branch{ManyRoots,String}(1, "Node 1", "tip 2", 1.42832), Branch{ManyRoots,String}(2, "Node 1", "tip 4", 0.00296236)])
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("Node 2", Branch{ManyRoots,String}(6, "Node 3", "Node 2", 0.20796611994615047), Branch{ManyRoots,String}[Branch{ManyRoots,String}(3, "Node 2", "tip 5", 0.250291), Branch{ManyRoots,String}(4, "Node 2", "tip 3", 0.655134)])
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("Node 3", Branch{ManyRoots,String}(8, "Node 4", "Node 3", 3.5927792827310996), Branch{ManyRoots,String}[Branch{ManyRoots,String}(5, "Node 3", "Node 1", 0.376345), Branch{ManyRoots,String}(6, "Node 3", "Node 2", 0.207966)])
+ Node{ManyRoots,String,Branch{ManyRoots,String}}("Node 4", nothing, Branch{ManyRoots,String}[Branch{ManyRoots,String}(7, "Node 4", "tip 1", 1.12815), Branch{ManyRoots,String}(8, "Node 4", "Node 3", 3.59278)])
 
 julia> collect(nodenamefilter(isroot, tree))
 1-element Array{String,1}:
  "Node 4"
-```
-
-TreeSets are iterators themselves
-
-```julia
-julia> collect(trees)
-2-element Array{BinaryTree{DataFrames.DataFrame,Dict{String,Any}},1}:
- Phylogenetic tree with 5 tips, 9 nodes and 8 branches.
-Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
-
- Phylogenetic tree with 5 tips,9 nodes and 8 branches.
-Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
-...
-```
+ ```
 
 The current main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity][diversity-url] package, and
