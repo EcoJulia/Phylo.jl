@@ -46,6 +46,24 @@ function nodehistory(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}
 end
 
 """
+    branchfuture(tree::AbstractTree, node)
+
+Find the branches between a node on a tree and its leaves
+"""
+function branchfuture(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
+    return _treefuture(tree, node)[1]
+end
+
+"""
+    nodefuture(tree::AbstractTree, node)
+
+Find the nodes between a node on a tree and its leaves
+"""
+function nodefuture(tree::T, node::NL) where {NL, BL, T <: AbstractTree{NL, BL}}
+    return _treefuture(tree, node)[2]
+end
+
+"""
     branchroute(tree::AbstractTree, node1, node2)
 
 Find the branch route between two nodes on a tree
