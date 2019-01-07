@@ -9,7 +9,7 @@ include tips or root.
 
 """
 function getinternalnodes(t::AbstractTree)
-    return collect(nodenamefilter(x->!isleaf(x) & !isroot(x), t))
+    return [name for name in getnodenames(t) if isinternal(t, name)]
 end
 """
     droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
@@ -17,7 +17,8 @@ Function to drop tips from a phylogenetic tree `t`, which are found in
 the vector of tip names, `tips`.
 
 """
-function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
+function droptips!(t::AbstractTree{OneTree, RT, NL}, tips::Vector{NL}) where
+    {RT, NL}
     tree_names = getleafnames(t)
     keep_tips = setdiff(tree_names, tips)
     # Remove nodes that are not in tip names
@@ -37,23 +38,22 @@ function droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, 
                                    inner_nodes))
         for i in remove_nodes
             parent = getparent(t, inner_nodes[i])
-            parentbranch = getinbound(getnode(t, inner_nodes[i]))
+            parentbranch = getinbound(t, inner_nodes[i])
 
             child = getchildren(t, inner_nodes[i])[1]
-            childbranch = getoutbounds(getnode(t, inner_nodes[i]))[1]
+            childbranch = getoutbounds(t, getnode(t, inner_nodes[i]))[1]
 
             len = distance(t, parent, child)
 
             deletebranch!(t, parentbranch)
             deletebranch!(t, childbranch)
-            delete!(getnodes(t), inner_nodes[i])
-            delete!(t.noderecords, inner_nodes[i])
+            deletenode!(t, inner_nodes[i])
 
-            addbranch!(t, parent, child, len)
+            createbranch!(t, parent, child, len)
         end
     end
     # Remove root if it no longer has two branches
-    root = collect(nodenamefilter(isroot, t))[1]
+    root = first(nodenamefilter(isroot, t))
     if length(getchildren(t, root)) < 2
         deletenode!(t, root)
     end
@@ -72,7 +72,7 @@ Function to keep only the tips in a phylogenetic tree, `t`, that are found in
 the vector of tip names, `tip`.
 
 """
-function keeptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
+function keeptips!(t::AbstractTree, tips::AbstractVector)
     tree_names = getleafnames(t)
     cut_names = setdiff(tree_names, tips)
     droptips!(t, cut_names)
