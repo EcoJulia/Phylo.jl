@@ -21,12 +21,25 @@ module Phylo
 import Base: Pair, Tuple, show, eltype, length, getindex
 import Compat: IteratorSize, IteratorEltype
 
-abstract type AbstractNode end
-abstract type AbstractBranch end
-abstract type AbstractTree{NodeLabel, BranchLabel} end
-abstract type AbstractBranchTree{NL, BL} <: AbstractTree{NL, BL} end
-export AbstractNode, AbstractBranch, AbstractTree
+abstract type Rootedness end
+struct Unrooted <: Rootedness end
+abstract type Rooted <: Rootedness end
+struct OneRoot <: Rooted end
+struct ManyRoots <: Rooted end
+export Unrooted, OneRoot, ManyRoots
 
+abstract type TreeType end
+struct OneTree <: TreeType end
+struct ManyTrees <: TreeType end
+export OneTree, ManyTrees
+
+abstract type AbstractNode{RootType <: Rootedness, NodeLabel} end
+abstract type AbstractBranch{RootType <: Rootedness, NodeLabel} end
+
+abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
+                           N <: AbstractNode{RT, NL},
+                           B <: AbstractBranch{RT, NL}} end
+export AbstractTree
 """
     Phylo.API submodule
 
@@ -37,31 +50,29 @@ ignored.
 module API
 include("API.jl")
 # AbstractTree methods
-export _ntrees, _addbranch!, _deletebranch!, _branch!, _setbranch!
-export _addnode!, _addnodes!, _deletenode!, _setnode!
+export _ntrees, _gettrees, _nroots, _getroots, _getroot
+export _treenametype, _gettreenames, _gettree, _gettreename
+export _createbranch!, _deletebranch!, _createnode!, _deletenode!
 export _getnodenames, _hasnode, _getnode, _getnodes
-export _getbranchnames, _hasbranch, _getbranch, _getbranches
+export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
-export _nodetype, _branchtype
-export _extractnode, _extractbranch
-export _extractnodename, _extractbranchname
 export _getleafinfo, _setleafinfo!, _leafinfotype
 export _getnoderecord, _setnoderecord!
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
 export _validate
-export _getleafnames, _resetleaves!, _nleaves
+export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
-export _indegree, _hasinbound, _getinbound, _setinbound!, _deleteoutbound!
-export _outdegree, _getoutbounds, _addoutbound!, _deleteoutbound!
-export _hasoutboundspace, _hasinboundspace
+export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _degree
+export _hasinbound, _getinbound, _addinbound!, _removeinbound!
+export _getoutbounds, _addoutbound!, _removeoutbound!
+export _getconnections, _addconnection!, _removeconnection!
 
 # AbstractBranch methods
 export _src, _dst, _getlength
-export _setsrc!, _setdst!
 
 # Label names
 export _newnodelabel, _newbranchlabel
@@ -70,11 +81,13 @@ end
 
 include("Interface.jl")
 # AbstractTree methods
-export ntrees, nodetype, branchtype, nodenametype, branchnametype
-export addbranch!, deletebranch!, branch!
-export addnode!, addnodes!, deletenode!
-export getnodenames, hasnode, getnode, getnodes
-export getbranchnames, hasbranch, getbranch, getbranches
+export ntrees, gettrees, nroots, getroots, getroot
+export treenametype, gettreenames, getonetree, gettreename
+export nodetype, branchtype, nodenametype, branchnametype
+export createbranch!, deletebranch!, branch!
+export createnode!, createnodes!, deletenode!
+export getnodenames, getnodename, hasnode, getnode, getnodes
+export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
 export hasrootheight, getrootheight, setrootheight!
 export hasparent, getparent, getancestors
 export haschildren, getchildren, getdescendants
@@ -84,17 +97,18 @@ export validate
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, resetleaves, nleaves
+export getleafnames, getleaves, resetleaves, nleaves, nnodes
 export getleafinfo, setleafinfo!, leafinfotype
 export getnoderecord, setnoderecord!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
 export src, dst, getlength
-export changesrc!, changedst!
+export hasrootheight, getrootheight, setrootheight!, clearrootheight!
+export getrootdistance
 
-include("Info.jl")
-export LeafInfo
+#include("Info.jl")
+#export LeafInfo
 
 include("Branch.jl")
 export Branch
@@ -105,8 +119,13 @@ export BinaryNode, Node
 include("Tree.jl")
 export BinaryTree, NamedBinaryTree, NamedTree
 export PolytomousTree, NamedPolytomousTree
-export hasrootheight, getrootheight, setrootheight!, clearrootheight!
-export getrootdistance
+
+#include("LinkTree.jl")
+#export LinkBranch, LinkNode, LinkTree
+
+#include("MetaTree.jl")
+#export UnrootedMetaTree, RootedMetaTree, SimpleNode, SimpleBranch
+#export RootedTree, ManyRootTree, UnrootedTree
 
 include("routes.jl")
 export branchhistory, branchfuture, branchroute
@@ -120,7 +139,7 @@ export nodeiter, nodefilter, nodenameiter, nodenamefilter,
 
 # A set of multiple trees
 include("TreeSet.jl")
-export TreeSet, treeiter, treenameiter, treeinfoiter
+export TreeSet, gettreeinfo
 
 # Random tree generator
 include("rand.jl")
@@ -137,8 +156,10 @@ include("show.jl")
 include("trim.jl")
 export droptips!, keeptips!
 
-# Plot recipes
-include("plot.jl")
+# Plot recipes, only works on Julia v0.7 and up
+@static if VERSION > v"0.7.0-"
+    include("plot.jl")
+end
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)

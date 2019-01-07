@@ -3,22 +3,24 @@ using Phylo.API
 using Compat
 using Compat.Printf
 
-function show(io::IO, object::AbstractNode, n::String = "")
+function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
+              n::String = "")
     node = "node"
     if !isempty(n)
         node *= " $n"
     end
-    if !_hasinbound(object)
-        if _outdegree(object) > 0
+    if !_hasinbound(object[1], object[2])
+        if _outdegree(object[1], object[2]) > 0
             blank = repeat(" ", length(" [root $node]") + (isempty(n) ? 0 : 1))
-            for (i, bn) in zip(1:_outdegree(object), _getoutbounds(object))
+            for (i, bn) in zip(Base.OneTo(_outdegree(object[1], object[2])),
+                               _getoutbounds(object[1], object[2]))
                 b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
-                if _outdegree(object) == 1
+                if _outdegree(object[1], object[2]) == 1
                     print(io, "[root $node]-->[branch $b]")
                 elseif get(io, :compact, false)
                     if i == 1
                         print(io, "[root $node]-->[branches $b")
-                    elseif i < _outdegree(object)
+                    elseif i < _outdegree(object[1], object[2])
                         print(io, ", $b")
                     else
                         print(io, " and $b]")
@@ -26,7 +28,7 @@ function show(io::IO, object::AbstractNode, n::String = "")
                 else # multiline view
                     if i == 1
                         println(io, "[root $node]-->[branch $b]")
-                    elseif i < _outdegree(object)
+                    elseif i < _outdegree(object[1], object[2])
                         println(io, "$blank-->[branch $b]")
                     else
                         print(io, "$blank-->[branch $b]")
@@ -37,23 +39,25 @@ function show(io::IO, object::AbstractNode, n::String = "")
             print(io, "[unattached $node]")
         end
     else # hasinbound
-        inb = typeof(_getinbound(object)) <: Number ?
-            "$(_getinbound(object))" : "\"$(_getinbound(object))\""
-        if _outdegree(object) == 0
+        inb = typeof(_getinbound(object[1], object[2])) <: Number ?
+            "$(_getinbound(object[1], object[2]))" :
+            "\"$(_getinbound(object[1], object[2]))\""
+        if _outdegree(object[1], object[2]) == 0
             print(io, "[branch $inb]-->[leaf $node]")
-        elseif _hasinbound(object)
+        elseif _hasinbound(object[1], object[2])
             blank = repeat(" ",
                            length(" [branch $inb]-->[internal $node]") +
                            (isempty(n) ? 0 : 1))
-            for (i, bn) in zip(1:_outdegree(object), _getoutbounds(object))
+            for (i, bn) in zip(Base.OneTo(_outdegree(object[1], object[2])),
+                               _getoutbounds(object[1], object[2]))
                 b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
-                if _outdegree(object) == 1
+                if _outdegree(object[1], object[2]) == 1
                     print(io, "[branch $inb]-->[internal $node]-->[branch $b]")
                 elseif get(io, :compact, false)
                     if i == 1
                         print(io, "[branch $inb]-->[internal $node]-->" *
                               "[branches $b")
-                    elseif i < _outdegree(object)
+                    elseif i < _outdegree(object[1], object[2])
                         print(io, ", $b")
                     else
                         print(io, " and $b]")
@@ -62,7 +66,7 @@ function show(io::IO, object::AbstractNode, n::String = "")
                     if i == 1
                         println(io, "[branch $inb]-->[internal $node]-->" *
                                 "[branch $b]")
-                    elseif i < _outdegree(object)
+                    elseif i < _outdegree(object[1], object[2])
                         println(io, "$blank-->[branch $b]")
                     else
                         print(io, "$blank-->[branch $b]")
@@ -78,12 +82,14 @@ function show(io::IO, p::Pair{NT, N}) where {N <: AbstractNode, NT}
     show(io, p[2], "$n")
 end
 
-function show(io::IO, object::B) where {B <: AbstractBranch}
-    NT = typeof(_src(object))
-    source = NT <: Number ? "$(_src(object))" : "\"$(_src(object))\""
-    destination = NT <: Number ? "$(_dst(object))" : "\"$(_dst(object))\""
-    println(io, "[node $source]-->[$(_getlength(object)) length branch]-->" *
-            "[node $destination]")
+function show(io::IO, object::Tuple{<: AbstractTree{OneTree, RT, NL},
+                                    <: AbstractBranch{RT, NL}}) where {RT, NL}
+    source = NL <: Number ? "$(_src(object[1], object[2]))" :
+        "\"$(_src(object[1], object[2]))\""
+    destination = NL <: Number ? "$(_dst(object[1], object[2]))" :
+        "\"$(_dst(object[1], object[2]))\""
+    println(io, "[node $source]-->[$(_getlength(object[1], object[2])) " *
+        "length branch]--> [node $destination]")
 end
 
 function show(io::IO, p::Pair{BT, B}) where {BT, B <: AbstractBranch}
@@ -97,80 +103,47 @@ end
 function showsimple(io::IO, object::TreeSet)
     @printf(io, "TreeSet with %d trees, each with %d tips.\n",
             ntrees(object), nleaves(object))
-    tn = collect(treenameiter(object))
+    tn = collect(gettreenames(object))
     if length(tn) < 10
-        println(io, "Tree names are " *
-                join(tn, ", ", " and "))
+        println(io, "Tree names are " * join(tn, ", ", " and "))
     else
-        println(io, "Tree names are " *
-                join(tn[1:5], ", ") *
-                " ... $(length(tn) - 6) missing ... " *
-                "$(tn[end])")
+        println(io, "Tree names are " * join(tn[1:5], ", ") *
+                " ... $(length(tn) - 6) missing ... $(tn[end])")
     end
 end
 
 function show(io::IO, object::TreeSet)
     showsimple(io, object)
-    for name in treenameiter(object)
+    for name in _gettreenames(object)
         @printf(io, "\n%s: ", name)
         showsimple(io, object[name])
     end
 end
 
-function showsimple(io::IO, object::TREE) where TREE <: AbstractBranchTree
-    println(io, "$TREE with $(nleaves(object)) tips, " *
-            "$(length(_getnodes(object))) nodes and " *
-            "$(length(_getbranches(object))) branches.")
+function showsimple(io::IO, object::TREE) where {TREE <: AbstractTree}
+    println(io, "$TREE with $(_nleaves(object)) tips, " *
+            "$(_nnodes(object)) nodes and " *
+            "$(_nbranches(object)) branches.")
     ln = getleafnames(object)
     if length(ln) < 10
-        println(io, "Leaf names are " *
-                join(ln, ", ", " and "))
+        println(io, "Leaf names are " * join(ln, ", ", " and "))
     else
-        println(io, "Leaf names are " *
-                join(ln[1:5], ", ") *
-                ", ... [$(length(ln) - 6) omitted] ... and " *
-                "$(ln[end])")
+        println(io, "Leaf names are " * join(ln[1:5], ", ") *
+                ", ... [$(length(ln) - 6) omitted] ... and $(ln[end])")
     end
 end
 
-function show(io::IO, object::TREE) where TREE <: AbstractBranchTree
+function show(io::IO, object::AbstractTree)
     showsimple(io, object)
     if !get(io, :compact, true)
         println(io, "Nodes:")
-        println(io, _getnodes(object))
+        println(io, [(object, node) for node in _getnodes(object)])
         println(io, "Branches:")
-        println(io, _getbranches(object))
-    end
-end
-
-function show(io::IO, object::BinaryTree{LI, ND}) where {LI, ND}
-    showsimple(io, object)
-    if !get(io, :compact, true)
-        println(io, "Nodes:")
-        println(io, _getnodes(object))
-        println(io, "Branches:")
-        println(io, _getbranches(object))
-        if ND !== Nothing
-            println(io, "NodeData:")
-            println(io, Dict(map(nodename ->
-                                nodename => getnoderecord(object, nodename),
-                                nodenameiter(object))))
-        end
-    end
-end
-
-function show(io::IO, object::PolytomousTree{LI, ND}) where {LI, ND}
-    showsimple(io, object)
-    if !get(io, :compact, true)
-        println(io, "Nodes:")
-        println(io, _getnodes(object))
-        println(io, "Branches:")
-        println(io, _getbranches(object))
-        if ND !== Nothing
-            println(io, "NodeData:")
-            println(io, Dict(map(nodename ->
-                                nodename => getnoderecord(object, nodename),
-                                nodenameiter(object))))
+        println(io, [(object, branch) for branch in _getbranches(object)])
+        if _noderecordtype(TREE) !== Nothing
+            println(io, "Node records:")
+            println(io, Dict(name => _getnoderecord(object, name)
+                             for name in _getnodenames(object)))
         end
     end
 end

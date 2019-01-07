@@ -1,3 +1,6 @@
+- v0.4.0
+  - New interface to allow an easier changeover of tree, node and branch types
+  - Defaults to polytomies
 - v0.3.3
   - Enable plotting
 - v0.3.2
