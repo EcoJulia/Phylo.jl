@@ -33,9 +33,9 @@ on Julia v1.0:
   [4607b0f0] + SuiteSparse
 
 (v1.0) pkg>
+```
 
 Note some features are [currently broken](https://github.com/JuliaLang/julia/issues/30612#issuecomment-452068910) on the binary release of Julia v1.0.3 for linux. Unfortunately, this appears to be a bug in the Julia release. The current workarounds are to remain on Julia v1.0.2 or to use the Julia v1.1.0-rc1 release candidate (found [here](https://julialang.org/downloads/)).
-```
 
 ## Project Status
 
@@ -61,7 +61,8 @@ be used to make trees manually, to generate random trees using the
 framework from `Distributions`, and to read newick and nexus format
 trees from files. For instance, to construct a sampler for 5 tip
 non-ultrametric trees, and then generate one or two random tree of
-that type:
+that type (the examples below are from the master branch, but work similarly
+on the current release):
 
 ```julia
 julia> using Phylo
@@ -111,8 +112,7 @@ phylogenetics to use in our [Diversity][diversity-url] package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
 
-It can also read newick trees either from
-strings or files:
+It can also read newick trees either from strings or files:
 
 ```julia
 julia> using Phylo
