@@ -150,13 +150,15 @@ function _findxy(tree::Phylo.AbstractTree)
         end
     end
 
-    function finddepths!(clade::String)
+    function finddepths!(clade::String, parentdepth::Float64 = 0.0)
+        mydepth = parentdepth
         push!(names, clade)
         if hasinbound(tree, clade)
-            depth[clade] = depth[getparent(tree, clade)] + getbranch(tree, getinbound(tree, clade)).length
+             mydepth += getlength(tree, getinbound(tree, clade))
         end
+        depth[clade] = mydepth
         for ch in getchildren(tree, clade)
-            finddepths!(ch)
+            finddepths!(ch, mydepth)
         end
     end
 
@@ -165,7 +167,7 @@ function _findxy(tree::Phylo.AbstractTree)
     sizehint!(height, nnodes(tree))
     findheights!(root)
 
-    depth = Dict{String, Float64}(root => 0)
+    depth = Dict{String, Float64}()
     names = String[]
     sizehint!(depth, nnodes(tree))
     sizehint!(names, nnodes(tree))
