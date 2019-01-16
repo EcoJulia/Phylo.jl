@@ -15,6 +15,10 @@ _newlabel(names::Vector{Vector{String}}, prefix::String) =
     prefix * "$(mapreduce(_newlabelfree, max, 1, names))"
 
 function _newlabelfree(names::Vector{String}, prefix)
+    num = length(names) + 1
+    if "$prefix$num" ∉ names
+        return num
+    end
     len = length(prefix)
     goodnames = [name[(len - 1):end] for name in names
              if length(name) > len && name[1:len] == prefix]
