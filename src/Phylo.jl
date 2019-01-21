@@ -40,6 +40,10 @@ abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
                            N <: AbstractNode{RT, NL},
                            B <: AbstractBranch{RT, NL}} end
 export AbstractTree
+
+@enum TraversalOrder preorder inorder postorder breadthfirst
+export TraversalOrder
+
 """
     Phylo.API submodule
 
@@ -61,7 +65,7 @@ export _getnoderecord, _setnoderecord!
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
-export _validate
+export _validate, _traversal
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 
 # AbstractNode methods
@@ -91,7 +95,7 @@ export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
 export hasrootheight, getrootheight, setrootheight!
 export hasparent, getparent, getancestors
 export haschildren, getchildren, getdescendants
-export validate
+export validate, traversal
 
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached

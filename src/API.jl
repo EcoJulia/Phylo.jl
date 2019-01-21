@@ -1,6 +1,7 @@
 using Phylo
 using Phylo: Rootedness, Rooted, TreeType
 using Phylo: AbstractNode, AbstractBranch, AbstractTree
+using Compat
 
 # Need to be able to create new node and branch labels
 function _newlabel(ids::Vector{Label}) where Label <: Integer
@@ -387,6 +388,47 @@ function _validate(::AbstractTree)
     return true
 end
 
+"""
+    _traversal(tree::AbstractTree, order::TraversalOrder, todo, sofar)
+
+Return an iterable object containing nodes in given order - preorder, inorder,
+postorder or breadthfirst
+"""
+function _traversal end
+function _traversal(tree::AbstractTree{OneTree, <: Rooted},
+                    order::TraversalOrder, todo = collect(_getroots(tree)),
+                    sofar = eltype(todo)[])
+    while !isempty(todo)
+        if order == Phylo.breadthfirst
+            append!(sofar, todo)
+            children = eltype(todo)[]
+            for node in todo
+                append!(children, getchildren(tree, node))
+            end
+            todo = children
+        else
+            now = popfirst!(todo)
+            children = getchildren(tree, now)
+            if isempty(children)
+                push!(sofar, now)
+            else
+                if order == Phylo.preorder
+                    push!(sofar, now)
+                    sofar = _traversal(tree, order, children, sofar)
+                elseif order == Phylo.postorder
+                    sofar = _traversal(tree, order, children, sofar)
+                    push!(sofar, now)
+                elseif order == Phylo.inorder
+                    child = popfirst!(children)
+                    sofar = _traversal(tree, order, [child], sofar)
+                    push!(sofar, now)
+                    sofar = _traversal(tree, order, children, sofar)
+                end
+            end
+        end
+    end
+    return sofar
+end
 
 # AbstractNode methods
 """

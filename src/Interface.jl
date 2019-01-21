@@ -810,6 +810,20 @@ function validate(tree::T) where
 end
 
 """
+    traversal(::AbstractTree, ::TraversalOrder)
+    traversal(::AbstractTree, ::TraversalOrder, init)
+
+Return an iterable object for a tree containing nodes in given order -
+preorder, inorder, postorder or breadthfirst - optionally starting from init.
+"""
+function traversal end
+traversal(tree::AbstractTree, order::TraversalOrder = preorder) =
+    _traversal(tree, order)
+traversal(tree::AbstractTree{TT, RT, NL, N},
+          order::TraversalOrder, init::Union{N, NL}) where {TT, RT, NL, N} =
+    _traversal(tree, order, [init])
+
+"""
     getancestors(tree::AbstractTree, nodename)
 
 Return the name of all of the nodes that are ancestral to this node.
