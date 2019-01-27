@@ -15,12 +15,13 @@ julia:
   - 0.6
   - 0.7
   - 1.0
+  - 1.1
   - nightly
 
 matrix:
   fast_finish: true
   allow_failures:
-    - julia: 1.0 # 1.0.3 fails on linux, but nightly is working.
+    - julia: 1.0, nightly # 1.0.3 fails on linux, but nightly is working.
 
 before_install:
   # linux
