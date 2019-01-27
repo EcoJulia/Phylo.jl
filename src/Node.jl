@@ -27,37 +27,32 @@ mutable struct BinaryNode{RT <: Rooted, NL,
     end
 end
 
-import Phylo.API._hasinbound
+import Phylo.API: _hasinbound
 function _hasinbound(::AbstractTree, node::BinaryNode)
     return node.inbound != nothing
 end
 
-import Phylo.API._outdegree
+import Phylo.API: _outdegree
 function _outdegree(::AbstractTree{OneTree, RT, NL},
                     node::BinaryNode{RT, NL}) where {RT <: Rooted, NL}
     return (node.outbounds[1] === nothing ? 0 : 1) +
         (node.outbounds[2] === nothing ? 0 : 1)
 end
 
-import Phylo.API._hasoutboundspace
+import Phylo.API: _hasoutboundspace
 _hasoutboundspace(tree::AbstractTree{OneTree, RT, NL, N, B},
-                  node::N) where {RT <: Rooted, NL,
-                                  N <: BinaryNode{RT, NL}, B} =
+                  node::N) where {RT <: Rooted, NL, B <: AbstractBranch{RT, NL},
+                                  N <: BinaryNode{RT, NL, B}} =
     _outdegree(tree, node) < 2
-_hasoutboundspace(tree::AbstractTree{OneTree, RT, NL, N, B},
-                  node::NL) where {RT <: Rooted, NL,
-                                   N <: BinaryNode{RT, NL}, B} =
-    _outdegree(tree, _getnode(tree, node)) < 2
 
-
-import Phylo.API._getinbound
+import Phylo.API: _getinbound
 function _getinbound(tree::AbstractTree, node::BinaryNode)
     _hasinbound(tree, node) ||
         error("Node has no inbound connection")
     return node.inbound
 end
 
-import Phylo.API._addinbound!
+import Phylo.API: _addinbound!
 function _addinbound!(tree::AbstractTree, node::BinaryNode{RT, NL, B},
                       inbound::B) where {RT, NL, B <: AbstractBranch}
     _hasinbound(tree, node) &&
@@ -65,7 +60,7 @@ function _addinbound!(tree::AbstractTree, node::BinaryNode{RT, NL, B},
     node.inbound = inbound
 end
 
-import Phylo.API._removeinbound!
+import Phylo.API: _removeinbound!
 function _removeinbound!(tree::AbstractTree,
                          node::BinaryNode{RT, NL, B},
                          inbound::B) where
@@ -76,15 +71,16 @@ function _removeinbound!(tree::AbstractTree,
     node.inbound = nothing
 end
 
-import Phylo.API._getoutbounds
-function _getoutbounds(::AbstractTree, node::BinaryNode)
+import Phylo.API: _getoutbounds
+function _getoutbounds(::AbstractTree{OneTree, <:Rooted, NL, N, B}, node::N) where
+    {NL, N <: BinaryNode, B}
     return (node.outbounds[1] === nothing ?
-        (node.outbounds[2] === nothing ? T[] : [node.outbounds[2]]) :
+        (node.outbounds[2] === nothing ? B[] : [node.outbounds[2]]) :
         (node.outbounds[2] === nothing ? [node.outbounds[1]] :
          [node.outbounds[1], node.outbounds[2]]))
 end
 
-import Phylo.API._addoutbound!
+import Phylo.API: _addoutbound!
 function _addoutbound!(::AbstractTree, node::BinaryNode{RT, NL, B},
                        outbound::B) where {RT, NL, B <: AbstractBranch}
     node.outbounds[1] === nothing ?
@@ -94,7 +90,7 @@ function _addoutbound!(::AbstractTree, node::BinaryNode{RT, NL, B},
          error("BinaryNode already has two outbound connections"))
 end
 
-import Phylo.API._removeoutbound!
+import Phylo.API: _removeoutbound!
 function _removeoutbound!(::AbstractTree, node::BinaryNode{RT, NL, B},
                           outbound::B) where
     {RT, NL, B <: AbstractBranch}
@@ -106,7 +102,7 @@ function _removeoutbound!(::AbstractTree, node::BinaryNode{RT, NL, B},
                "$outbound"))
 end
 
-import Phylo.API._getnodename
+import Phylo.API: _getnodename
 _getnodename(::AbstractTree, node::BinaryNode) = node.name
 
 """
@@ -141,14 +137,14 @@ function _outdegree(::AbstractTree{OneTree, RT, NL},
     return length(node.outbounds)
 end
 
-import Phylo.API._getinbound
+import Phylo.API: _getinbound
 function _getinbound(tree::AbstractTree, node::Node)
     _hasinbound(tree, node) ||
         error("Node has no inbound connection")
     return node.inbound
 end
 
-import Phylo.API._addinbound!
+import Phylo.API: _addinbound!
 function _addinbound!(tree::AbstractTree, node::Node{RT, NL, B},
                       inbound::B) where {RT, NL, B <: AbstractBranch}
     _hasinbound(tree, node) &&
@@ -156,35 +152,33 @@ function _addinbound!(tree::AbstractTree, node::Node{RT, NL, B},
     node.inbound = inbound
 end
 
-import Phylo.API._removeinbound!
+import Phylo.API: _removeinbound!
 function _removeinbound!(tree::AbstractTree,
                          node::Node{RT, NL, B},
-                         inbound::B) where
-    {RT, NL, B <: AbstractBranch}
+                         inbound::B) where {RT, NL, B <: AbstractBranch}
     _hasinbound(tree, node) || error("Node has no inbound connection")
     node.inbound == inbound ||
         error("Node has no inbound connection from branch $inbound")
     node.inbound = nothing
 end
 
-import Phylo.API._getoutbounds
+import Phylo.API: _getoutbounds
 function _getoutbounds(::AbstractTree, node::Node)
     return node.outbounds
 end
 
-import Phylo.API._addoutbound!
+import Phylo.API: _addoutbound!
 function _addoutbound!(::AbstractTree, node::Node{RT, NL, B},
                        outbound::B) where {RT, NL, B <: AbstractBranch}
     push!(node.outbounds, outbound)
 end
 
-import Phylo.API._removeoutbound!
+import Phylo.API: _removeoutbound!
 function _removeoutbound!(::AbstractTree, node::Node{RT, NL, B},
-                          outbound::B) where {RT, NL,
-                                              B <: AbstractBranch}
+                          outbound::B) where {RT, NL, B <: AbstractBranch}
     outbound ∈ node.outbounds ? filter!(n -> n != outbound, node.outbounds) :
          error("Node does not have outbound connection to branch $outbound")
 end
 
-import Phylo.API._getnodename
+import Phylo.API: _getnodename
 _getnodename(::AbstractTree, node::Node) = node.name

@@ -87,7 +87,7 @@ function _deletenode!(tree::AbstractBranchTree, node::AbstractNode)
     end
     delete!(tree.nodes, name)
     delete!(tree.nodedata, name)
-    return name
+    return true
 end
 function _deletenode!(tree::AbstractBranchTree, name::String)
     node = getnode(tree, name)
@@ -99,7 +99,7 @@ function _deletenode!(tree::AbstractBranchTree, name::String)
     end
     delete!(tree.nodes, name)
     delete!(tree.nodedata, name)
-    return name
+    return true
 end
 
 import Phylo.API: _hasbranch
@@ -123,7 +123,7 @@ function _createbranch!(tree::AbstractBranchTree{RT}, source, destination,
     _addinbound!(tree, _getnode(tree, destination), branch)
 
     # Return updated tree
-    return name
+    return id
 end
 
 import Phylo.API: _deletebranch!
@@ -137,7 +137,7 @@ function _deletebranch!(tree::AbstractBranchTree, name::Int)
     # Remove branch itself
     delete!(tree.branches, name)
     # Return the branch name
-    return name
+    return true
 end
 function _deletebranch!(tree::AbstractBranchTree, branch::Branch)
     # Find the branch
@@ -149,11 +149,11 @@ function _deletebranch!(tree::AbstractBranchTree, branch::Branch)
     # Remove branch itself
     delete!(tree.branches, name)
     # Return the branch name
-    return branch
+    return true
 end
 
 import Phylo.API: _validate!
-function _validate!(tree::TREE) where TREE <: AbstractBranchTree
+function _validate!(tree::TREE) where {RT, TREE <: AbstractBranchTree{RT}}
     if _leafinfotype(TREE) != Nothing && length(getiterator(tree.leafinfos)) > 0
         if Set(info[1] for info in getiterator(tree.leafinfos)) !=
             Set(_getleafnames(tree))
@@ -166,6 +166,20 @@ function _validate!(tree::TREE) where TREE <: AbstractBranchTree
         @warn "Node names do not match node records of tree"
         return false
     end
+
+    nr = nroots(tree)
+    if RT == OneRoot
+        if nr != 1
+            warn("Wrong number of roots for $RT tree ($nr)")
+            return false
+        end
+    elseif RT == ManyRoots
+        if nr < 1
+            warn("Wrong number of roots for $RT tree ($nr)")
+            return false
+        end
+    end
+
     return true
 end
 

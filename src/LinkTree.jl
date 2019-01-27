@@ -140,7 +140,7 @@ end
 import Phylo.API: _removeinbound!
 function _removeinbound!(tree::LinkTree, node::LinkNode{<: Rooted, NL, Data, B},
                          branch::B) where {NL, Data, B}
-    _hasinbound(node) || error("Node has no inbound connection")
+    _hasinbound(tree, node) || error("Node has no inbound connection")
     node.inbound ≡ branch ||
         error("Node has no inbound connection from branch $inbound")
     node.inbound = missing
@@ -157,9 +157,10 @@ _addoutbound!(::LinkTree,
     {NL, Data, B} = push!(node.other, branch)
 
 import Phylo.API: _removeoutbound!
-function _removeoutbound!(node::LinkNode{<: Rooted, NL, Data, B},
+function _removeoutbound!(tree::LinkTree,
+                          node::LinkNode{<: Rooted, NL, Data, B},
                           branch::B) where {NL, Data, B}
-    branch ∈ _getoutbounds(node) ? filter!(p -> p ≢ branch, node.other) :
+    branch ∈ _getoutbounds(tree, node) ? filter!(p -> p ≢ branch, node.other) :
          error("Node does not have outbound connection to branch $branch")
 end
 
@@ -173,11 +174,12 @@ function _addconnection!(::AbstractTree, node::LinkNode{Unrooted, NL, Data, B},
 end
 
 import Phylo.API: _removeconnection!
-function _removeconnection!(::AbstractTree,
+function _removeconnection!(tree::AbstractTree,
                             node::LinkNode{Unrooted, NL}, branch::B) where
     {NL, B <: LinkBranch{Unrooted, NL}}
-    outbound ∈ _getoutbounds(node) ? filter!(p -> p ≢ branch, node.other) :
-         error("Node does not have a connection to branch $branch")
+    outbound ∈ _getoutbounds(tree, node) ?
+        filter!(p -> p ≢ branch, node.other) :
+        error("Node does not have a connection to branch $branch")
 end
 
 # LinkTree methods
@@ -185,16 +187,24 @@ const TREENAME = "Tree"
 const NODENAME = "Node"
 
 import Phylo.API: _validate!
-function _validate!(tree::LinkTree{RT, NL, N, B, Nothing}) where {RT, NL, N, B}
+function _validate!(tree::LinkTree{RT, NL, N, B, TD}) where {RT, NL, N, B, TD}
     tree.isvalid = true
-    return tree.isvalid
-end
-function _validate!(tree::LinkTree{RT, NL, N, B, Dict{String,Any}}) where
-    {RT, NL, N, B}
-    if isempty(tree.tipdata)
-        tree.isvalid = true
-    else
-        tree.isvalid = (Set(keys(tree.tipdata)) == Set(getleafnames(tree)))
+    if TD <: Dict
+        if !isempty(tree.tipdata)
+            tree.isvalid &= (Set(keys(tree.tipdata)) == Set(getleafnames(tree)))
+        end
+    end
+    nr = nroots(tree)
+    if RT == OneRoot
+        if nr != 1
+            warn("Wrong number of roots for $RT tree ($nr)")
+            tree.isvalid = false
+        end
+    elseif RT == ManyRoots
+        if nr < 1
+            warn("Wrong number of roots for $RT tree ($nr)")
+            tree.isvalid = false
+        end
     end
     return tree.isvalid
 end
@@ -227,6 +237,7 @@ function _deletenode!(tree::LinkTree{RT, NL, N}, node::N) where {RT, NL, N}
     delete!(tree.nodedict, node.name)
     filter!(n -> n ≢ node, tree.roots)
     tree.isvalid = missing
+    return true
 end
 
 import Phylo.API: _getroots
@@ -263,8 +274,9 @@ _getbranchnames(tree::LinkTree) = findall(.!ismissing.(tree.branches))
 import Phylo.API: _hasbranch
 _hasbranch(tree::LinkTree, id::Int) =
     1 ≤ id ≤ length(tree.branches) && !ismissing(tree.branches[id])
-_hasbranch(tree::LinkTree{RT, NL, N, B}, branch::B) where {RT, NL, N, B} =
-    branch ∈ tree.branches
+_hasbranch(tree::LinkTree{RT, NL, N, B}, branch::B) where
+    {RT, NL, N <: LinkNode{RT, NL}, B <: LinkBranch{RT, NL}} =
+    branch ∈ skipmissing(tree.branches)
 
 import Phylo.API: _getbranch
 _getbranch(tree::LinkTree, id::Int) = tree.branches[id]
@@ -290,7 +302,7 @@ function _createbranch!(tree::LinkTree{RT, NL, N, B},
     _addoutbound!(tree, from, branch)
     _addinbound!(tree, to, branch)
     tree.isvalid = missing
-    return id
+    return branch
 end
 function _createbranch!(tree::LinkTree{Unrooted, NL, N, B},
                         from::N, to::N, len::Float64 = NaN,
@@ -309,10 +321,11 @@ end
 import Phylo.API: _deletebranch!
 function _deletebranch!(tree::LinkTree{<: Rooted}, id::Int)
     branch = tree.branches[id]
-    _removeoutbound!(branch.inout[1], branch)
-    _removeinbound!(branch.inout[2], branch)
+    _removeoutbound!(tree, branch.inout[1], branch)
+    _removeinbound!(tree, branch.inout[2], branch)
     tree.branches[id] = missing
     tree.isvalid = missing
+    return true
 end
 function _deletebranch!(tree::LinkTree{Unrooted}, id::Int)
     branch = tree.branches[id]
@@ -320,14 +333,16 @@ function _deletebranch!(tree::LinkTree{Unrooted}, id::Int)
     _removeconnection!(tree, branch.inout[2], branch)
     tree.branches[id] = missing
     tree.isvalid = missing
+    return true
 end
 function _deletebranch!(tree::LinkTree{<: Rooted, NL, N, B}, branch::B) where
     {NL, N, B}
-    _removeoutbound!(branch.inout[1], branch)
-    _removeinbound!(branch.inout[2], branch)
+    _removeoutbound!(tree, branch.inout[1], branch)
+    _removeinbound!(tree, branch.inout[2], branch)
     id = _getbranchname(tree, branch)
     tree.branches[id] = missing
     tree.isvalid = missing
+    return true
 end
 function _deletebranch!(tree::LinkTree{Unrooted, NL, N, B}, branch::B) where
     {NL, N, B}
@@ -336,6 +351,7 @@ function _deletebranch!(tree::LinkTree{Unrooted, NL, N, B}, branch::B) where
     id = _getbranchname(tree, branch)
     tree.branches[id] = missing
     tree.isvalid = missing
+    return true
 end
 
 import Phylo.API: _createnode!
@@ -343,6 +359,7 @@ function _createnode!(tree::LinkTree{RT, NL, N, B}, name::Union{NL, Missing},
                       data::Data = newempty(Data)) where
     {RT <: Rooted, NL, Data, B, N <: LinkNode{RT, NL, Data, B}}
     nodename = ismissing(name) ? _newnodelabel(tree) : name
+    _hasnode(tree, nodename) && error("Node $nodename already exists in tree.")
     node = LinkNode{RT, NL, Data, B}(nodename, data)
     id = length(tree.nodes) + 1
     push!(tree.nodes, node)

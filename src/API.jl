@@ -489,6 +489,8 @@ In degree of node. Can be implemented for rooted nodes, otherwise inferred
 from _hasinbound.
 """
 function _indegree end
+_indegree(tree::AbstractTree{OneTree, RT, NL}, nodename::NL) where {RT, NL} =
+    _indegree(tree, _getnode(tree, nodename))
 _indegree(tree::AbstractTree, node::AbstractNode) = Int(_hasinbound(tree, node))
 _indegree(tree::AbstractTree, node::AbstractNode{Unrooted}) =
     _degree(tree, node) == 0 ? 0 : missing
@@ -499,7 +501,7 @@ _indegree(tree::AbstractTree, node::AbstractNode{Unrooted}) =
 Is there space for a new inbound connection on a node?
 """
 function _hasinboundspace end
-_hasinboundspace(tree::AbstractTree, node::AbstractNode) =
+_hasinboundspace(tree::AbstractTree, node) =
     !_hasinbound(tree, node)
 
 """
@@ -508,6 +510,8 @@ _hasinboundspace(tree::AbstractTree, node::AbstractNode) =
 Out degree of node.
 """
 function _outdegree end
+_outdegree(tree::AbstractTree{OneTree, RT, NL}, nodename::NL) where {RT, NL} =
+    _outdegree(tree, _getnode(tree, nodename))
 _outdegree(tree::AbstractTree{OneTree, <: Rooted}, node::AbstractNode) =
     length(_getoutbounds(tree, node))
 _outdegree(tree::AbstractTree{OneTree, Unrooted},
@@ -521,8 +525,9 @@ Is there space for a new outbound connection on a node? Must be implemented if
 a node has a limit on the number of outbound connections (eg for a binary tree)
 """
 function _hasoutboundspace end
+_hasoutboundspace(tree::AbstractTree{OneTree, RT, NL}, name::NL) where {RT, NL} =
+    _hasoutboundspace(tree, _getnode(tree, name))
 _hasoutboundspace(::AbstractTree{OneTree, <: Rooted}, ::AbstractNode) = true
-_hasoutboundspace(::AbstractTree{OneTree, <: Rooted, NL}, ::NL) where NL = true
 
 """
     _hasspace(tree::AbstractTree, node::AbstractNode)
@@ -531,6 +536,8 @@ Is there space for a new connection on a node? Must be implemented if
 a node has a limit on the number of connections (eg for a binary tree)
 """
 function _hasspace end
+_hasspace(tree::AbstractTree{OneTree, RT, NL}, name::NL) where {RT, NL} =
+    _hasspace(tree, _getnode(tree, name))
 _hasspace(::AbstractTree{OneTree}, ::AbstractNode) =
     _hasinboundspace(tree, node) | _hasoutboundspace(tree, node)
 _hasspace(::AbstractTree{OneTree, Unrooted}, ::AbstractNode) = true
@@ -542,6 +549,8 @@ Degree of node. Must be implemented for Unrooted nodes, otherwise can be
 inferred from indegree and outdegree.
 """
 function _degree end
+_degree(tree::AbstractTree{OneTree, RT, NL}, name::NL) where {RT, NL} =
+    _degree(tree, _getnode(tree, name))
 _degree(tree::AbstractTree, node::AbstractNode) =
     _indegree(tree, node) + _outdegree(tree, node)
 
@@ -747,6 +756,8 @@ Return source node for a branch. Must be implemented for any rooted
 AbstractBranch subtype.
 """
 function _src end
+_src(tree::AbstractTree, branchname::Int) =
+    _src(tree, _getbranch(tree, branchname))
 _src(::AbstractTree, ::AbstractBranch{Unrooted}) =
     error("Unrooted branches do not have in and out connections")
 
@@ -757,6 +768,8 @@ Return destination node for a branch. Must be implemented for any rooted
 AbstractBranch subtype.
 """
 function _dst end
+_dst(tree::AbstractTree, branchname::Int) =
+    _dst(tree, _getbranch(tree, branchname))
 _dst(::AbstractTree, ::AbstractBranch{Unrooted}) =
     error("Unrooted branches do not have in and out connections")
 
