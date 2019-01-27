@@ -9,13 +9,13 @@ using Compat.Test
     # Create a 10 tip tree
     nu = Nonultrametric(10)
     @test eltype(nu) == NamedTree
-    @test validate(rand(nu))
+    @test validate!(rand(nu))
     @test Set(getleafnames(rand(nu))) == Set(getleafnames(rand(nu)))
     # Create a tree with named tips
     species = ["Dog", "Cat", "Human"]
     t = rand(Nonultrametric(species))
     @test ntrees(t) == 1
-    @test validate(t)
+    @test validate!(t)
     @test Set(getleafnames(t)) == Set(species)
 
     t2 = rand(Nonultrametric{BinaryTree{DataFrame, Vector{Float64}}}(species))
@@ -32,7 +32,7 @@ end
 @testset "Ultrametric()" begin
     # Create a 10 tip tree
     u = Ultrametric(10)
-    @test validate(rand(u))
+    @test validate!(rand(u))
     @test Set(getleafnames(rand(u))) == Set(getleafnames(rand(u)))
     tree = rand(u)
     @test ntrees(tree) == 1
@@ -40,7 +40,7 @@ end
     @test all(h -> h ≈ heights[1], heights)
     species = ["Dog", "Cat", "Human"]
     t = rand(Ultrametric(species))
-    @test validate(t)
+    @test validate!(t)
     @test Set(getleafnames(t)) == Set(species)
 
     numnodes = 50

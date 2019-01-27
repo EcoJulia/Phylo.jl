@@ -31,8 +31,8 @@ end
     tips2 = getleafnames(test_tree2)
     @test Set(tips) == Set(keep_tips)
     @test Set(tips) == Set(tips2)
-    @test validate(test_tree)
-    @test validate(test_tree2)
+    @test validate!(test_tree)
+    @test validate!(test_tree2)
 
     tdf = rand(Ultrametric(df))
     @test ["Dog"] == droptips!(tdf, ["Dog"])

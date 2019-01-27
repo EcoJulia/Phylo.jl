@@ -28,7 +28,7 @@ using Compat.Test
     deletebranch!(tree, 551)
     br4 = addbranch!(tree, nr, "Potato")
     @test Set(species) ⊆ Set(getdescendants(tree, nr))
-    @test validate(tree)
+    @test validate!(tree)
 end
 
 end

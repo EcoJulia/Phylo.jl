@@ -7,7 +7,8 @@ using Compat.Test
 @testset "Build and tear down trees" begin
     @testset "For $TreeType" for TreeType in
         [NamedTree, NamedBinaryTree,
-         BinaryTree{ManyRoots, DataFrame, Vector{Float64}}]
+         BinaryTree{ManyRoots, DataFrame, Vector{Float64}},
+         RootedTree, ManyRootTree]
 
         species = ["Dog", "Cat", "Human", "Potato", "Apple"]
         tree = TreeType(species)
@@ -36,7 +37,7 @@ using Compat.Test
                 createbranch!(tree, first(itr), node)
             end
         @test Set(branches) == Set(getbranchnames(tree))
-        @test validate(tree)
+        @test validate!(tree)
         @test_throws ErrorException createbranch!(tree, allnodes[1], allnodes[2])
         who = getparent(tree, species[1])
         b = getinbound(tree, species[1])
@@ -72,7 +73,7 @@ using Compat.Test
         @test species[1] == createnode!(tree, species[1])
         @test createbranch!(tree, who, species[1]) isa Int
         @test hasnode(tree, species[1])
-        @test validate(tree)
+        @test validate!(tree)
         @test all(isleaf(tree, node) for node in species)
         @test all((!isroot(tree, node) & !isunattached(tree, node) &
                    !isinternal(tree, node)) for node in species)
