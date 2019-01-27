@@ -79,18 +79,18 @@ retrieve the leaf info type of a tree.
 leafinfotype(::Type{<: AbstractTree}) = _leafinfotype(T)
 
 """
-    noderecordtype(::Type{<: AbstractTree})
+    nodedatatype(::Type{<: AbstractTree})
 
 retrieve the node info type of a tree.
 """
-noderecordtype(::Type{<: AbstractTree}) = _noderecordtype(T)
+nodedatatype(::Type{<: AbstractTree}) = _nodedatatype(T)
 
 """
-    branchrecordtype(::Type{<: AbstractTree})
+    branchdatatype(::Type{<: AbstractTree})
 
 retrieve the branch info type of a tree.
 """
-branchrecordtype(::Type{<: AbstractTree}) = _branchrecordtype(T)
+branchdatatype(::Type{<: AbstractTree}) = _branchdatatype(T)
 
 # AbstractTree methods
 """
@@ -369,7 +369,7 @@ function createnodes!(tree::T, nodedata::NDS) where
      ND, NDS <: Dict{NL, ND}}
     here = [name for name in keys(nodedata) if _hasnode(tree, name)]
     isempty(here) || error("Nodes $here already present in tree")
-    noderecordtype(T) == ND || error("Node info types does not match")
+    nodedatatype(T) == ND || error("Node info types does not match")
     return [_createnode!(tree, info.first, info.second) for info in nodedata]
 end
 
@@ -734,34 +734,43 @@ Set the leaf info for the leaves of the tree.
 setleafinfo!(tree::AbstractTree, table) = _setleafinfo!(tree, table)
 
 """
-    getnoderecord(::AbstractTree, label)
+    getnodedata(::AbstractTree, node)
 
-retrieve the node info for a leaf of the tree.
+retrieve the node data for a node of the tree.
 """
-getnoderecord(tree::AbstractTree{OneTree}, label) = _getnoderecord(tree, label)
-
-"""
-    setnoderecord!(::AbstractTree, label, value)
-
-Set the node info for a node of the tree.
-"""
-setnoderecord!(tree::AbstractTree{OneTree}, label, value) =
-    _setnoderecord!(tree, label, value)
+getnodedata(tree::AbstractTree{OneTree}, node) = _getnodedata(tree, node)
 
 """
-    getbranchinfo(::AbstractTree, label)
+    setnodedata!(::AbstractTree, node, label, value)
+    setnodedata!(::AbstractTree, node, data)
 
-retrieve the branch info for a leaf of the tree.
+Set the node data for a node of the tree.
 """
-getbranchinfo(tree::AbstractTree{OneTree}, label) = _getbranchinfo(tree, label)
+function setnodedata! end
+setnodedata!(tree::AbstractTree{OneTree}, node, label, value) =
+    _setnodedata!(tree, node, label, value)
+setnodedata!(tree::AbstractTree{OneTree}, node, data) =
+    _setnodedata!(tree, node, data)
 
 """
-    setbranchinfo!(::AbstractTree, label, value)
+    getbranchdata(::AbstractTree, label)
 
-Set the branch info for a branch of the tree.
+retrieve the branch data for a leaf of the tree.
 """
-setbranchinfo!(tree::AbstractTree{OneTree}, label, value) =
-    _setbranchinfo!(tree, label, value)
+getbranchdata(tree::AbstractTree{OneTree}, branch) =
+    _getbranchdata(tree, branch)
+
+"""
+    setbranchdata!(::AbstractTree, branch, label, value)
+    setbranchdata!(::AbstractTree, branch, data)
+
+Set the branch data for a branch of the tree.
+"""
+function setbranchdata! end
+setbranchdata!(tree::AbstractTree{OneTree}, branch, label, value) =
+    _setbranchdata!(tree, branch, label, value)
+setbranchdata!(tree::AbstractTree{OneTree}, branch, data) =
+    _setbranchdata!(tree, branch, data)
 
 """
     resetleaves!(::AbstractTree)

@@ -61,7 +61,7 @@ export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _getleafinfo, _setleafinfo!, _leafinfotype
-export _getnoderecord, _setnoderecord!
+export _getnodedata, _setnodedata!
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
@@ -103,13 +103,20 @@ export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
 export getleafnames, getleaves, resetleaves, nleaves, nnodes
 export getleafinfo, setleafinfo!, leafinfotype
-export getnoderecord, setnoderecord!
+export getnodedata, setnodedata!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
 export src, dst, getlength
 export hasrootheight, getrootheight, setrootheight!, clearrootheight!
 export getrootdistance
+
+@deprecate getnoderecord getnodedata
+@deprecate setnoderecord! setnodedata!
+@deprecate getbranchrecord getbranchdata
+@deprecate setbranchrecord! setbranchdata!
+@deprecate getbranchinfo getbranchdata
+@deprecate setbranchinfo! setbranchdata!
 
 #include("Info.jl")
 #export LeafInfo

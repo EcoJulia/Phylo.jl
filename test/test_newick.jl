@@ -14,9 +14,9 @@ using Compat.Test
     end
     @test length(branches) == 1
     @test getlength(first(branches)) ≈ 4.0
-    @test getnoderecord(tree, "MyLeaf")["Real"] == 23
-    @test 5 ∈ getnoderecord(tree, "MyLeaf")["Not real"]
-    @test 4 ∈ getnoderecord(tree, "MyLeaf")["Not real"]
+    @test getnodedata(tree, "MyLeaf")["Real"] == 23
+    @test 5 ∈ getnodedata(tree, "MyLeaf")["Not real"]
+    @test 4 ∈ getnodedata(tree, "MyLeaf")["Not real"]
     if VERSION < v"0.7.0-"
         @test_warn "Tree ended but not finished" parsenewick("((,),(,));a")
     end

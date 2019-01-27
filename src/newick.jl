@@ -265,7 +265,7 @@ function parsenode(token, state, tokens, tree::TREE,
     if token.kind == T.LSQUARE
         token, state, dict = parsedict(token, state, tokens)
         siblings[myname]["dict"] = dict
-        setnoderecord!(tree, myname, dict)
+        setnodedata!(tree, myname, dict)
     end
 
     if token.kind == T.COLON || foundcolon

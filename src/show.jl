@@ -140,9 +140,9 @@ function show(io::IO, object::AbstractTree)
         println(io, [(object, node) for node in _getnodes(object)])
         println(io, "Branches:")
         println(io, [(object, branch) for branch in _getbranches(object)])
-        if _noderecordtype(TREE) !== Nothing
+        if _nodedatatype(TREE) !== Nothing
             println(io, "Node records:")
-            println(io, Dict(name => _getnoderecord(object, name)
+            println(io, Dict(name => _getnodedata(object, name)
                              for name in _getnodenames(object)))
         end
     end

@@ -194,7 +194,7 @@ OneTree type (otherwise determined from _getroots()).
 function _getroot end
 function _getroot(tree::AbstractTree{OneTree, <: Rooted})
     @assert nroots(tree) == 1 "More than one root for tree " *
-    "(found $(length(roots)))"
+    "(found $(nroots(tree)))"
     return first(_getroots(tree))
 end
 
@@ -806,25 +806,40 @@ function _leafinfotype end
 _leafinfotype(::Type{<:AbstractTree}) = Nothing
 
 """
-    _noderecordtype(::Type{<:AbstractTree})
+    _nodedatatype(::Type{<:AbstractTree})
 
 Returns the type of the node info data.
 """
-function _noderecordtype end
-_noderecordtype(::Type{<:AbstractTree}) = Nothing
+function _nodedatatype end
+_nodedatatype(::Type{<:AbstractTree}) = Nothing
 
 """
-    _branchrecordtype(::Type{<:AbstractTree})
+    _branchdatatype(::Type{<:AbstractTree})
 
 Returns the type of the branch info data.
 """
-function _branchrecordtype end
-_branchrecordtype(::Type{<:AbstractTree}) = Nothing
+function _branchdatatype end
+_branchdatatype(::Type{<:AbstractTree}) = Nothing
+
+function _getnodedata end
+_getnodedata(tree::AbstractTree{OneTree, RT, NL}, name::NL) where {RT, NL} =
+    _getnodedata(tree, _getnode(tree, name))
+function _setnodedata! end
+_setnodedata!(tree::AbstractTree{OneTree, RT, NL}, name::NL, data) where {RT, NL} =
+    _setnodedata!(tree, _getnode(tree, name), data)
+_setnodedata!(tree::AbstractTree, node::AbstractNode, label, value) =
+    (_getnodedata(tree, node)[label] = value)
+
+function _getbranchdata end
+_getbranchdata(tree::AbstractTree, name::Int) =
+    _getbranchdata(tree, _getbranch(tree, name))
+function _setbranchdata! end
+_setbranchdata!(tree::AbstractTree, name::Int, data) =
+    _setbranchdata!(tree, _getbranch(tree, name), data)
+_setbranchdata!(tree::AbstractTree, branch::AbstractBranch, label, value) =
+    (_getbranchdata(tree, branch)[label] = value)
 
 function _getleafinfo end
 function _setleafinfo! end
-function _getnoderecord end
-function _setnoderecord! end
-function _getbranchinfo end
-function _setbranchinfo! end
+
 function _resetleaves! end

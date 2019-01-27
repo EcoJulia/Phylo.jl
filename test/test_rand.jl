@@ -19,13 +19,13 @@ using Compat.Test
     @test Set(getleafnames(t)) == Set(species)
 
     t2 = rand(Nonultrametric{BinaryTree{DataFrame, Vector{Float64}}}(species))
-    @test length(getnoderecord(t2, species[1])) == 0
+    @test length(getnodedata(t2, species[1])) == 0
     t3 = rand(Nonultrametric{BinaryTree{DataFrame, Vector{String}}}(species))
     map(nodenameiter(t3)) do name
-        setnoderecord!(t3, name, nodehistory(t3, name))
+        setnodedata!(t3, name, nodehistory(t3, name))
     end
     for name in nodenameiter(t3)
-        @test all(getnoderecord(t3, name) .== nodehistory(t3, name))
+        @test all(getnodedata(t3, name) .== nodehistory(t3, name))
     end
 end
 

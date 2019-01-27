@@ -17,8 +17,8 @@ SimpleBranch{RT, NL}(edge::SimpleEdge{Int}) where {RT, NL} =
 abstract type MetaTree{RT, NL, TD} <:
     AbstractTree{OneTree, RT, NL, SimpleNode{RT, NL}, SimpleBranch{RT, NL}} end
 
-_noderecordtype(::Type{<:MetaTree}) = Dict{Symbol, Any}
-_branchrecordtype(::Type{<:MetaTree}) = Dict{Symbol, Any}
+_nodedatatype(::Type{<:MetaTree}) = Dict{Symbol, Any}
+_branchdatatype(::Type{<:MetaTree}) = Dict{Symbol, Any}
 
 mutable struct UnrootedMetaTree{NL, TD} <: MetaTree{Unrooted, NL, TD}
     mg::MetaGraph{Int, Float64}
@@ -225,7 +225,7 @@ import Phylo.API._createnode!
 function _createnode!(tree::T, nodename::NL, data) where
     {RT, NL, TD, T <: MetaTree{RT, NL, TD}}
     if ismissing(data)
-        add_vertex!(tree.mg, noderecordtype(T)())
+        add_vertex!(tree.mg, nodedatatype(T)())
     else
         add_vertex!(tree.mg, data)
     end

@@ -84,11 +84,11 @@ end
     addbranch!(nt, r, "Human", 4.0)
     addbranch!(nt, r, n, 2.0)
     @test validate(nt)
-    setnoderecord!(nt, "Dog", [1.0])
-    @test getnoderecord(nt, "Dog")[1] ≈ 1.0
-    @test length(getnoderecord(nt, "Cat")) == 0
+    setnodedata!(nt, "Dog", [1.0])
+    @test getnodedata(nt, "Dog")[1] ≈ 1.0
+    @test length(getnodedata(nt, "Cat")) == 0
     nt2 = BinaryTree(nt)
-    @test length(getnoderecord(nt2, "Dog")) == 0
+    @test length(getnodedata(nt2, "Dog")) == 0
     @test Set(getleafnames(nt2)) == Set(species)
     @test validate(nt)
     nt3 = BinaryTree(nt, empty=false)
