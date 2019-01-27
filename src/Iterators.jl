@@ -1,8 +1,19 @@
-using Compat
 using Compat: Random
-import Compat.IteratorSize, Base.length, Compat.IteratorEltype, Base.eltype
-
+import Compat: IteratorSize, IteratorEltype
+import Base: length, eltype
+using Base: HasLength, HasEltype
 using Phylo.API
+
+# For a single tree
+function IteratorSize(::Type{<: AbstractTree{OneTree}})
+    return HasLength()
+end
+
+function IteratorEltype(::Type{<: AbstractTree{OneTree}})
+    return HasEltype()
+end
+length(::AbstractTree{OneTree}) = 1
+eltype(ni::T) where T <: AbstractTree = T
 
 abstract type AbstractTreeIterator{T <: AbstractTree} end
 
@@ -123,7 +134,15 @@ branchnamefilter(filterfn::Function, tree::T) where T <: AbstractTree =
 eltype(bi::BranchNameIterator{T}) where T <: AbstractTree = branchnametype(T)
 
 @static if VERSION >= v"0.7.0"
-import Base.iterate
+import Base: iterate
+function iterate(tree::AbstractTree{OneTree}, state = nothing)
+    if state === nothing
+        return tree, missing
+    else
+        return nothing
+    end
+end
+
 function iterate(ni::NodeIterator, state = nothing)
     nodes = _getnodes(ni.tree)
     if state === nothing

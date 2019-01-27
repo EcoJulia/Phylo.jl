@@ -1,5 +1,6 @@
 using Missings
 using Compat
+using Compat: @warn
 
 newempty(::Type{Data}) where Data = Data()
 
@@ -197,12 +198,12 @@ function _validate!(tree::LinkTree{RT, NL, N, B, TD}) where {RT, NL, N, B, TD}
     nr = nroots(tree)
     if RT == OneRoot
         if nr != 1
-            warn("Wrong number of roots for $RT tree ($nr)")
+            @warn "Wrong number of roots for $RT tree ($nr)"
             tree.isvalid = false
         end
     elseif RT == ManyRoots
         if nr < 1
-            warn("Wrong number of roots for $RT tree ($nr)")
+            @warn "Wrong number of roots for $RT tree ($nr)"
             tree.isvalid = false
         end
     end

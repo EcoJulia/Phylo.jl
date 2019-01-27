@@ -1,5 +1,5 @@
 using Phylo.API
-using Compat: mapreduce
+using Compat: mapreduce, @warn
 import LightGraphs: src, dst, indegree, outdegree, degree
 
 # AbstractTree/Node/Branch type methods
@@ -785,25 +785,25 @@ function validate!(tree::T) where
         # We need to validate the connections
         if Set(_getinbound(tree, node) for node in nodes
                if _hasinbound(tree, node)) != Set(branches)
-            warn("Inbound branches must exactly match Branch labels")
+            @warn "Inbound branches must exactly match Branch labels"
             return false
         end
 
         if Set(mapreduce(node -> _getoutbounds(tree, node), append!,
                          nodes; init = B[])) != Set(branches)
-            warn("Node outbound branches must exactly match Branch labels")
+            @warn "Node outbound branches must exactly match Branch labels"
             return false
         end
 
         if !(Set(_getnodename(tree, _src(tree, branch))
                  for branch in branches) ⊆ Set(nodenames))
-            warn("Branch sources must be nodes")
+            @warn "Branch sources must be nodes"
             return false
         end
 
         if !(Set(_getnodename(tree, _dst(tree, branch))
                 for branch in branches) ⊆ Set(nodenames))
-            warn("Branch destinations must be nodes")
+            @warn "Branch destinations must be nodes"
             return false
         end
     end
