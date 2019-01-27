@@ -380,13 +380,12 @@ function _setrootheight! end
 function _clearrootheight! end
 
 """
-    _validate(::AbstractTree)
+    _validate!(::AbstractTree)
 
 
 """
-function _validate(::AbstractTree)
-    return true
-end
+function _validate! end
+_validate!(::AbstractTree) = true
 
 """
     _traversal(tree::AbstractTree, order::TraversalOrder, todo, sofar)
@@ -844,4 +843,11 @@ _setbranchdata!(tree::AbstractTree, branch::AbstractBranch, label, value) =
 function _getleafinfo end
 function _setleafinfo! end
 
+"""
+    _resetleaves!(::AbstractTree)
+
+Fixes leaf naming after creation or deletion of nodes or branches. Must be
+implemented by tree types where this is handled separately.
+"""
 function _resetleaves! end
+_resetleaves!(::AbstractTree) = true

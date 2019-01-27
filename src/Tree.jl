@@ -49,12 +49,13 @@ function _resetleaves!(bt::AbstractBranchTree)
 end
 
 import Phylo.API: _getnodedata
-function _getnodedata(bt::AbstractBranchTree, name)
+function _getnodedata(bt::AbstractBranchTree, name::String)
     return bt.nodedata[name]
 end
 
 import Phylo.API: _setnodedata!
-function _setnodedata!(bt::AbstractBranchTree, name, value)
+function _setnodedata!(bt::AbstractBranchTree{RT, N, B, LI, ND},
+                       name::String, value::ND) where {RT, N, B, LI, ND}
     bt.nodedata[name] = value
 end
 
@@ -151,8 +152,8 @@ function _deletebranch!(tree::AbstractBranchTree, branch::Branch)
     return branch
 end
 
-import Phylo.API: _validate
-function _validate(tree::TREE) where {TREE <: AbstractBranchTree}
+import Phylo.API: _validate!
+function _validate!(tree::TREE) where TREE <: AbstractBranchTree
     if _leafinfotype(TREE) != Nothing && length(getiterator(tree.leafinfos)) > 0
         if Set(info[1] for info in getiterator(tree.leafinfos)) !=
             Set(_getleafnames(tree))
@@ -206,7 +207,7 @@ end
 
 function BinaryTree(lt::BinaryTree{RT, LI, ND};
                     copyinfo=false) where {RT, LI, ND}
-    validate(lt) || error("Tree to copy is not valid")
+    validate!(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records are conserved across trees, as could be invariant?
     leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos
@@ -277,7 +278,7 @@ end
 
 function PolytomousTree(lt::PolytomousTree{RT, LI, ND};
                         copyinfo=false) where {RT, LI, ND}
-    validate(lt) || error("Tree to copy is not valid")
+    validate!(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
     leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos

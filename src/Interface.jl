@@ -770,19 +770,13 @@ setbranchdata!(tree::AbstractTree{OneTree}, branch, data) =
     _setbranchdata!(tree, branch, data)
 
 """
-    resetleaves!(::AbstractTree)
-
-Reset the leaf records to the current leaves, deleting all leaf records.
-"""
-resetleaves!(tree::AbstractTree{OneTree}) = _resetleaves!(tree)
-
-"""
-    validate(tree::AbstractTree)
+    validate!(tree::AbstractTree)
 
 Validate the tree by making sure that it is connected up correctly.
 """
-function validate(tree::T) where
+function validate!(tree::T) where
     {TT, RT, NL, N, B, T <: AbstractTree{TT, RT, NL, N, B}}
+    _resetleaves!(tree)
     nodes = _getnodes(tree)
     nodenames = _getnodenames(tree)
     branches = _getbranches(tree)
@@ -801,18 +795,20 @@ function validate(tree::T) where
             return false
         end
 
-        if !(Set(_src(tree, branch) for branch in branches) ⊆ Set(nodenames))
-            warn("Branch sources must be node labels")
+        if !(Set(_getnodename(tree, _src(tree, branch))
+                 for branch in branches) ⊆ Set(nodenames))
+            warn("Branch sources must be nodes")
             return false
         end
 
-        if !(Set(_dst(tree, branch) for branch in branches) ⊆ Set(nodenames))
-            warn("Branch destinations must be node labels")
+        if !(Set(_getnodename(tree, _dst(tree, branch))
+                for branch in branches) ⊆ Set(nodenames))
+            warn("Branch destinations must be nodes")
             return false
         end
     end
 
-    return _validate(tree)
+    return _validate!(tree)
 end
 
 """

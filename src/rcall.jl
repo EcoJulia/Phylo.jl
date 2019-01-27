@@ -28,7 +28,7 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
                       lengths[edge])
     end
 
-    validate(tree) || warn("Tree does not internally validate")
+    validate!(tree) || warn("Tree does not internally validate")
     return tree
 end
 
@@ -39,7 +39,7 @@ rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = NamedTree
 import .RCall.sexp
 
 function sexp(tree::T) where T <: AbstractTree
-    validate(tree) || warn("Tree does not internally validate")
+    validate!(tree) || warn("Tree does not internally validate")
 
     tipnames = getleafnames(tree)
     root = [getnodename(tree, node) for node in getroots(tree)]

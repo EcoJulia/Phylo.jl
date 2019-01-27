@@ -1,5 +1,5 @@
 using Compat
-using Compat: Random, mapreduce
+using Compat: Random
 import Compat.IteratorSize, Base.length, Compat.IteratorEltype, Base.eltype
 
 using Phylo.API
@@ -17,17 +17,15 @@ end
 abstract type AbstractNodeIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
 
 function length(ni::It) where It <: AbstractNodeIterator
-    return ni.filterfn === nothing ? length(_getnodes(ni.tree)) :
-        mapreduce(val -> ni.filterfn(ni.tree, _getnode(ni.tree, val)) ? 1 : 0,
-                  +, ni; init = 0)
+    return ni.filterfn === nothing ? _nnodes(ni.tree) :
+        count(val -> ni.filterfn(_getnode(ni.tree, val)), ni)
 end
 
 abstract type AbstractBranchIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
 
 function length(bi::It) where It <: AbstractBranchIterator
-    return bi.filterfn === nothing ? length(_getbranches(bi.tree)) :
-        mapreduce(val -> bi.filterfn(bi.tree, _getbranch(bi.tree, val)) ? 1 : 0,
-                  +, bi; init = 0)
+    return bi.filterfn === nothing ? _nbranches(bi.tree) :
+        count(val -> bi.filterfn(_getbranch(bi.tree, val)), bi)
 end
 
 struct NodeIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
@@ -142,7 +140,7 @@ function iterate(ni::NodeIterator, state = nothing)
 
     val, state = result
     node = _getnode(ni.tree, val)
-    while !ni.filterfn(ni.tree, node)
+    while !ni.filterfn(node)
         result = iterate(nodes, state)
         result === nothing && return nothing
         val, state = result
@@ -168,7 +166,7 @@ function iterate(ni::NodeNameIterator, state = nothing)
 
     val, state = result
     node = _getnode(ni.tree, val)
-    while !ni.filterfn(ni.tree, node)
+    while !ni.filterfn(node)
         result = iterate(nodes, state)
         result === nothing && return nothing
         val, state = result
@@ -195,7 +193,7 @@ function iterate(bi::BranchIterator, state = nothing)
 
     val, state = result
     branch = _getbranch(bi.tree, val)
-    while !bi.filterfn(bi.tree, branch)
+    while !bi.filterfn(branch)
         result = iterate(branches, state)
         result === nothing && return nothing
         val, state = result
@@ -221,7 +219,7 @@ function iterate(bi::BranchNameIterator, state = nothing)
 
     val, state = result
     branch = _getbranch(bi.tree, val)
-    while !bi.filterfn(bi.tree, branch)
+    while !bi.filterfn(branch)
         result = iterate(branches, state)
         result === nothing && return nothing
         val, state = result

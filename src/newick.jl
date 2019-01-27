@@ -220,9 +220,9 @@ function parsedict(token, state, tokens)
 end
 
 function parsenode(token, state, tokens, tree::TREE,
-                   lookup, siblings, istip) where {RT, NL, N, B,
-                                                   TREE <: AbstractTree{OneTree, RT, NL, N, B}}
-    myname = ""
+                   lookup, siblings, istip) where
+    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+    myname = missing
     endkinds = [T.SEMICOLON, T.COLON, T.COMMA, T.RPAREN, T.LSQUARE]
     if token.kind ∉ endkinds # We got a nodename
         token, state, name = tokensgetkey(token, state, tokens,
@@ -261,10 +261,10 @@ function parsenode(token, state, tokens, tree::TREE,
         token, state = result
     end
 
-    siblings[myname] = Dict{String, Any}()
+    siblings[getnodename(tree, myname)] = Dict{String, Any}()
     if token.kind == T.LSQUARE
         token, state, dict = parsedict(token, state, tokens)
-        siblings[myname]["dict"] = dict
+        siblings[getnodename(tree, myname)]["dict"] = dict
         setnodedata!(tree, myname, dict)
     end
 
@@ -287,7 +287,8 @@ function parsenode(token, state, tokens, tree::TREE,
             token, state = result
         end
         if token.kind ∈ [T.INTEGER, T.FLOAT]
-            siblings[myname]["length"] = sgn(parse(Float64, untokenize(token)))
+            siblings[getnodename(tree, myname)]["length"] =
+                sgn(parse(Float64, untokenize(token)))
         else
             tokenerror(token, "a length")
         end
@@ -341,15 +342,16 @@ function parsenewick!(token, state, tokens, tree::TREE,
         else
             error("At end of tree, but not ';'")
         end
-        tree = resetleaves!(tree)
+        if !validate!(tree)
+            error("Tree $(gettreename(tree)) does not validate!")
+        end
     end
 
     return token, state
 end
 
-function parsenewick(tokens::Tokenize.Lexers.Lexer,
-                     ::Type{TREE}) where {RT, N, B,
-                                                     TREE <: AbstractTree{OneTree, RT, String, N, B}}
+function parsenewick(tokens::Tokenize.Lexers.Lexer, ::Type{TREE}) where
+    {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
     result = iterateskip(tokens)
     if result === nothing
         error("Unexpected end of file at start of newick file")
@@ -447,8 +449,8 @@ function parsetaxa(token, state, tokens, taxa)
     return iterateskip(tokens, state)
 end
 
-function parsetrees(token, state, tokens,
-                    ::Type{TREE}, taxa) where {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
+function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
+    {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
     notaxa = isempty(taxa)
     if isTRANSLATE(token)
         result = iterateskip(tokens, state)
@@ -525,9 +527,8 @@ function parsetrees(token, state, tokens,
     return token, state, trees, treedata
 end
 
-function parsenexus(token, state, tokens,
-                    ::Type{TREE}) where {RT, NL, N, B,
-                                                    TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+function parsenexus(token, state, tokens, ::Type{TREE}) where
+    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     trees = missing
     treedata = missing
     taxa = Dict{NL, NL}()

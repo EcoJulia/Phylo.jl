@@ -65,7 +65,7 @@ export _getnodedata, _setnodedata!
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
-export _validate, _traversal
+export _validate!, _traversal
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 
 # AbstractNode methods
@@ -95,13 +95,13 @@ export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
 export hasrootheight, getrootheight, setrootheight!
 export hasparent, getparent, getancestors
 export haschildren, getchildren, getdescendants
-export validate, traversal
+export validate!, traversal
 
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, getleaves, resetleaves, nleaves, nnodes, nbranches
+export getleafnames, getleaves, nleaves, nnodes, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
 export getnodedata, setnodedata!
 export hasheight, getheight, setheight!
