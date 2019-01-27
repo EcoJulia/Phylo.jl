@@ -395,8 +395,11 @@ Return an iterable object containing nodes in given order - preorder, inorder,
 postorder or breadthfirst
 """
 function _traversal end
+_traversal(tree::AbstractTree{OneTree, <: Rooted}, order::TraversalOrder) =
+    (order == anyorder ? _getnodes(tree) :
+                         _traversal(tree, order, collect(_getroots(tree))))
 function _traversal(tree::AbstractTree{OneTree, <: Rooted},
-                    order::TraversalOrder, todo = collect(_getroots(tree)),
+                    order::TraversalOrder, todo,
                     sofar = eltype(todo)[])
     while !isempty(todo)
         if order == Phylo.breadthfirst

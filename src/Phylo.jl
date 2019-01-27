@@ -41,7 +41,7 @@ abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
                            B <: AbstractBranch{RT, NL}} end
 export AbstractTree
 
-@enum TraversalOrder preorder inorder postorder breadthfirst
+@enum TraversalOrder anyorder preorder inorder postorder breadthfirst
 export TraversalOrder
 
 """
