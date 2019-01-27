@@ -522,6 +522,8 @@ Is there space for a new outbound connection on a node? Must be implemented if
 a node has a limit on the number of outbound connections (eg for a binary tree)
 """
 function _hasoutboundspace end
+_hasoutboundspace(::AbstractTree{OneTree, <: Rooted}, ::AbstractNode) = true
+_hasoutboundspace(::AbstractTree{OneTree, <: Rooted, NL}, ::NL) where NL = true
 
 """
     _hasspace(tree::AbstractTree, node::AbstractNode)

@@ -101,7 +101,7 @@ export validate, traversal
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, getleaves, resetleaves, nleaves, nnodes
+export getleafnames, getleaves, resetleaves, nleaves, nnodes, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
 export getnodedata, setnodedata!
 export hasheight, getheight, setheight!

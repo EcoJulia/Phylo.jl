@@ -254,15 +254,15 @@ getbranchnames(tree::AbstractTree{ManyTrees}) =
          for name in _gettreenames(tree))
 
 """
-    createbranch!(tree::AbstractTree, source, destination[, length::Float64];
+    createbranch!(tree::AbstractTree, source, destination[, len::Float64];
                   data)
 
 Add a branch from `source` to `destination` on `tree` with optional length and
 data. `source` and `destination` can be either nodes or nodenames.
 """
 function createbranch!(tree::AbstractTree{OneTree, <: Rooted},
-                       source, destination, length::Float64 = NaN;
-                       name::Int = _newbranchlabel(tree), data = missing)
+                       source, destination, len::Float64 = NaN;
+                       name = missing, data = missing)
     sn = _getnode(tree, source)
     dn = _getnode(tree, destination)
     _hasnode(tree, sn) ||
@@ -279,12 +279,12 @@ function createbranch!(tree::AbstractTree{OneTree, <: Rooted},
               _getnodename(tree, destination))
     sn !== dn || error("Branch must connect different nodes")
 
-    return ismissing(data) ? _createbranch!(tree, sn, dn, length, name) :
-        _createbranch!(tree, sn, dn, length, name, data)
+    return ismissing(data) ? _createbranch!(tree, sn, dn, len, name) :
+        _createbranch!(tree, sn, dn, len, name, data)
 end
 function createbranch!(tree::AbstractTree{OneTree, Unrooted},
-                       source, destination, length::Float64 = NaN;
-                       name::Int = _newbranchlabel(tree), data = missing)
+                       source, destination, len::Float64 = NaN;
+                       name = missing, data = missing)
     sn = _getnode(tree, source)
     dn = _getnode(tree, destination)
     _hasnode(tree, sn) ||
@@ -303,8 +303,8 @@ function createbranch!(tree::AbstractTree{OneTree, Unrooted},
               "$(_degree(tree, dn)))")
     sn !== dn || error("Branch must connect different nodes")
 
-    return ismissing(data) ? _createbranch!(tree, sn, dn, length, name) :
-        _createbranch!(tree, sn, dn, length, name, data)
+    return ismissing(data) ? _createbranch!(tree, sn, dn, len, name) :
+        _createbranch!(tree, sn, dn, len, name, data)
 end
 
 """
@@ -336,10 +336,7 @@ end
 Create a node on a tree with optional node info.
 """
 function createnode!(tree::AbstractTree{OneTree, RT, NL, N, B},
-                     nodename::NL = _newnodelabel(tree);
-                     data = missing) where {RT, NL, N, B}
-    !_hasnode(tree, nodename) ||
-        error("Node $nodename already present in tree")
+                     nodename = missing; data = missing) where {RT, NL, N, B}
     return ismissing(data) ? _createnode!(tree, nodename) :
         _createnode!(tree, nodename, data)
 end
@@ -651,7 +648,7 @@ Return the height of the node.
 function getheight(tree::AbstractTree{OneTree, <:Rooted}, node)
     return _hasheight(tree, node) ? _getheight(tree, node) :
         mapreduce(b -> getlength(tree, b), +, branchhistory(tree, node);
-                  init = getrootheight(tree))
+                  init = hasrootheight(tree) ? getrootheight(tree) : 0)
 end
 
 """

@@ -141,13 +141,6 @@ function _outdegree(::AbstractTree{OneTree, RT, NL},
     return length(node.outbounds)
 end
 
-_hasoutboundspace(tree::AbstractTree{OneTree, RT, NL, N, B},
-                  node::N) where {RT <: Rooted, NL,
-                                  N <: Node{RT, NL}, B} = true
-_hasoutboundspace(tree::AbstractTree{OneTree, RT, NL, N, B},
-                  node::NL) where {RT <: Rooted, NL,
-                                   N <: Node{RT, NL}, B} = true
-
 import Phylo.API._getinbound
 function _getinbound(tree::AbstractTree, node::Node)
     _hasinbound(tree, node) ||
