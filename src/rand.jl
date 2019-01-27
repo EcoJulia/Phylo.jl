@@ -19,7 +19,6 @@ Base.eltype(::Type{Phylogenetics{T}}) where T <: AbstractTree = T
 
 The sampler for non-ultrametric phylogenetic trees of size `n` or with
 tip labels `tiplabels`. Generate random trees by calling rand().
-Currently only works for `NamedTree`s.
 """
 struct Nonultrametric{T <: AbstractTree,
                       RNG <: Sampleable{Univariate, Continuous}} <:
@@ -57,11 +56,11 @@ function Nonultrametric{T}(leafinfo) where T <: AbstractTree
 end
 
 Nonultrametric(info::LI) where LI =
-    Nonultrametric{NamedTree}(info)
+    Nonultrametric{RootedTree}(info)
 
-Nonultrametric(n::Int) = Nonultrametric{NamedTree}(n)
+Nonultrametric(n::Int) = Nonultrametric{RootedTree}(n)
 Nonultrametric(tiplabels::Vector{String}) =
-    Nonultrametric{NamedTree}(tiplabels)
+    Nonultrametric{RootedTree}(tiplabels)
 
 function rand(t::Nonultrametric{T, RNG}) where {T, RNG}
     t.n >= 2 || error("A tree must have at least 2 tips")
@@ -90,7 +89,6 @@ end
 
 The sampler for ultrametric phylogenetic trees of size `n` or with
 tip labels `tiplabels`. Generate random trees by calling rand().
-Currently only works for `NamedTree`s.
 """
 struct Ultrametric{T <: AbstractTree,
                    RNG <: Sampleable{Univariate, Continuous}} <:
@@ -127,10 +125,10 @@ function Ultrametric{T}(leafinfo) where T <: AbstractTree
                                        Exponential(), leafinfo)
 end
 
-Ultrametric(info::LI) where LI = Ultrametric{NamedTree}(info)
+Ultrametric(info::LI) where LI = Ultrametric{RootedTree}(info)
 
-Ultrametric(n::Int) = Ultrametric{NamedTree}(n)
-Ultrametric(tiplabels::Vector{String}) = Ultrametric{NamedTree}(tiplabels)
+Ultrametric(n::Int) = Ultrametric{RootedTree}(n)
+Ultrametric(tiplabels::Vector{String}) = Ultrametric{RootedTree}(tiplabels)
 
 function rand(t::Ultrametric{T, RNG}) where {T, RNG}
     t.n >= 2 || error("A tree must have at least 2 tips")

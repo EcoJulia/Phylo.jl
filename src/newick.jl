@@ -384,7 +384,7 @@ function parsenewick(ios::IOStream, ::Type{TREE}) where TREE <: AbstractTree
     return parsenewick(buf, TREE)
 end
 
-parsenewick(inp) = parsenewick(inp, NamedTree)
+parsenewick(inp) = parsenewick(inp, RootedTree)
 
 function parsetaxa(token, state, tokens, taxa)
     if !isDIMENSIONS(token)
@@ -593,4 +593,4 @@ function parsenexus(ios::IOStream, ::Type{TREE}) where {RT, NL, N, B,
     return parsenexus(buf, TREE)
 end
 
-parsenexus(inp) = parsenexus(inp, NamedTree)
+parsenexus(inp) = parsenexus(inp, RootedTree)

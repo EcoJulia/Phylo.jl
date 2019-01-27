@@ -131,8 +131,9 @@ include("Tree.jl")
 export BinaryTree, NamedBinaryTree, NamedTree
 export PolytomousTree, NamedPolytomousTree
 
-#include("LinkTree.jl")
-#export LinkBranch, LinkNode, LinkTree
+include("LinkTree.jl")
+export LinkBranch, LinkNode, LinkTree
+export RootedTree, ManyRootTree, UnrootedTree
 
 #include("MetaTree.jl")
 #export UnrootedMetaTree, RootedMetaTree, SimpleNode, SimpleBranch
