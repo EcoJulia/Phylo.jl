@@ -87,7 +87,7 @@ include("Interface.jl")
 # AbstractTree methods
 export ntrees, gettrees, nroots, getroots, getroot
 export treenametype, gettreenames, getonetree, gettreename
-export nodetype, branchtype, nodenametype, branchnametype
+export roottype, nodetype, branchtype, nodenametype, branchnametype
 export createbranch!, deletebranch!, branch!
 export createnode!, createnodes!, deletenode!
 export getnodenames, getnodename, hasnode, getnode, getnodes
