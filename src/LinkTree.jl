@@ -53,6 +53,10 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
         return tree
     end
 end
+function LinkTree{RT, NL, N, B, TD}(leafinfos::TD) where {RT, NL, N, B, TD}
+        leafnames = unique(info[1] for info in getiterator(leafinfos))
+        return LinkTree{RT, NL, N, B, TD}(leafnames; tipdata = leafinfos)
+end
 
 const LB{RT} = LinkBranch{RT, String, Dict{String, Any}}
 const LN{RT} = LinkNode{RT, String, Dict{String, Any}, LB{RT}}
