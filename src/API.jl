@@ -22,7 +22,7 @@ function _newlabelfree(names::Vector{String}, prefix)
     end
     len = length(prefix)
     goodnames = [name[(len - 1):end] for name in names
-             if length(name) > len && name[1:len] == prefix]
+                 if length(name) > len && name[1:len] == prefix]
     num = length(goodnames) + 1
     while ("$num" ∈ goodnames)
         num += 1
@@ -142,7 +142,8 @@ _nnodes(tree::AbstractTree{OneTree}) = length(_getnodes(tree))
 """
     _nbranches(::AbstractTree)
 
-Returns the number of branches in a single tree. May be implemented for any OneTree tree type (otherwise infers from _getbranches()).
+Returns the number of branches in a single tree. May be implemented for any
+OneTree tree type (otherwise infers from _getbranches()).
 """
 _nbranches(tree::AbstractTree{OneTree}) = length(_getbranches(tree))
 
@@ -194,7 +195,7 @@ OneTree type (otherwise determined from _getroots()).
 function _getroot end
 function _getroot(tree::AbstractTree{OneTree, <: Rooted})
     @assert nroots(tree) == 1 "More than one root for tree " *
-    "(found $(nroots(tree)))"
+        "(found $(nroots(tree)))"
     return first(_getroots(tree))
 end
 
@@ -220,8 +221,8 @@ type.
 function _getnode end
 _getnode(::AbstractTree{OneTree, RT, NL, N}, node::N) where {RT, NL, N} =
     node
-_getnode(::AbstractTree{OneTree, RT, NL, N}, pair::Pair{NL, N}) where
-    {RT, NL, N} = pair[2]
+_getnode(::AbstractTree{OneTree, RT, NL, N}, pair::Pair{NL, N}) where {RT, NL, N} =
+    pair[2]
 _getnode(pair::Pair{NL, N}) where {RT, NL, N <: AbstractNode{RT, NL}} = pair[2]
 
 """
@@ -234,9 +235,9 @@ able to extract the node name without reference to the tree.
 """
 function _getnodename end
 _getnodename(::AbstractTree{OneTree, RT, NL, N, B}, pair::Pair{NL, N}) where
-    {RT, NL, N, B} = pair[1]
+{RT, NL, N, B} = pair[1]
 _getnodename(::AbstractTree{OneTree, RT, NL, N, B}, nodename::NL) where
-    {RT, NL, N, B} = nodename
+{RT, NL, N, B} = nodename
 _getnodename(pair::Pair{NL, N}) where {RT, NL, N <: AbstractNode{RT, NL}} =
     pair[1]
 
@@ -250,9 +251,9 @@ without reference to the tree. Must be implemented for any OneTree tree type.
 """
 function _getbranch end
 _getbranch(::AbstractTree{OneTree, RT, NL, N, B}, branch::B) where
-    {RT, NL, N, B} = branch
+{RT, NL, N, B} = branch
 _getbranch(::AbstractTree{OneTree, RT, NL, N, B}, pair::Pair{Int, B}) where
-    {RT, NL, N, B} = pair[2]
+{RT, NL, N, B} = pair[2]
 _getbranch(pair::Pair{Int, B}) where {RT, NL, B <: AbstractBranch{RT, NL}} =
     pair[2]
 
@@ -266,11 +267,11 @@ the branch name without reference to the tree.
 """
 function _getbranchname end
 _getbranchname(::AbstractTree{OneTree, RT, NL, N, B}, branchname::Int) where
-    {RT, NL, N, B} = branchname
+{RT, NL, N, B} = branchname
 _getbranchname(::AbstractTree{OneTree, RT, NL, N, B}, pair::Pair{Int, B}) where
-    {RT, NL, N, B} = pair[1]
+{RT, NL, N, B} = pair[1]
 _getbranchname(pair::Pair{Int, B}) where
-    {RT, NL, B <: AbstractBranch{RT, NL}} = pair[1]
+{RT, NL, B <: AbstractBranch{RT, NL}} = pair[1]
 
 """
     _hasnode(tree::AbstractTree, node[name])
