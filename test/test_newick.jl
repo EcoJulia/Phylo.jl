@@ -9,7 +9,7 @@ using Compat.Test
         nodenameiter(parsenewick("""((MyLeaf,"when it's good"),
                                      ('Not mine',where));"""))
     tree = parsenewick("((MyLeaf[&Real=23,'Not real'={5,4}]:4.0,)Parent,(,));")
-    branches = branchfilter(tree) do branch
+    branches = branchfilter(tree) do tree, branch
         return getnodename(tree, src(tree, branch)) == "Parent" &&
             getnodename(tree, dst(tree, branch)) == "MyLeaf"
     end
