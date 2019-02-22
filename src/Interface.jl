@@ -843,7 +843,7 @@ traversal(tree::AbstractTree{TT, RT, NL, N},
 Return the name of all of the nodes that are ancestral to this node.
 """
 function getancestors(tree::AbstractTree{OneTree, <:Rooted}, nodename)
-    return _treepast(tree, nodename)[2][2:end]
+    return _treehistory(tree, nodename)[2][2:end]
 end
 
 

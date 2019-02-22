@@ -59,8 +59,9 @@ function droptips!(t::AbstractTree{OneTree, RT, NL}, tips::Vector{NL}) where
     end
 
     if !isempty(getleafinfo(t))
-        li = leafinfotype(t)(Iterators.filter(line -> line[1] ∉ tips,
-                                              getiterator(getleafinfo(t))))
+        li =
+            leafinfotype(typeof(t))(Iterators.filter(line -> line[1] ∉ tips,
+                                                     getiterator(getleafinfo(t))))
         setleafinfo!(t, li)
     end
     return tips

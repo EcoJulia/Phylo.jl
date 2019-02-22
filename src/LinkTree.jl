@@ -274,7 +274,8 @@ import Phylo.API: _getbranches
 _getbranches(tree::LinkTree) = skipmissing(tree.branches)
 
 import Phylo.API: _getbranchnames
-_getbranchnames(tree::LinkTree) = findall(.!ismissing.(tree.branches))
+_getbranchnames(tree::LinkTree) =
+    [getbranchname(tree, b) for b in tree.branches if !ismissing(b)]
 
 import Phylo.API: _hasbranch
 _hasbranch(tree::LinkTree, id::Int) =
@@ -297,8 +298,10 @@ function _createbranch!(tree::LinkTree{RT, NL, N, B},
     if ismissing(name)
         push!(tree.branches, branch)
     else
-        if id > length(tree.branches)
+        l = length(tree.branches)
+        if id > l
             resize!(tree.branches, id)
+            tree.branches[l+1:id-1] .= missing
         else
             ismissing(tree.branches[id]) || error("Branch $name already exists")
         end
@@ -378,6 +381,10 @@ leafinfotype(::Type{LinkTree{RT, NL, N, B, TD}}) where {RT, NL, N, B, TD} = TD
 
 import Phylo.API: _getleafinfo
 _getleafinfo(tree::LinkTree) = tree.tipdata
+
+import Phylo.API: _setleafinfo!
+_setleafinfo!(tree::LinkTree{RT, NL, N, B, TD}, leafinfo::TD) where
+{RT, NL, N, B, TD} = tree.tipdata = leafinfo
 
 import Phylo.API: _nodedatatype
 _nodedatatype(::Type{LinkTree{RT, NL, N}}) where
