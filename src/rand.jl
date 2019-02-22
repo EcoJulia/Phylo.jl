@@ -1,43 +1,49 @@
 using Compat.Random
 import Distributions: ValueSupport, Sampleable
+import Distributions: _rand!
 import Base: eltype, rand
 using Phylo
 using Distributions
 using Missings
 using IterableTables: getiterator
 
-mutable struct Phylogenetics{T <: AbstractTree} <: ValueSupport end
+struct Phylogenetics{T <: AbstractTree} <: ValueSupport end
 Base.eltype(::Type{Phylogenetics{T}}) where T <: AbstractTree = T
+Base.eltype(::Sampleable{S, P}) where {S, P <: Phylogenetics} = eltype(P)
 
 """
     Nonultrametric{T <: AbstractTree,
-                   RNG <: Sampleable}(n::Int,
-                                      rng::RNG = Exponential())
+                   SAMP <: Sampleable}(n::Int,
+                                       sampleable::SAMP = Exponential())
     Nonultrametric{T <: AbstractTree,
-                   RNG <: Sampleable}(tiplabels::Vector{String},
-                                      rng::RNG = Exponential())
+                   SAMP <: Sampleable}(tiplabels::Vector{String},
+                                       sampleable::SAMP = Exponential())
 
 The sampler for non-ultrametric phylogenetic trees of size `n` or with
 tip labels `tiplabels`. Generate random trees by calling rand().
 """
 struct Nonultrametric{T <: AbstractTree,
-                      RNG <: Sampleable{Univariate, Continuous}} <:
-    Sampleable{Univariate, Phylogenetics{T}}
+                      SAMP <: Sampleable{Univariate, Continuous}} <:
+                          Sampleable{Univariate, Phylogenetics{T}}
     n::Int
     tiplabels::Vector{String}
-    rng::RNG
+    sampleable::SAMP
     leafinfo::Any
 
-    function Nonultrametric{T, RNG}(n::Int, tiplabels::Vector{String}, rng::RNG, leafinfo) where {T, RNG}
-        return new{T, RNG}(n, tiplabels, rng, leafinfo)
+    function Nonultrametric{T, SAMP}(n::Int, tiplabels::Vector{String},
+                                     sampleable::SAMP, leafinfo) where {T, SAMP}
+        return new{T, SAMP}(n, tiplabels, sampler(sampleable), leafinfo)
     end
 
-    function Nonultrametric{T, RNG}(n::Int, rng::RNG) where {T, RNG}
-        return new{T, RNG}(n, ["tip $i" for i in Base.OneTo(n)], rng, missing)
+    function Nonultrametric{T, SAMP}(n::Int, sampleable::SAMP) where {T, SAMP}
+        return new{T, SAMP}(n, ["tip $i" for i in Base.OneTo(n)],
+                            sampler(sampleable), missing)
     end
 
-    function Nonultrametric{T, RNG}(tiplabels::Vector{String}, rng::RNG) where {T, RNG}
-        return new{T, RNG}(length(tiplabels), tiplabels, rng, missing)
+    function Nonultrametric{T, SAMP}(tiplabels::Vector{String},
+                                     sampleable::SAMP) where {T, SAMP}
+        return new{T, SAMP}(length(tiplabels), tiplabels,
+                            sampler(sampleable), missing)
     end
 end
 
@@ -50,64 +56,68 @@ function Nonultrametric{T}(tiplabels::Vector{String}) where T <: AbstractTree
 end
 
 function Nonultrametric{T}(leafinfo) where T <: AbstractTree
-    tipnames = unique(collect(keys(leafinfo)))
+    tipnames = unique([info[1] for info in getiterator(leafinfo)])
     return Nonultrametric{T, Exponential}(length(tipnames), tipnames,
                                           Exponential(), leafinfo)
 end
 
 Nonultrametric(info::LI) where LI =
-    Nonultrametric{RootedTree}(info)
+    Nonultrametric{Phylo.LT{OneRoot, LI}}(info)
 
 Nonultrametric(n::Int) = Nonultrametric{RootedTree}(n)
 Nonultrametric(tiplabels::Vector{String}) =
     Nonultrametric{RootedTree}(tiplabels)
 
-function rand(t::Nonultrametric{T, RNG}) where {T, RNG}
+function _rand!(rng::AbstractRNG, t::Nonultrametric{T, SAMP}) where {T, SAMP}
     t.n >= 2 || error("A tree must have at least 2 tips")
     if ismissing(t.leafinfo)
-        tree = T(t.tiplabels; rootheight = 0.0)
+        tree = T(t.tiplabels)
     else
-        tree = T(t.leafinfo; rootheight = 0.0)
+        tree = T(t.leafinfo)
     end
     while nroots(tree) > 1
         roots = getroots(tree)
         children = sample(collect(roots), 2, replace=false)
         parent = createnode!(tree)
-        createbranch!(tree, parent, children[1], rand(t.rng))
-        createbranch!(tree, parent, children[2], rand(t.rng))
+        createbranch!(tree, parent, children[1], rand(rng, t.sampleable))
+        createbranch!(tree, parent, children[2], rand(rng, t.sampleable))
     end
     return tree
 end
 
 """
     Ultrametric{T <: AbstractTree,
-                RNG <: Sampleable}(n::Int,
-                                   rng::RNG = Exponential())
+                SAMP <: Sampleable}(n::Int,
+                                    sampleable::SAMP = Exponential())
     Ultrametric{T <: AbstractTree,
-                RNG <: Sampleable}(tiplabels::Vector{String},
-                                   rng::RNG = Exponential())
+                SAMP <: Sampleable}(tiplabels::Vector{String},
+                                    sampleable::SAMP = Exponential())
 
 The sampler for ultrametric phylogenetic trees of size `n` or with
 tip labels `tiplabels`. Generate random trees by calling rand().
 """
 struct Ultrametric{T <: AbstractTree,
-                   RNG <: Sampleable{Univariate, Continuous}} <:
-    Sampleable{Univariate, Phylogenetics{T}}
+                   SAMP <: Sampleable{Univariate, Continuous}} <:
+                       Sampleable{Univariate, Phylogenetics{T}}
     n::Int
     tiplabels::Vector{String}
-    rng::RNG
+    sampleable::SAMP
     leafinfo::Any
 
-    function Ultrametric{T, RNG}(n::Int, tiplabels::Vector{String}, rng::RNG, leafinfo) where {T, RNG}
-        return new{T, RNG}(n, tiplabels, rng, leafinfo)
+    function Ultrametric{T, SAMP}(n::Int, tiplabels::Vector{String},
+                                  sampleable::SAMP, leafinfo) where {T, SAMP}
+        return new{T, SAMP}(n, tiplabels, sampler(sampleable), leafinfo)
     end
 
-    function Ultrametric{T, RNG}(n::Int, rng::RNG) where {T, RNG}
-        return new{T, RNG}(n, ["tip $i" for i in Base.OneTo(n)], rng, missing)
+    function Ultrametric{T, SAMP}(n::Int, sampleable::SAMP) where {T, SAMP}
+        return new{T, SAMP}(n, ["tip $i" for i in Base.OneTo(n)],
+                            sampler(sampleable), missing)
     end
 
-    function Ultrametric{T, RNG}(tiplabels::Vector{String}, rng::RNG) where {T, RNG}
-        return new{T, RNG}(length(tiplabels), tiplabels, rng, missing)
+    function Ultrametric{T, SAMP}(tiplabels::Vector{String},
+                                  sampleable::SAMP) where {T, SAMP}
+        return new{T, SAMP}(length(tiplabels), tiplabels,
+                            sampler(sampleable), missing)
     end
 end
 
@@ -120,31 +130,32 @@ function Ultrametric{T}(tiplabels::Vector{String}) where T <: AbstractTree
 end
 
 function Ultrametric{T}(leafinfo) where T <: AbstractTree
-    tipnames = unique(collect(keys(leafinfo)))
+    tipnames = unique([info[1] for info in getiterator(leafinfo)])
     return Ultrametric{T, Exponential}(length(tipnames), tipnames,
                                        Exponential(), leafinfo)
 end
 
-Ultrametric(info::LI) where LI = Ultrametric{RootedTree}(info)
+Ultrametric(info::LI) where LI =
+    Ultrametric{Phylo.LT{OneRoot, LI}}(info)
 
 Ultrametric(n::Int) = Ultrametric{RootedTree}(n)
 Ultrametric(tiplabels::Vector{String}) = Ultrametric{RootedTree}(tiplabels)
 
-function rand(t::Ultrametric{T, RNG}) where {T, RNG}
+function _rand!(rng::AbstractRNG, t::Ultrametric{T, SAMP}) where {T, SAMP}
     t.n >= 2 || error("A tree must have at least 2 tips")
     if ismissing(t.leafinfo)
-        tree = T(t.tiplabels; rootheight = 0.0)
+        tree = T(t.tiplabels)
     else
-        tree = T(t.leafinfo; rootheight = 0.0)
+        tree = T(t.leafinfo)
     end
-    depth = zero(rand(t.rng))
+    depth = zero(rand(rng, t.sampleable))
     leaves = getleaves(tree)
     while nroots(tree) > 1
         roots = getroots(tree)
         tocoalesce = collect(roots)
         coalescers = sample(tocoalesce, 2, replace=false)
         parent = createnode!(tree)
-        depth += rand(t.rng) * 2.0 / length(tocoalesce)
+        depth += rand(rng, t.sampleable) * 2.0 / length(tocoalesce)
         d1 = getheight(tree, first(nodefuture(tree, coalescers[1]) ∩
                                    leaves))
         d2 = getheight(tree, first(nodefuture(tree, coalescers[2]) ∩
@@ -155,18 +166,17 @@ function rand(t::Ultrametric{T, RNG}) where {T, RNG}
     return tree
 end
 
-function rand(s::S, treenames) where
-    {TREE <: AbstractTree,
+rand(s::S, treenames::AbstractVector{LABEL}) where
+{LABEL, TREE <: AbstractTree,
+ S <: Sampleable{Univariate, Phylogenetics{TREE}}} =
+     rand(Random.GLOBAL_RNG, s, treenames)
+
+function rand(rng::AbstractRNG, s::S, treenames::AbstractVector{LABEL}) where
+    {LABEL, TREE <: AbstractTree{OneTree},
      S <: Sampleable{Univariate, Phylogenetics{TREE}}}
     trees = Dict{eltype(treenames), TREE}()
     for name in treenames
-        trees[name] = rand(s)
+        trees[name] = rand(rng, s)
     end
-    return TreeSet(trees, Dict{String, Dict{String, Any}}())
-end
-
-function rand(s::S, n::Int) where
-    {TREE <: AbstractTree,
-     S <: Sampleable{Univariate, Phylogenetics{TREE}}}
-    return rand(s, 1:n)
+    return trees
 end

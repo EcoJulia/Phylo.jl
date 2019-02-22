@@ -4,8 +4,17 @@ mutable struct TreeSet{LABEL, RT, NL, N, B, TREE <:
                        AbstractTree{OneTree, RT, NL, N, B}} <:
     AbstractTree{ManyTrees, RT, NL, N, B}
     trees::Dict{LABEL, TREE}
-    treeinfo::Dict{String, Dict{String, Any}}
+    treeinfo::Dict{LABEL, Dict{String, Any}}
+
+    TreeSet(treedict::Dict{LABEL, TREE},
+            info::Dict{LABEL, Dict{String, Any}} =
+            Dict(broadcast(key -> (key, Dict{String, Any}()), keys(treedict)))) where
+    {LABEL, RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}} =
+        new{LABEL, RT, NL, N, B, TREE}(treedict, info)
 end
+
+TreeSet(trees::AbstractVector{T}) where T <: AbstractTree{OneTree} =
+    TreeSet(Dict(Pair.(Base.OneTo(length(trees)), trees)))
 
 import Compat.IteratorSize
 function IteratorSize(::Type{TreeSet})
@@ -16,6 +25,10 @@ import Compat.IteratorEltype
 function IteratorEltype(::Type{TreeSet})
     return HasEltype()
 end
+
+import Phylo.API: _getleafinfo
+_getleafinfo(ts::TreeSet) = _getleafinfo(first(gettrees(ts)))
+_getleafinfo(ts::TreeSet, leafname) = _getleafinfo(first(gettrees(ts)), leafname)
 
 import Phylo.API: _ntrees
 _ntrees(ts::TreeSet) = length(ts.trees)
@@ -42,7 +55,7 @@ import Base.length
 length(ts::TreeSet) = length(ts.trees)
 
 import Base.getindex
-getindex(ts::TreeSet, idx) = ts.trees[idx]
+getindex(ts::TreeSet{LABEL}, idx::LABEL) where LABEL = ts.trees[idx]
 
 import Phylo.API: _getleafnames
 function _getleafnames(ts::TREESET) where {LABEL, RT, NL, N, B,
