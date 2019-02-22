@@ -97,6 +97,15 @@ export hasparent, getparent, getancestors
 export haschildren, getchildren, getdescendants
 export validate!, traversal
 
+@deprecate addnode! createnode!
+@deprecate addnodes! createnodes!
+@deprecate addbranch! createbranch!
+@deprecate(branch!(tree, source, length = NaN;
+                   destination = _newnodelabel(tree),
+                   branchname = _newbranchlabel(tree)),
+           createbranch!(tree, source, createnode!(tree, destination),
+                         length; name = branchname))
+
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds

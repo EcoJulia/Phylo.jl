@@ -857,6 +857,16 @@ function _getleafinfo end
 function _setleafinfo! end
 
 """
+    _gettreeinfo(tree::AbstractTree)
+    _gettreeinfo(tree::AbstractTree, treename)
+
+Returns the info data associated with the tree(s).
+"""
+function _gettreeinfo end
+_gettreeinfo(tree::AbstractTree{OneTree}) = [Dict{String, Any}()]
+_gettreeinfo(tree::AbstractTree{OneTree}, treename) = _gettreename(tree) == treename ? Dict{String, Any}() : error("No tree called $treename")
+
+"""
     _resetleaves!(::AbstractTree)
 
 Fixes leaf naming after creation or deletion of nodes or branches. Must be

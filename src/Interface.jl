@@ -131,6 +131,16 @@ gettreenames(tree::AbstractTree{OneTree}) = [_gettreename(tree)]
 gettreenames(tree::AbstractTree{ManyTrees}) = _gettreenames(tree)
 
 """
+    gettreeinfo(tree::AbstractTree)
+    gettreeinfo(tree::AbstractTree, treename)
+
+Returns the info data associated with the tree(s).
+"""
+function gettreeinfo end
+gettreeinfo(tree::AbstractTree) = _gettreeinfo(tree)
+gettreeinfo(tree::AbstractTree, treename) = _gettreeinfo(tree, treename)
+
+"""
     gettreename(tree::AbstractTree)
 
 Returns the name of the single tree.
@@ -717,11 +727,13 @@ Retrieve the leaves from the tree.
 getleaves(tree::AbstractTree) = _getleaves(tree)
 
 """
-    getleafinfo(::AbstractTree, label)
+    getleafinfo(::AbstractTree[, label])
 
 retrieve the leaf info for a leaf of the tree.
 """
+function getleafinfo end
 getleafinfo(tree::AbstractTree) = _getleafinfo(tree)
+getleafinfo(tree::AbstractTree, leaf) = _getleafinfo(tree, leaf)
 
 """
     setleafinfo!(::AbstractTree, table)
