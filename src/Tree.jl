@@ -9,12 +9,10 @@ abstract type AbstractBranchTree{RT, N, B, LI, ND} <:
 end
 
 import Phylo.API: _leafinfotype
-_leafinfotype(::Type{<: AbstractBranchTree{RT, N, B, LI, ND}}) where
-    {RT, N, B, LI, ND} = LI
+_leafinfotype(::Type{<: AbstractBranchTree{RT, N, B, LI}}) where {RT, N, B, LI} = LI
 
 import Phylo.API: _nodedatatype
-_nodedatatype(::Type{<: AbstractBranchTree{RT, N, B, LI, ND}}) where
-    {RT, N, B, LI, ND} = ND
+_nodedatatype(::Type{<: AbstractBranchTree{RT, N, B, LI, ND}}) where {RT, N, B, LI, ND} = ND
 
 import Phylo.API: _branchdatatype
 _branchdatatype(::Type{<: AbstractBranchTree}) = Nothing
@@ -44,8 +42,8 @@ end
 
 import Phylo.API: _resetleaves!
 function _resetleaves!(bt::AbstractBranchTree)
-    bt.leafinfos = empty!(bt.leafinfos)
-    return bt
+    # bt.leafinfos = empty!(bt.leafinfos)
+    return true
 end
 
 import Phylo.API: _getnodedata
@@ -170,12 +168,12 @@ function _validate!(tree::TREE) where {RT, TREE <: AbstractBranchTree{RT}}
     nr = nroots(tree)
     if RT == OneRoot
         if nr != 1
-            warn("Wrong number of roots for $RT tree ($nr)")
+            @warn "Wrong number of roots for $RT tree ($nr)"
             return false
         end
     elseif RT == ManyRoots
         if nr < 1
-            warn("Wrong number of roots for $RT tree ($nr)")
+            @warn "Wrong number of roots for $RT tree ($nr)"
             return false
         end
     end
@@ -247,14 +245,16 @@ end
 
 function BinaryTree{RT, LI, ND}(numleaves::Int = 0,
                                 treetype::Type{BinaryTree{RT, LI, ND}} =
-                                BinaryTree{LI, ND};
+                                BinaryTree{RT, LI, ND};
                                 rootheight::Float64 = NaN) where {RT, LI, ND}
     leafnames = ["Leaf $num" for num in Base.OneTo(numleaves)]
     return BinaryTree{RT, LI, ND}(leafnames, treetype; rootheight = rootheight)
 end
 
-function BinaryTree{LI, ND}(leafinfos::LI;
-                            rootheight::Float64 = NaN) where {LI, ND}
+function BinaryTree{RT, LI, ND}(leafinfos::LI,
+                                treetype::Type{BinaryTree{RT, LI, ND}} =
+                                BinaryTree{RT, LI, ND};
+                                rootheight::Float64 = NaN) where {RT, LI, ND}
     leafnames = unique(info[1] for info in getiterator(leafinfos))
     nodes = OrderedDict(leaf => BinaryNode{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
@@ -264,8 +264,12 @@ function BinaryTree{LI, ND}(leafinfos::LI;
                                   nodedata, rootheight)
 end
 
-BinaryTree{RT}(leafinfos::LI; rootheight::Float64 = NaN) where {RT, LI} =
+BinaryTree{RT}(leafinfos::LI; rootheight::Float64 = NaN) where
+{RT <: Rootedness, LI} =
     BinaryTree{RT, LI, Dict{String, Any}}(leafinfos; rootheight = rootheight)
+
+BinaryTree(leafinfos::LI; rootheight::Float64 = NaN) where LI =
+    BinaryTree{OneRoot}(leafinfos; rootheight = rootheight)
 
 """
     NamedBinaryTree
@@ -298,7 +302,7 @@ function PolytomousTree(lt::PolytomousTree{RT, LI, ND};
     leafinfos = copyinfo ? deepcopy(lt.leafinfos) : lt.leafinfos
     nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
-    branches = Dict{Int, Branch{String}}()
+    branches = Dict{Int, Branch{RT, String}}()
     nodedata = OrderedDict(leaf => ND() for leaf in leafnames)
     return PolytomousTree{RT, LI, ND}(nodes, branches, leafinfos,
                                       nodedata, lt.rootheight)
@@ -306,46 +310,42 @@ end
 
 function PolytomousTree{RT, LI, ND}(leafnames::Vector{String},
                                     treetype::Type{PolytomousTree{RT, LI, ND}} =
-                                        PolytomousTree{RT, LI, ND};
-                                    rootheight::Float64 = NaN) where
-    {RT, LI, ND}
+                                    PolytomousTree{RT, LI, ND};
+                                    rootheight::Float64 = NaN) where {RT, LI, ND}
     nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
     leafinfos = LI()
     nodedata = OrderedDict(leaf => ND() for leaf in leafnames)
-    return PolytomousTree{RT, LI, ND}(nodes,
-                                      OrderedDict{Int,
-                                                  Branch{RT, String}}(),
+    return PolytomousTree{RT, LI, ND}(nodes, Dict{Int, Branch{RT, String}}(),
                                       leafinfos, nodedata, rootheight)
 end
 
 function PolytomousTree{RT, LI, ND}(numleaves::Int = 0,
                                     treetype::Type{PolytomousTree{RT, LI, ND}} =
-                                        PolytomousTree{RT, LI, ND};
-                                    rootheight::Float64 = NaN) where
-    {RT, LI, ND}
+                                    PolytomousTree{RT, LI, ND};
+                                    rootheight::Float64 = NaN) where {RT, LI, ND}
     leafnames = ["Leaf $num"  for num in Base.OneTo(numleaves)]
-    return PolytomousTree{RT, LI, ND}(leafnames, treetype;
-                                      rootheight = rootheight)
+    return PolytomousTree{RT, LI, ND}(leafnames, treetype; rootheight = rootheight)
 end
 
 function PolytomousTree{RT, LI, ND}(leafinfos::LI,
                                     treetype::Type{PolytomousTree{RT, LI, ND}} =
-                                        PolytomousTree{RT, LI, ND};
-                                    rootheight::Float64 = NaN) where
-    {RT, LI, ND}
+                                    PolytomousTree{RT, LI, ND};
+                                    rootheight::Float64 = NaN) where {RT, LI, ND}
     leafnames = unique(info[1] for info in getiterator(leafinfos))
     nodes = OrderedDict(leaf => Node{RT, String, Branch{RT, String}}(leaf)
                         for leaf in leafnames)
-    branches = Dict{Int, Branch{String}}()
+    branches = Dict{Int, Branch{RT, String}}()
     nodedata = OrderedDict(leaf => ND() for leaf in leafnames)
     return PolytomousTree{RT, LI, ND}(nodes, branches, leafinfos,
                                       nodedata, rootheight)
 end
 
 PolytomousTree{RT}(leafinfos::LI; rootheight::Float64 = NaN) where {RT, LI} =
-    PolytomousTree{RT, LI, Dict{String, Any}}(leafinfos;
-                                              rootheight = rootheight)
+    PolytomousTree{RT, LI, Dict{String, Any}}(leafinfos; rootheight = rootheight)
+
+PolytomousTree(leafinfos::LI; rootheight::Float64 = NaN) where LI =
+    PolytomousTree{OneRoot}(leafinfos; rootheight = rootheight)
 
 """
     NamedPolytomousTree

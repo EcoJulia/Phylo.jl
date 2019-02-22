@@ -29,14 +29,14 @@ abstract type AbstractNodeIterator{T <: AbstractTree} <: AbstractTreeIterator{T}
 
 function length(ni::It) where It <: AbstractNodeIterator
     return ni.filterfn === nothing ? _nnodes(ni.tree) :
-        count(val -> ni.filterfn(_getnode(ni.tree, val)), ni)
+        count(val -> ni.filterfn(ni.tree, _getnode(ni.tree, val)), ni)
 end
 
 abstract type AbstractBranchIterator{T <: AbstractTree} <: AbstractTreeIterator{T} end
 
 function length(bi::It) where It <: AbstractBranchIterator
     return bi.filterfn === nothing ? _nbranches(bi.tree) :
-        count(val -> bi.filterfn(_getbranch(bi.tree, val)), bi)
+        count(val -> bi.filterfn(bi.tree, _getbranch(bi.tree, val)), bi)
 end
 
 struct NodeIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
@@ -135,9 +135,11 @@ eltype(bi::BranchNameIterator{T}) where T <: AbstractTree = branchnametype(T)
 
 @static if VERSION >= v"0.7.0"
 import Base: iterate
-function iterate(tree::AbstractTree{OneTree}, state = nothing)
+function iterate(tree::AbstractTree, state = nothing)
     if state === nothing
-        return tree, missing
+        return first(gettrees(tree)), 1
+    elseif ntrees(tree) > state
+        return collect(gettrees(tree))[state], state + 1
     else
         return nothing
     end
@@ -159,7 +161,7 @@ function iterate(ni::NodeIterator, state = nothing)
 
     val, state = result
     node = _getnode(ni.tree, val)
-    while !ni.filterfn(node)
+    while !ni.filterfn(ni.tree, node)
         result = iterate(nodes, state)
         result === nothing && return nothing
         val, state = result
@@ -185,7 +187,7 @@ function iterate(ni::NodeNameIterator, state = nothing)
 
     val, state = result
     node = _getnode(ni.tree, val)
-    while !ni.filterfn(node)
+    while !ni.filterfn(ni.tree, node)
         result = iterate(nodes, state)
         result === nothing && return nothing
         val, state = result
@@ -212,7 +214,7 @@ function iterate(bi::BranchIterator, state = nothing)
 
     val, state = result
     branch = _getbranch(bi.tree, val)
-    while !bi.filterfn(branch)
+    while !bi.filterfn(bi.tree, branch)
         result = iterate(branches, state)
         result === nothing && return nothing
         val, state = result
@@ -238,7 +240,7 @@ function iterate(bi::BranchNameIterator, state = nothing)
 
     val, state = result
     branch = _getbranch(bi.tree, val)
-    while !bi.filterfn(branch)
+    while !bi.filterfn(bi.tree, branch)
         result = iterate(branches, state)
         result === nothing && return nothing
         val, state = result
@@ -260,7 +262,7 @@ function start(ni::It) where It <: AbstractNodeIterator
     end
 
     val, after = next(nodes, state)
-    while !ni.filterfn(_getnode(ni.tree, val))
+    while !ni.filterfn(ni.tree, _getnode(ni.tree, val))
         state = after
         if done(nodes, state)
             return state
@@ -285,7 +287,7 @@ function next(ni::NodeIterator, state)
     end
 
     val, after = next(nodes, state)
-    while !ni.filterfn(_getnode(ni.tree, val))
+    while !ni.filterfn(ni.tree, _getnode(ni.tree, val))
         state = after
         if done(nodes, state)
             return node, state
@@ -307,7 +309,7 @@ function next(ni::NodeNameIterator, state)
     end
 
     val, after = next(nodes, state)
-    while !ni.filterfn(_getnode(ni.tree, val))
+    while !ni.filterfn(ni.tree, _getnode(ni.tree, val))
         state = after
         if done(nodes, state)
             return name, state
@@ -327,7 +329,7 @@ function start(bi::It) where It <: AbstractBranchIterator
     end
 
     val, after = next(branches, state)
-    while !bi.filterfn(_getbranch(bi.tree, val))
+    while !bi.filterfn(bi.tree, _getbranch(bi.tree, val))
         state = after
         if done(branches, state)
             return state
@@ -352,7 +354,7 @@ function next(bi::BranchIterator, state)
     end
 
     val, after = next(branches, state)
-    while !bi.filterfn(_getbranch(bi.tree, val))
+    while !bi.filterfn(bi.tree, _getbranch(bi.tree, val))
         state = after
         if done(branches, state)
             return branch, state
@@ -374,7 +376,7 @@ function next(bi::BranchNameIterator, state)
     end
 
     val, after = next(branches, state)
-    while !bi.filterfn(_getbranch(bi.tree, val))
+    while !bi.filterfn(bi.tree, _getbranch(bi.tree, val))
         state = after
         if done(branches, state)
             return name, state
