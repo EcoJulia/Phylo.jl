@@ -60,7 +60,7 @@ export _createbranch!, _deletebranch!, _createnode!, _deletenode!
 export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
-export _getleafinfo, _setleafinfo!, _leafinfotype
+export _getleafinfo, _setleafinfo!, _leafinfotype, _gettreeinfo
 export _getnodedata, _setnodedata!
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
@@ -157,6 +157,8 @@ export distance, distances, heighttoroot, heightstoroot
 include("Iterators.jl")
 export nodeiter, nodefilter, nodenameiter, nodenamefilter,
     branchiter, branchfilter, branchnameiter, branchnamefilter
+@deprecate treeiter gettrees
+@deprecate treenameiter gettreenames
 
 # A set of multiple trees
 include("TreeSet.jl")
