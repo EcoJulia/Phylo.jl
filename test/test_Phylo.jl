@@ -12,6 +12,8 @@ using Phylo
     @test nleaves(t) == 2
     @test nroots(t) == 1
     @test nbranches(t) == 2
+    @test_deprecated treeiter(t)
+    @test_deprecated treenameiter(t)
 end
 
 end
