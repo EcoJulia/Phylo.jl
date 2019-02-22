@@ -34,7 +34,7 @@ end
 
 import .RCall.rcopytype
 
-rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = NamedTree
+rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = RootedTree
 
 import .RCall.sexp
 
@@ -59,7 +59,8 @@ function sexp(tree::T) where T <: AbstractTree
     index = 1
     for branch in bi
         lengths[index] = getlength(tree, branch)
-        edges[index, :] = indexin([src(tree, branch), dst(tree, branch)], nodes)
+        edges[index, :] = indexin([getnodename(tree, src(tree, branch)),
+                                   getnodename(tree, dst(tree, branch))], nodes)
         index += 1
     end
     tor[:edge] = edges

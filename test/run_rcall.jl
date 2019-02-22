@@ -23,7 +23,7 @@ if !skipR
     @testset "RCall - testing Phylo vs ape" begin
         @testset "Testing with R rtree($i)" for i in 5:5:50
             rt = rcall(:rtree, i)
-            jt = rcopy(NamedTree, rt)
+            jt = rcopy(RootedTree, rt)
             jl = Set(getleafnames(jt))
             rl = Set(rcopy(rcall(Symbol("[["), rt, "tip.label")))
             @test jl == rl
@@ -60,7 +60,7 @@ if !skipR
             jtree1 = jts["TREE1"]
             @test rcopy(rcall(Symbol("all.equal"), jtree1, rtree1))
             @test "H1N1_A_MIYAGI_3_2000" ∈ nodenameiter(jtree1)
-            @test collect(keys(first(treeinfoiter(jts)))) == ["lnP"]
+            @test collect(keys(gettreeinfo(jts)["TREE1"])) == ["lnP"]
         end
     end
 end
