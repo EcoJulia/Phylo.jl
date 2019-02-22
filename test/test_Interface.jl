@@ -20,9 +20,9 @@ using Compat.Test
         append!(othernodes, extra)
         also = getnodename(tree, createnode!(tree))
         @test also ∉ othernodes
-        @test_throws ErrorException createnode!(tree, also)
-        @test_throws ErrorException createnodes!(tree, [also])
-        @test_throws ErrorException deletenode!(tree, "really not")
+        @test_throws Exception createnode!(tree, also)
+        @test_throws Exception createnodes!(tree, [also])
+        @test_throws Exception deletenode!(tree, "really not")
         @test deletenode!(tree, also)
         also = getnodename(tree, createnode!(tree))
         push!(othernodes, also)
@@ -30,7 +30,7 @@ using Compat.Test
         innodes = append!(copy(species), othernodes)
         allnodes = reverse(innodes)
         pop!(innodes)
-        @test_throws AssertionError getroot(tree)
+        @test_throws Exception getroot(tree)
         branches = map(innodes) do node
             itr = Iterators.filter(name -> hasoutboundspace(tree, name) &&
                                    name != node, allnodes)
@@ -40,7 +40,7 @@ using Compat.Test
         branchnames = [getbranchname(tree, branch) for branch in branches]
         @test Set(branchnames) == Set(getbranchnames(tree))
         @test validate!(tree)
-        @test_throws ErrorException createbranch!(tree, allnodes[1], allnodes[2])
+        @test_throws Exception createbranch!(tree, allnodes[1], allnodes[2])
         who = getparent(tree, species[1])
         b = getbranch(tree, getinbound(tree, species[1]))
         bn = getbranchname(tree, b)
@@ -59,7 +59,7 @@ using Compat.Test
             hasinboundspace(tree, species[1]) &&
             outdegree(tree, species[1]) == 0 &&
             indegree(tree, species[1]) == 0
-        @test_throws ErrorException getbranch(tree, b)
+        @test_throws Exception getbranch(tree, b)
         branches = [branch for branch in branches if branch != b]
         @test Set(branches) == Set(getbranches(tree))
         b3 = getinbound(tree, species[2])

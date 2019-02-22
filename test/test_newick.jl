@@ -21,10 +21,10 @@ using Compat.Test
     if VERSION < v"0.7.0-"
         @test_warn "Tree ended but not finished" parsenewick("((,),(,));a")
     end
-    @test_throws ErrorException parsenewick("((,),(,)));")
-    @test_throws ErrorException parsenewick("((,),(,))")
-    @test_throws ErrorException parsenewick("((,),(,);")
-    @test_throws ErrorException parsenewick("((MyLeaf:-4.0,)Parent,(,));")
+    @test_throws Exception parsenewick("((,),(,)));")
+    @test_throws Exception parsenewick("((,),(,))")
+    @test_throws Exception parsenewick("((,),(,);")
+    @test_throws Exception parsenewick("((MyLeaf:-4.0,)Parent,(,));")
     tree = open(parsenewick, Phylo.path("H1N1.newick"))
     @test nleaves(tree) == 507
     @test ntrees(tree) == 1
@@ -40,15 +40,15 @@ end
         nodenameiter(parsenewick("""((MyLeaf,"when it's good",next),
                                      ('Not mine',where));""", NamedPolytomousTree))
     tree = parsenewick("((MyLeaf:4.0,)Parent,());", NamedPolytomousTree)
-    branches = branchfilter(tree) do branch
+    branches = branchfilter(tree) do tree, branch
         return getnodename(tree, src(tree, branch)) == "Parent" &&
             getnodename(tree, dst(tree, branch)) == "MyLeaf"
     end
     @test length(branches) == 1
     @test getlength(tree, first(branches)) ≈ 4.0
-    @test_throws ErrorException parsenewick("((,),(,)));", NamedPolytomousTree)
-    @test_throws ErrorException parsenewick("((,),(,))", NamedPolytomousTree)
-    @test_throws ErrorException parsenewick("((,),(,);", NamedPolytomousTree)
+    @test_throws Exception parsenewick("((,),(,)));", NamedPolytomousTree)
+    @test_throws Exception parsenewick("((,),(,))", NamedPolytomousTree)
+    @test_throws Exception parsenewick("((,),(,);", NamedPolytomousTree)
 end
 
 end
