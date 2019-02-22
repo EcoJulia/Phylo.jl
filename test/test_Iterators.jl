@@ -39,7 +39,7 @@ end
     ntip = 10
     nur = rand(TreeType(ntip))
 
-    nni = nodenamefilter(n -> isleaf(nur, n), nur)
+    nni = nodenamefilter(isleaf, nur)
     @test Compat.IteratorEltype(nni) == Base.HasEltype()
     @test eltype(nni) == nodenametype(typeof(nur))
     @test Compat.IteratorSize(nni) == Base.HasLength()
@@ -47,23 +47,23 @@ end
     leaves = collect(nni)
     @test Set(leaves) == Set(getleafnames(nur))
 
-    ni = nodefilter(n -> isleaf(nur, n), nur)
+    ni = nodefilter(isleaf, nur)
     @test Compat.IteratorEltype(ni) == Base.HasEltype()
     @test eltype(ni) == nodetype(typeof(nur))
     @test Compat.IteratorSize(ni) == Base.HasLength()
     @test length(ni) == ntip
     @test all(n -> isleaf(nur, n), collect(ni))
 
-    bni = branchnamefilter(nur) do branch
-        return isleaf(nur, dst(nur, branch))
+    bni = branchnamefilter(nur) do tree, branch
+        return isleaf(tree, dst(tree, branch))
     end
     @test Compat.IteratorEltype(bni) == Base.HasEltype()
     @test eltype(bni) == branchnametype(typeof(nur))
     @test Compat.IteratorSize(bni) == Base.HasLength()
     @test length(bni) == ntip
 
-    bi = branchfilter(nur) do branch
-        return isleaf(nur, dst(nur, branch))
+    bi = branchfilter(nur) do tree, branch
+        return isleaf(tree, dst(tree, branch))
     end
     @test Compat.IteratorEltype(bi) == Base.HasEltype()
     @test eltype(bi) == branchtype(typeof(nur))
