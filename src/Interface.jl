@@ -163,14 +163,15 @@ nleaves(tree::AbstractTree) = _nleaves(tree)
 
 Returns the number of roots in a tree. For OneTree types, Unrooted trees will
 return 0, OneRoot trees should return 1, and manyroots tree (ones with multiple
-subtrees) will return the number of subtrees. Manytrees types will return a
+subtrees) will return the number of subtrees. ManyTrees types will return a
 Dict of counts of the number of roots for each tree in the set.
 """
 function nroots end
 nroots(::AbstractTree{OneTree, Unrooted}) = 0
 nroots(tree::AbstractTree{OneTree, <: Rooted}) = _nroots(tree)
-nroots(tree::AbstractTree{ManyTrees}) =
-    Dict(name => nroots(gettree(tree, name)) for name in _gettreenames(tree))
+nroots(trees::AbstractTree{ManyTrees}, name) = nroots(gettree(trees, name))
+nroots(trees::AbstractTree{ManyTrees}) =
+    Dict(name => nroots(gettree(trees, name)) for name in _gettreenames(trees))
 
 """
     getroots(::AbstractTree)
@@ -181,9 +182,11 @@ or a set of (ManyTrees) trees.
 """
 function getroots end
 getroots(tree::AbstractTree{OneTree}) = _getroots(tree)
-getroots(tree::AbstractTree{OneTree, Unrooted, NL, N, B}) where {NL, N, B} = N[]
-getroots(tree::AbstractTree{ManyTrees}) =
-    Dict(name => getroots(gettree(tree, name)) for name in _gettreenames(tree))
+getroots(tree::AbstractTree{OneTree, Unrooted, NL, N}) where {NL, N} = N[]
+getroots(trees::AbstractTree{ManyTrees}, name) = getroots(gettree(trees, name))
+getroots(trees::AbstractTree{ManyTrees}) =
+    Dict(name => getroots(gettree(trees, name))
+         for name in _gettreenames(trees))
 
 """
     getroot(::AbstractTree)
@@ -192,7 +195,10 @@ Returns the root of a single tree (must be only one tree for a ManyTrees tree).
 """
 function getroot end
 getroot(tree::AbstractTree{OneTree, <: Rooted}) = _getroot(tree)
-getroot(tree::AbstractTree{ManyTrees, <: Rooted}) = getroot(gettree(tree))
+getroot(trees::AbstractTree{ManyTrees}, name) = getroot(gettree(trees, name))
+getroot(trees::AbstractTree{ManyTrees}) =
+    Dict(name => getroot(gettree(trees, name))
+         for name in _gettreenames(trees))
 
 """
     getnodes(::AbstractTree)
@@ -202,8 +208,10 @@ for multiple trees.
 """
 function getnodes end
 getnodes(tree::AbstractTree{OneTree}) = _getnodes(tree)
-getnodes(tree::AbstractTree{ManyTrees}) =
-    Dict(name => getnodes(gettree(tree, name)) for name in _gettreenames(tree))
+getnodes(trees::AbstractTree{ManyTrees}, name) = getnodes(gettree(trees, name))
+getnodes(trees::AbstractTree{ManyTrees}) =
+    Dict(name => getnodes(gettree(trees, name))
+         for name in _gettreenames(trees))
 
 """
     nnodes(::AbstractTree)
@@ -213,8 +221,10 @@ for multiple trees.
 """
 function nnodes end
 nnodes(tree::AbstractTree{OneTree}) = _nnodes(tree)
-nnodes(tree::AbstractTree{ManyTrees}) =
-    Dict(name => nnodes(gettree(tree, name)) for name in _gettreenames(tree))
+nnodes(trees::AbstractTree{ManyTrees}, name) = nnodes(gettree(trees, name))
+nnodes(trees::AbstractTree{ManyTrees}) =
+    Dict(name => nnodes(gettree(trees, name))
+         for name in _gettreenames(trees))
 
 """
     nbranches(::AbstractTree)
@@ -224,8 +234,11 @@ branches for multiple trees.
 """
 function nbranches end
 nbranches(tree::AbstractTree{OneTree}) = _nbranches(tree)
-nbranches(tree::AbstractTree{ManyTrees}) =
-    Dict(name => nbranches(gettree(tree, name)) for name in _gettreenames(tree))
+nbranches(trees::AbstractTree{ManyTrees}, name) =
+    nbranches(gettree(trees, name))
+nbranches(trees::AbstractTree{ManyTrees}) =
+    Dict(name => nbranches(gettree(trees, name))
+         for name in _gettreenames(trees))
 
 """
     getnodenames(tree::AbstractTree)
@@ -235,9 +248,11 @@ ManyTrees tree), or a Dict of vectors of node names for multiple trees.
 """
 function getnodenames end
 getnodenames(tree::AbstractTree{OneTree}) = _getnodenames(tree)
-getnodenames(tree::AbstractTree{ManyTrees}) =
-    Dict(name => getnodenames(gettree(tree, name))
-         for name in _gettreenames(tree))
+getnodenames(trees::AbstractTree{ManyTrees}, name) =
+    getnodenames(gettree(trees, name))
+getnodenames(trees::AbstractTree{ManyTrees}) =
+    Dict(name => getnodenames(gettree(trees, name))
+         for name in _gettreenames(trees))
 
 """
     getbranches(::AbstractTree)
@@ -247,9 +262,11 @@ branches for multiple trees.
 """
 function getbranches end
 getbranches(tree::AbstractTree{OneTree}) = _getbranches(tree)
-getbranches(tree::AbstractTree{ManyTrees}) =
-    Dict(name => getbranches(gettree(tree, name))
-         for name in _gettreenames(tree))
+getbranches(trees::AbstractTree{ManyTrees}, name) =
+    getbranches(gettree(trees, name))
+getbranches(trees::AbstractTree{ManyTrees}) =
+    Dict(name => getbranches(gettree(trees, name))
+         for name in _gettreenames(trees))
 
 """
     getbranchnames(tree::AbstractTree)
@@ -259,9 +276,11 @@ branch names for multiple trees.
 """
 function getbranchnames end
 getbranchnames(tree::AbstractTree{OneTree}) = _getbranchnames(tree)
-getbranchnames(tree::AbstractTree{ManyTrees}) =
-    Dict(name => getbranchnames(gettree(tree, name))
-         for name in _gettreenames(tree))
+getbranchnames(trees::AbstractTree{ManyTrees}, name) =
+    getbranchnames(gettree(trees, name))
+getbranchnames(trees::AbstractTree{ManyTrees}) =
+    Dict(name => getbranchnames(gettree(trees, name))
+         for name in _gettreenames(trees))
 
 """
     createbranch!(tree::AbstractTree, source, destination[, len::Float64];
