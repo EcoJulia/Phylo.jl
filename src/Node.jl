@@ -104,6 +104,8 @@ end
 
 import Phylo.API: _getnodename
 _getnodename(::AbstractTree, node::BinaryNode) = node.name
+import Phylo.API: _prefernodeobjects
+_prefernodeobjects(::Type{<:BinaryNode}) = false
 
 """
     Node{RT, NL, T}(AbstractVector{T}, AbstractVector{T}) <: AbstractNode
@@ -127,6 +129,8 @@ mutable struct Node{RT <: Rooted, NL, B <: AbstractBranch{RT, NL}} <:
         new{RT, NL, B}(name, n_in, n_out)
     end
 end
+
+_prefernodeobjects(::Type{<:Node}) = false
 
 function _hasinbound(::AbstractTree, node::Node)
     return node.inbound != nothing

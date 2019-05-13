@@ -2,6 +2,75 @@ using Phylo
 using Phylo: Rootedness, Rooted, TreeType
 using Phylo: AbstractNode, AbstractBranch, AbstractTree
 using Compat
+using SimpleTraits
+
+@traitdef PreferNodeObjects{X}
+@traitimpl PreferNodeObjects{X} <- _prefernodeobjects(X)
+
+@traitdef PreferBranchObjects{X}
+@traitimpl PreferBranchObjects{X} <- _preferbranchobjects(X)
+
+@traitdef PreferNodeType{T, N}
+@traitimpl PreferNodeType{T, N} <- _prefernodetype(T, N)
+
+@traitdef PreferNodeTypes{T, N1, N2}
+@traitimpl PreferNodeTypes{T, N1, N2} <- _prefernodetypes(T, N1, N2)
+
+@traitdef HoldsNodeData{T, ND}
+@traitimpl HoldsNodeData{T, ND} <- (_nodedatatype(T) ≡ ND)
+
+@traitdef PreferBranchType{T, B}
+@traitimpl PreferBranchType{T, B} <- _preferbranchtype(T, B)
+
+"""
+    _prefernodeobjects(::Type{<:AbstractTree})
+    _prefernodeobjects(::Type{<:AbstractNode})
+
+Does this tree or node type prefer nodes to be objects or names? Must be
+implemented for every node type.
+"""
+function _prefernodeobjects end
+_prefernodeobjects(::Type{<:AbstractTree{TT, RT, NL, N, B}}) where
+{TT, RT, NL, N, B} = _prefernodeobjects(N)
+
+"""
+    _preferbranchobjects(::Type{<:AbstractTree})
+    _preferbranchobjects(::Type{<:AbstractBranch})
+
+Does this tree or branch type prefer branches to be objects or names? Must be
+implemented for every branch type.
+"""
+function _preferbranchobjects end
+_preferbranchobjects(::Type{<:AbstractTree{TT, RT, NL, N, B}}) where
+{TT, RT, NL, N, B} = _preferbranchobjects(B)
+
+"""
+    _prefernodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}}, ::Type{N})
+    _prefernodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}}, ::Type{NL})
+
+Does this tree type prefer the node or node label type provided?
+"""
+function _prefernodetype end
+_prefernodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
+                ::Type{N}) where {TT, RT, NL, N, B} = _prefernodeobjects(N)
+_prefernodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
+                ::Type{NL}) where {TT, RT, NL, N, B} = !_prefernodeobjects(N)
+_prefernodetypes(::Type{<:AbstractTree}, ::Type{<:Any}, ::Type{<:Any}) = false
+_prefernodetypes(::Type{T}, ::Type{N}, ::Type{N}) where {T, N} =
+    _prefernodeobjects(T, N)
+
+"""
+    _preferbranchtype(::Type{<:AbstractTree}, ::Type{<:AbstractBranch})
+
+Does this tree type prefer the branch or branch label type provided?
+"""
+function _preferbranchtype end
+_preferbranchtype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
+                  ::Type{B}) where {TT, RT, NL, N, B} =
+                      _preferbranchobjects(B)
+_preferbranchtype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
+                  ::Type{Int}) where {TT, RT, NL, N, B} =
+                      !_preferbranchobjects(B)
 
 # Need to be able to create new node and branch labels
 function _newlabel(ids::Vector{Label}) where Label <: Integer

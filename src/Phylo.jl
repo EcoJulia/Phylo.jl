@@ -67,6 +67,7 @@ export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
 export _validate!, _traversal
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
+export HoldsNodeData
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
@@ -74,9 +75,11 @@ export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _degree
 export _hasinbound, _getinbound, _addinbound!, _removeinbound!
 export _getoutbounds, _addoutbound!, _removeoutbound!
 export _getconnections, _addconnection!, _removeconnection!
+export PreferNodeType, PreferNodeTypes, PreferNodeObjects, _prefernodeobjects
 
 # AbstractBranch methods
 export _src, _dst, _getlength
+export PreferBranchType, PreferBranchObjects, _preferbranchobjects
 
 # Label names
 export _newnodelabel, _newbranchlabel

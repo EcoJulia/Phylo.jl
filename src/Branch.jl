@@ -17,6 +17,9 @@ mutable struct Branch{RT, NL} <: AbstractBranch{RT, NL}
     end
 end
 
+import Phylo.API: _preferbranchobjects
+_preferbranchobjects(::Type{<:Branch}) = true
+
 import Phylo.API: _src
 _src(::AbstractTree, branch::Branch) = branch.source
 import Phylo.API: _dst

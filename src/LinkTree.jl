@@ -22,6 +22,9 @@ mutable struct LinkNode{RT, NL, Data,
 
 end
 
+import Phylo.API: _prefernodeobjects
+_prefernodeobjects(::Type{<:LinkNode}) = true
+
 mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
                         B <: LinkBranch{RT, NL}, TD} <:
                AbstractTree{OneTree, RT, NL, N, B}
@@ -75,6 +78,9 @@ function LinkBranch(name::Int,
         error("Branch length must be positive or NaN (no recorded length), not $len")
     return LinkBranch{RT, NL, Data}(name, (from, to), len, data)
 end
+
+import Phylo.API: _preferbranchobjects
+_preferbranchobjects(::Type{<:LinkBranch}) = true
 
 import Phylo.API: _src
 _src(::AbstractTree, branch::LinkBranch{<:Rooted}) = branch.inout[1]
