@@ -9,18 +9,18 @@ function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
     if !isempty(n)
         node *= " $n"
     end
-    if !_hasinbound(object[1], object[2])
-        if _outdegree(object[1], object[2]) > 0
+    if !hasinbound(object[1], object[2])
+        if outdegree(object[1], object[2]) > 0
             blank = repeat(" ", length(" [root $node]") + (isempty(n) ? 0 : 1))
             for (i, bn) in zip(Base.OneTo(_outdegree(object[1], object[2])),
-                               _getoutbounds(object[1], object[2]))
+                               getoutbounds(object[1], object[2]))
                 b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
-                if _outdegree(object[1], object[2]) == 1
+                if outdegree(object[1], object[2]) == 1
                     print(io, "[root $node]-->[branch $b]")
                 elseif get(io, :compact, false)
                     if i == 1
                         print(io, "[root $node]-->[branches $b")
-                    elseif i < _outdegree(object[1], object[2])
+                    elseif i < outdegree(object[1], object[2])
                         print(io, ", $b")
                     else
                         print(io, " and $b]")
@@ -28,7 +28,7 @@ function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
                 else # multiline view
                     if i == 1
                         println(io, "[root $node]-->[branch $b]")
-                    elseif i < _outdegree(object[1], object[2])
+                    elseif i < outdegree(object[1], object[2])
                         println(io, "$blank-->[branch $b]")
                     else
                         print(io, "$blank-->[branch $b]")
@@ -39,25 +39,25 @@ function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
             print(io, "[unattached $node]")
         end
     else # hasinbound
-        inb = typeof(_getinbound(object[1], object[2])) <: Number ?
+        inb = typeof(getinbound(object[1], object[2])) <: Number ?
             "$(_getinbound(object[1], object[2]))" :
             "\"$(_getinbound(object[1], object[2]))\""
-        if _outdegree(object[1], object[2]) == 0
+        if outdegree(object[1], object[2]) == 0
             print(io, "[branch $inb]-->[leaf $node]")
-        elseif _hasinbound(object[1], object[2])
+        elseif hasinbound(object[1], object[2])
             blank = repeat(" ",
                            length(" [branch $inb]-->[internal $node]") +
                            (isempty(n) ? 0 : 1))
             for (i, bn) in zip(Base.OneTo(_outdegree(object[1], object[2])),
-                               _getoutbounds(object[1], object[2]))
+                               getoutbounds(object[1], object[2]))
                 b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
-                if _outdegree(object[1], object[2]) == 1
+                if outdegree(object[1], object[2]) == 1
                     print(io, "[branch $inb]-->[internal $node]-->[branch $b]")
                 elseif get(io, :compact, false)
                     if i == 1
                         print(io, "[branch $inb]-->[internal $node]-->" *
                               "[branches $b")
-                    elseif i < _outdegree(object[1], object[2])
+                    elseif i < outdegree(object[1], object[2])
                         print(io, ", $b")
                     else
                         print(io, " and $b]")
@@ -66,7 +66,7 @@ function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
                     if i == 1
                         println(io, "[branch $inb]-->[internal $node]-->" *
                                 "[branch $b]")
-                    elseif i < _outdegree(object[1], object[2])
+                    elseif i < outdegree(object[1], object[2])
                         println(io, "$blank-->[branch $b]")
                     else
                         print(io, "$blank-->[branch $b]")
