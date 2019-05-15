@@ -178,5 +178,5 @@ function rand(rng::AbstractRNG, s::S, treenames::AbstractVector{LABEL}) where
     for name in treenames
         trees[name] = rand(rng, s)
     end
-    return trees
+    return TreeSet(trees)
 end

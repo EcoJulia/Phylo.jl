@@ -15,12 +15,12 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
 
     dict = rcopy(Dict{Symbol, Any}, rt)
     nodes = dict[:tip_label]
-    tree = NamedTree(nodes)
+    tree = T(nodes)
     edges = dict[:edge]
     nnode = dict[:Nnode]
     lengths = dict[:edge_length]
     nontips = nnode
-    append!(nodes, createnodes!(tree, nontips))
+    append!(nodes, getnodename.(tree, createnodes!(tree, nontips)))
 
     for edge in 1:size(edges, 1)
         createbranch!(tree,
