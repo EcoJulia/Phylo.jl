@@ -51,7 +51,7 @@ using Compat.Test
         @test hasbranch(tree, b)
         @test hasbranch(tree, bn)
         @test getnodename(tree, dst(tree, getbranch(tree, b))) == species[1]
-        @test getnodename(tree, src(tree, getbranch(tree, b))) == who
+        @test src(tree, getbranch(tree, b)) == who
         @test deletebranch!(tree, b)
         @test !hasbranch(tree, b)
         @test isunattached(tree, species[1]) &&
@@ -68,7 +68,7 @@ using Compat.Test
         @test deletebranch!(tree, b3)
         branches = [branch for branch in branches if branch != b3]
         b3 = createbranch!(tree, who, species[1])
-        @test who == getnodename(tree, src(tree, b3))
+        @test who == getnode(tree, src(tree, b3))
         spparent = getparent(tree, getnode(tree, species[1]))
         @test getnode(tree, spparent) == getnode(tree, src(tree, b3))
         @test species[1] == getnodename(tree, dst(tree, b3))

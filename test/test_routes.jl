@@ -20,13 +20,15 @@ using Compat.Test
     @test n3 ∈ getdescendants(tree, nr)
     @test n3 ∉ getchildren(tree, nr)
     @test Set([nr, n2, n3]) == Set(nodehistory(tree, n3))
-    br = getbranchname(tree, createbranch!(tree, n3, "Dog"))
+    br = getbranch(tree, createbranch!(tree, n3, "Dog"))
     @test br ∈ branchhistory(tree, "Dog")
-    br2 = getbranchname(tree, createbranch!(tree, n3, "Cat"))
+    br2 = getbranch(tree, createbranch!(tree, n3, "Cat"))
     @test [br2, br] == branchroute(tree, "Cat", "Dog")
     br3 = createbranch!(tree, n2, "Human")
-    @test getbranchname(tree, createbranch!(tree, nr, "Potato", name = 551)) == 551
-    @test 551 ∈ branchroute(tree, "Dog", "Potato")
+    @test getbranchname(tree, createbranch!(tree, nr, "Potato",
+                                            name = 551)) == 551
+    @test 551 ∈ [getbranchname(tree, branch)
+                 for branch in branchroute(tree, "Dog", "Potato")]
     deletebranch!(tree, 551)
     createbranch!(tree, nr, "Potato")
     @test Set(species) ⊆ Set(getnodename.(tree, getdescendants(tree, nr)))
