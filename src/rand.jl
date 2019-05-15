@@ -68,7 +68,7 @@ Nonultrametric(n::Int) = Nonultrametric{RootedTree}(n)
 Nonultrametric(tiplabels::Vector{String}) =
     Nonultrametric{RootedTree}(tiplabels)
 
-function _rand!(rng::AbstractRNG, t::Nonultrametric{T, SAMP}) where {T, SAMP}
+function rand(rng::AbstractRNG, t::Nonultrametric{T, SAMP}) where {T, SAMP}
     t.n >= 2 || error("A tree must have at least 2 tips")
     if ismissing(t.leafinfo)
         tree = T(t.tiplabels)
@@ -141,7 +141,7 @@ Ultrametric(info::LI) where LI =
 Ultrametric(n::Int) = Ultrametric{RootedTree}(n)
 Ultrametric(tiplabels::Vector{String}) = Ultrametric{RootedTree}(tiplabels)
 
-function _rand!(rng::AbstractRNG, t::Ultrametric{T, SAMP}) where {T, SAMP}
+function rand(rng::AbstractRNG, t::Ultrametric{T, SAMP}) where {T, SAMP}
     t.n >= 2 || error("A tree must have at least 2 tips")
     if ismissing(t.leafinfo)
         tree = T(t.tiplabels)
