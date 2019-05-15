@@ -10,14 +10,7 @@ end
 
 import Phylo.API: _hasinbound
 function _hasinbound(tree::AbstractBranchTree{<: Rooted}, name::String) 
-    return tree.nodes[name].inbound != nothing
-end
-
-import Phylo.API: _outdegree
-function _outdegree(tree::AbstractBranchTree{<: Rooted}, name::String)
-    node = tree.nodes[name]
-    return (node.outbounds[1] === nothing ? 0 : 1) +
-        (node.outbounds[2] === nothing ? 0 : 1)
+    return tree.nodes[name].inbound !== nothing
 end
 
 import Phylo.API: _getinbound
@@ -39,11 +32,11 @@ function _removeinbound!(tree::AbstractBranchTree{<: Rooted, N, B},
                          name::String,
                          inbound::B) where {N, B <: Branch}
     _hasinbound(tree, name) || error("Node has no inbound connection")
-    node.inbound == inbound ||
+    node = tree.nodes[name]
+    node.inbound === inbound ||
         error("Node has no inbound connection from branch $inbound")
     node.inbound = nothing
 end
-
 
 import Phylo.API: _leafinfotype
 _leafinfotype(::Type{<: AbstractBranchTree{RT, N, B, LI}}) where {RT, N, B, LI} = LI
@@ -55,7 +48,7 @@ import Phylo.API: _branchdatatype
 _branchdatatype(::Type{<: AbstractBranchTree}) = Nothing
 
 import Phylo.API: _getnodes
-_getnodes(bt::AbstractBranchTree) = values(bt.nodes)
+_getnodes(bt::AbstractBranchTree) = keys(bt.nodes)
 
 import Phylo.API: _getnodenames
 _getnodenames(bt::AbstractBranchTree) = keys(bt.nodes)
@@ -98,12 +91,15 @@ import Phylo.API: _hasnode
 _hasnode(tree::AbstractBranchTree, name::String) = haskey(tree.nodes, name)
 
 import Phylo.API: _getnode
-_getnode(tree::AbstractBranchTree, name::String) = tree.nodes[name]
+@traitfn _getnode(tree::T,
+                  nodename::String) where {T <: AbstractBranchTree;
+                                           PreferNodeObjects{T}} =
+                                               tree.nodes[name]
 
 import Phylo.API: _createnode!
 function _createnode!(tree::AbstractBranchTree{RT, N, B, LI, ND},
-                      name::Union{String, Missing}, data::ND = ND()) where
-    {RT, N, B, LI, ND}
+                      name::Union{String, Missing},
+                      data::ND = ND()) where {RT, N, B, LI, ND}
     nodename = ismissing(name) ? _newnodelabel(tree) : name
     _hasnode(tree, nodename) && error("Node $name already present in tree")
     tree.nodes[nodename] = N(nodename)
@@ -158,7 +154,7 @@ function _createbranch!(tree::AbstractBranchTree{RT}, source, destination,
     _addinbound!(tree, _getnode(tree, destination), branch)
 
     # Return updated tree
-    return id
+    return branch
 end
 
 import Phylo.API: _deletebranch!
@@ -392,17 +388,28 @@ Polytomous phylogenetic tree object with known leaves
 const NamedTree = NamedPolytomousTree =
     PolytomousTree{ManyRoots, DataFrame, Dict{String, Any}}
 
+import Phylo.API: _outdegree
+function _outdegree(tree::BinaryTree{<: Rooted}, name::String)
+    node = tree.nodes[name]
+    return (node.outbounds[1] ≡ nothing ? 0 : 1) +
+        (node.outbounds[2] ≡ nothing ? 0 : 1)
+end
+function _outdegree(tree::PolytomousTree{<: Rooted}, name::String)
+    node = tree.nodes[name]
+    return length(node.outbounds)
+end
+
 import Phylo.API: _hasoutboundspace
-_hasoutboundspace(tree::BinaryTree{<: Rooted}, name::String) =
+_hasoutboundspace(tree::BinaryTree{<: Rooted}, node::String) =
     _outdegree(tree, node) < 2
 
 import Phylo.API: _getoutbounds
 function _getoutbounds(tree::BinaryTree{RT}, name::String) where RT <: Rooted
     node = tree.nodes[name]
-    return (node.outbounds[1] === nothing ?
-            (node.outbounds[2] === nothing ? Branch{RT, String}[] :
+    return (node.outbounds[1] ≡ nothing ?
+            (node.outbounds[2] ≡ nothing ? Branch{RT, String}[] :
              [node.outbounds[2]]) :
-            (node.outbounds[2] === nothing ? [node.outbounds[1]] :
+            (node.outbounds[2] ≡ nothing ? [node.outbounds[1]] :
              [node.outbounds[1], node.outbounds[2]]))
 end
 function _getoutbounds(tree::PolytomousTree{<: Rooted}, name::String)
@@ -413,9 +420,9 @@ import Phylo.API: _addoutbound!
 function _addoutbound!(tree::BinaryTree{RT}, name::String, branch::B) where
     {RT <: Rooted, N, B <: Branch{RT, String}}
     node = tree.nodes[name]
-    node.outbounds[1] === nothing ?
+    node.outbounds[1] ≡ nothing ?
         node.outbounds = (branch, node.outbounds[2]) :
-        (node.outbounds[2] === nothing ?
+        (node.outbounds[2] ≡ nothing ?
          node.outbounds = (node.outbounds[1], branch) :
          error("BinaryNode already has two outbound connections"))
 end
@@ -429,15 +436,15 @@ end
 import Phylo.API: _removeoutbound!
 function _removeoutbound!(tree::BinaryTree{<: Rooted}, name::String,
                           branch::Branch)
-    node.outbounds[1] === branch ?
+    node = tree.nodes[name]
+    node.outbounds[1] ≡ branch ?
         node.outbounds = (node.outbounds[2], nothing) :
-        (node.outbounds[2] === branch ?
+        (node.outbounds[2] ≡ branch ?
          node.outbounds = (node.outbounds[1], nothing) :
          error("BinaryNode does not have outbound connection to branch " *
                "$branch"))
 end
 
-function _removeoutbound!(tree::PolytomousTree{<: Rooted}, name::String,
-                          branch::Branch)
-    filter!(x -> x !== branch, node.outbounds)
-end
+_removeoutbound!(tree::PolytomousTree{<: Rooted}, name::String,
+                 branch::Branch) =
+                     filter!(x -> x ≢ branch, tree.nodes[name].outbounds)

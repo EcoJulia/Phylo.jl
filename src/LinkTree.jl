@@ -1,6 +1,7 @@
 using Missings
 using Compat
 using Compat: @warn
+using SimpleTraits
 
 newempty(::Type{Data}) where Data = Data()
 
@@ -42,7 +43,8 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
     function LinkTree{RT, NL, N, B, TD}(tipnames::Vector{NL} = NL[];
                                         treename::Union{String, Missing} = missing,
                                         tipdata::TD = newempty(TD),
-                                        rootheight = NaN) where {RT, NL, N, B, TD}
+                                        rootheight = NaN) where
+        {RT, NL, N, B, TD}
         tree = new{RT, NL, N, B, TD}(treename, Dict{NL, N}(), Vector{N}(),
                                      Vector{Union{N, Missing}}(), Vector{B}(),
                                      Dict{String, Any}(),
@@ -165,8 +167,8 @@ _getoutbounds(::LinkTree, node::LinkNode{<: Rooted}) = node.other
 
 import Phylo.API: _addoutbound!
 _addoutbound!(::LinkTree,
-              node::LinkNode{<: Rooted, NL, Data, B}, branch::B) where
-{NL, Data, B} = push!(node.other, branch)
+              node::LinkNode{<: Rooted, NL, Data, B},
+              branch::B) where {NL, Data, B} = push!(node.other, branch)
 
 import Phylo.API: _removeoutbound!
 function _removeoutbound!(tree::LinkTree,
@@ -253,10 +255,8 @@ function _deletenode!(tree::LinkTree{RT, NL, N}, node::N) where {RT, NL, N}
 end
 
 import Phylo.API: _getroots
-_getroots(tree::LinkTree{RT, NL, N, B, TD}) where
-{RT <: Rooted, NL, N, B, TD} = tree.roots
-_getroots(tree::LinkTree{Unrooted, NL, N, B, TD}) where
-{NL, N, B, TD} = error("Unrooted trees do not have roots")
+_getroots(tree::LinkTree{<: Rooted}) = tree.roots
+_getroots(tree::LinkTree{Unrooted}) = error("Unrooted trees do not have roots")
 
 import Phylo.API: _getnodes
 _getnodes(tree::LinkTree) = skipmissing(tree.nodes)
@@ -274,8 +274,11 @@ _hasnode(tree::LinkTree{RT, NL, N}, node::N) where {RT, NL, N} =
     haskey(tree.nodedict, node.name)
 
 import Phylo.API: _getnode
-_getnode(tree::LinkTree{RT, NL}, name::NL) where {RT, NL} =
-    tree.nodes[tree.nodedict[name]]
+@traitfn _getnode(tree::T,
+                  node::NL) where {RT, NL,
+                                   T <: LinkTree{RT, NL};
+                                   PreferNodeObjects{T}} =
+                                       tree.nodes[tree.nodedict[node]]
 
 import Phylo.API: _getbranches
 _getbranches(tree::LinkTree) = skipmissing(tree.branches)

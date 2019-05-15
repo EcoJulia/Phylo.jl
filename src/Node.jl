@@ -55,15 +55,6 @@ end
 
 _prefernodeobjects(::Type{<:Node}) = false
 
-function _hasinbound(::AbstractTree, node::Node)
-    return node.inbound != nothing
-end
-
-function _outdegree(::AbstractTree{OneTree, RT, NL},
-                    node::Node{RT, NL}) where {RT <: Rooted, NL}
-    return length(node.outbounds)
-end
-
 import Phylo.API: _getinbound
 function _getinbound(tree::AbstractTree, node::Node)
     _hasinbound(tree, node) ||
