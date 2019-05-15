@@ -42,7 +42,7 @@ abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
 export AbstractTree
 
 @enum TraversalOrder anyorder preorder inorder postorder breadthfirst
-export TraversalOrder
+export TraversalOrder, anyorder, preorder, inorder, postorder, breadthfirst
 
 """
     Phylo.API submodule
