@@ -1046,16 +1046,22 @@ retrieve the leaf info for a leaf of the tree.
 """
 function getleafinfo end
 getleafinfo(tree::AbstractTree) = _getleafinfo(tree)
-getleafinfo(tree::AbstractTree{OneTree}, leaf) =
-     _getleafinfo(tree, _getnode(tree, leaf))
-@traitfn getleafinfo(tree::T, leaf::N) where
-{RT, NL, N, B, T <: AbstractTree{OneTree, RT, NL, N, B};
- MatchNodeType{T, N}} =
-     _getleafinfo(tree, leaf)
-@traitfn getleafinfo(tree::T, leaf::NL) where
-{TT, RT, NL, N, B, T <: AbstractTree{TT, RT, NL, N, B};
- MatchNodeType{T, NL}} =
-     _getleafinfo(tree, leaf)
+@traitfn getleafinfo(tree::T, leaf::NL) where {RT, NL,
+                                               T <: AbstractTree{OneTree,
+                                                                 RT, NL};
+                                               !MatchNodeType{T, NL}} =
+                                                   _getleafinfo(tree,
+                                                                getnode(tree,
+                                                                        leaf))
+@traitfn getleafinfo(tree::T, leaf::N) where {RT, NL, N,
+                                              T <: AbstractTree{OneTree,
+                                                                RT, NL, N};
+                                              MatchNodeType{T, N}} =
+                                                  _getleafinfo(tree, leaf)
+@traitfn getleafinfo(tree::T, leaf::NL) where {TT, RT, NL,
+                                               T <: AbstractTree{TT, RT, NL};
+                                               MatchNodeType{T, NL}} =
+                                                   _getleafinfo(tree, leaf)
 
 """
     setleafinfo!(::AbstractTree, table)
