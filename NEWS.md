@@ -1,3 +1,7 @@
+- v0.5.0
+  - New linked list tree, node and branch type
+  - Improved, more consistent and faster interface
+  - trait-based dispatch to use faster code paths where desired
 - v0.4.0
   - New interface to allow an easier changeover of tree, node and branch types
   - Defaults to polytomies
