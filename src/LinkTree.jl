@@ -18,7 +18,7 @@ mutable struct LinkNode{RT, NL, Data,
     other::Vector{B}
     data::Data
     LinkNode{RT, NL, Data, B}(name::NL, data::Data = newempty(Data)) where
-        {RT, NL, Data, B} = new{RT, NL, Data, B}(name, missing, Vector{B}(), data)
+    {RT, NL, Data, B} = new{RT, NL, Data, B}(name, missing, Vector{B}(), data)
 
 end
 
@@ -27,7 +27,7 @@ _prefernodeobjects(::Type{<:LinkNode}) = true
 
 mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
                         B <: LinkBranch{RT, NL}, TD} <:
-               AbstractTree{OneTree, RT, NL, N, B}
+                            AbstractTree{OneTree, RT, NL, N, B}
     name::Union{String, Missing}
     nodedict::Dict{NL, Int}
     roots::Vector{N}
@@ -38,10 +38,11 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
     rootheight::Float64
     isvalid::Union{Bool, Missing}
     cache::Dict{TraversalOrder, Vector{N}}
-
+    
     function LinkTree{RT, NL, N, B, TD}(tipnames::Vector{NL} = NL[];
-        treename::Union{String, Missing} = missing,
-        tipdata::TD = newempty(TD), rootheight = NaN) where {RT, NL, N, B, TD}
+                                        treename::Union{String, Missing} = missing,
+                                        tipdata::TD = newempty(TD),
+                                        rootheight = NaN) where {RT, NL, N, B, TD}
         tree = new{RT, NL, N, B, TD}(treename, Dict{NL, N}(), Vector{N}(),
                                      Vector{Union{N, Missing}}(), Vector{B}(),
                                      Dict{String, Any}(),
@@ -57,8 +58,8 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
     end
 end
 function LinkTree{RT, NL, N, B, TD}(leafinfos::TD) where {RT, NL, N, B, TD}
-        leafnames = unique(info[1] for info in getiterator(leafinfos))
-        return LinkTree{RT, NL, N, B, TD}(leafnames; tipdata = leafinfos)
+    leafnames = unique(info[1] for info in getiterator(leafinfos))
+    return LinkTree{RT, NL, N, B, TD}(leafnames; tipdata = leafinfos)
 end
 
 const LB{RT} = LinkBranch{RT, String, Dict{String, Any}}
@@ -90,8 +91,8 @@ import Phylo.API: _conn
 function _conn(::AbstractTree, branch::LinkBranch{RT, NL, D},
                exclude::AbstractNode{RT, NL}) where {RT, NL, D}
     return exclude ≡ branch.inout[1] ? branch.inout[2] :
-           (exclude ≡ branch.inout[2] ? branch.inout[1] :
-            error("Branch $(branch.name) not connected to $(exclude.name)"))
+        (exclude ≡ branch.inout[2] ? branch.inout[1] :
+         error("Branch $(branch.name) not connected to $(exclude.name)"))
 end
 import Phylo.API: _getlength
 _getlength(::AbstractTree, branch::LinkBranch) = branch.length
@@ -165,14 +166,14 @@ _getoutbounds(::LinkTree, node::LinkNode{<: Rooted}) = node.other
 import Phylo.API: _addoutbound!
 _addoutbound!(::LinkTree,
               node::LinkNode{<: Rooted, NL, Data, B}, branch::B) where
-    {NL, Data, B} = push!(node.other, branch)
+{NL, Data, B} = push!(node.other, branch)
 
 import Phylo.API: _removeoutbound!
 function _removeoutbound!(tree::LinkTree,
                           node::LinkNode{<: Rooted, NL, Data, B},
                           branch::B) where {NL, Data, B}
     branch ∈ _getoutbounds(tree, node) ? filter!(p -> p ≢ branch, node.other) :
-         error("Node does not have outbound connection to branch $branch")
+        error("Node does not have outbound connection to branch $branch")
 end
 
 import Phylo.API: _getconnections
@@ -237,7 +238,7 @@ import Phylo.API: _deletenode!
 function _deletenode!(tree::LinkTree{RT, NL, N}, node::N) where {RT, NL, N}
     (haskey(tree.nodedict, node.name) &&
      tree.nodes[tree.nodedict[node.name]] ≡ node) ||
-    error("Node $(node.name) is not in tree $(_gettreename(tree)), cannot be deleted")
+     error("Node $(node.name) is not in tree $(_gettreename(tree)), cannot be deleted")
     # Does nothing for unrooted tree, as inbound is never set
     !ismissing(node.inbound) && _deletebranch!(tree, node.inbound)
     # Delete outbound connections of rooted tree, all connections of unrooted
@@ -253,9 +254,9 @@ end
 
 import Phylo.API: _getroots
 _getroots(tree::LinkTree{RT, NL, N, B, TD}) where
-    {RT <: Rooted, NL, N, B, TD} = tree.roots
+{RT <: Rooted, NL, N, B, TD} = tree.roots
 _getroots(tree::LinkTree{Unrooted, NL, N, B, TD}) where
-    {NL, N, B, TD} = error("Unrooted trees do not have roots")
+{NL, N, B, TD} = error("Unrooted trees do not have roots")
 
 import Phylo.API: _getnodes
 _getnodes(tree::LinkTree) = skipmissing(tree.nodes)
@@ -287,7 +288,7 @@ import Phylo.API: _hasbranch
 _hasbranch(tree::LinkTree, id::Int) =
     1 ≤ id ≤ length(tree.branches) && !ismissing(tree.branches[id])
 _hasbranch(tree::LinkTree{RT, NL, N, B}, branch::B) where
-    {RT, NL, N <: LinkNode{RT, NL}, B <: LinkBranch{RT, NL}} =
+{RT, NL, N <: LinkNode{RT, NL}, B <: LinkBranch{RT, NL}} =
     branch ∈ skipmissing(tree.branches)
 
 import Phylo.API: _getbranch
@@ -394,7 +395,7 @@ _setleafinfo!(tree::LinkTree{RT, NL, N, B, TD}, leafinfo::TD) where
 
 import Phylo.API: _nodedatatype
 _nodedatatype(::Type{LinkTree{RT, NL, N}}) where
-    {RT, NL, Data, N <: LinkNode{RT, NL, Data}} = _nodedatatype(N)
+{RT, NL, Data, N <: LinkNode{RT, NL, Data}} = _nodedatatype(N)
 
 import Phylo.API: _branchdatatype
 _branchdatatype(::Type{LinkTree{RT, NL, N, B, TD}}) where {RT, NL, N, B, TD} =

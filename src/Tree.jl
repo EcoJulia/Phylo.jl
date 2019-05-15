@@ -8,6 +8,43 @@ abstract type AbstractBranchTree{RT, N, B, LI, ND} <:
     AbstractTree{OneTree, RT, String, N, B}
 end
 
+import Phylo.API: _hasinbound
+function _hasinbound(tree::AbstractBranchTree{<: Rooted}, name::String) 
+    return tree.nodes[name].inbound != nothing
+end
+
+import Phylo.API: _outdegree
+function _outdegree(tree::AbstractBranchTree{<: Rooted}, name::String)
+    node = tree.nodes[name]
+    return (node.outbounds[1] === nothing ? 0 : 1) +
+        (node.outbounds[2] === nothing ? 0 : 1)
+end
+
+import Phylo.API: _getinbound
+function _getinbound(tree::AbstractBranchTree{<: Rooted}, name::String)
+    return tree.nodes[name].inbound
+end
+
+import Phylo.API: _addinbound!
+function _addinbound!(tree::AbstractBranchTree{<: Rooted, N, B},
+                      name::String,
+                      inbound::B) where {N, B <: Branch}
+    _hasinbound(tree, name) &&
+        error("Node already has an inbound connection")
+    tree.nodes[name].inbound = inbound
+end
+
+import Phylo.API: _removeinbound!
+function _removeinbound!(tree::AbstractBranchTree{<: Rooted, N, B},
+                         name::String,
+                         inbound::B) where {N, B <: Branch}
+    _hasinbound(tree, name) || error("Node has no inbound connection")
+    node.inbound == inbound ||
+        error("Node has no inbound connection from branch $inbound")
+    node.inbound = nothing
+end
+
+
 import Phylo.API: _leafinfotype
 _leafinfotype(::Type{<: AbstractBranchTree{RT, N, B, LI}}) where {RT, N, B, LI} = LI
 
@@ -354,3 +391,53 @@ Polytomous phylogenetic tree object with known leaves
 """
 const NamedTree = NamedPolytomousTree =
     PolytomousTree{ManyRoots, DataFrame, Dict{String, Any}}
+
+import Phylo.API: _hasoutboundspace
+_hasoutboundspace(tree::BinaryTree{<: Rooted}, name::String) =
+    _outdegree(tree, node) < 2
+
+import Phylo.API: _getoutbounds
+function _getoutbounds(tree::BinaryTree{RT}, name::String) where RT <: Rooted
+    node = tree.nodes[name]
+    return (node.outbounds[1] === nothing ?
+            (node.outbounds[2] === nothing ? Branch{RT, String}[] :
+             [node.outbounds[2]]) :
+            (node.outbounds[2] === nothing ? [node.outbounds[1]] :
+             [node.outbounds[1], node.outbounds[2]]))
+end
+function _getoutbounds(tree::PolytomousTree{<: Rooted}, name::String)
+    return tree.nodes[name].outbounds
+end
+
+import Phylo.API: _addoutbound!
+function _addoutbound!(tree::BinaryTree{RT}, name::String, branch::B) where
+    {RT <: Rooted, N, B <: Branch{RT, String}}
+    node = tree.nodes[name]
+    node.outbounds[1] === nothing ?
+        node.outbounds = (branch, node.outbounds[2]) :
+        (node.outbounds[2] === nothing ?
+         node.outbounds = (node.outbounds[1], branch) :
+         error("BinaryNode already has two outbound connections"))
+end
+
+function _addoutbound!(tree::PolytomousTree{<: Rooted}, name::String,
+                       branch::Branch)
+    node = tree.nodes[name]
+    push!(node.outbounds, branch)
+end
+
+import Phylo.API: _removeoutbound!
+function _removeoutbound!(tree::BinaryTree{<: Rooted}, name::String,
+                          branch::Branch)
+    node.outbounds[1] === branch ?
+        node.outbounds = (node.outbounds[2], nothing) :
+        (node.outbounds[2] === branch ?
+         node.outbounds = (node.outbounds[1], nothing) :
+         error("BinaryNode does not have outbound connection to branch " *
+               "$branch"))
+end
+
+function _removeoutbound!(tree::PolytomousTree{<: Rooted}, name::String,
+                          branch::Branch)
+    filter!(x -> x !== branch, node.outbounds)
+end
