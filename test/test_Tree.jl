@@ -72,6 +72,9 @@ end
     @test getleafnames(nb) ⊆ getleafnames(np)
     @test getleafinfo(BinaryTree(df)) == df
     @test getleafinfo(PolytomousTree(df)) == df
+    @test branchdatatype(typeof(np)) ≡ Nothing
+    @test nodedatatype(typeof(np)) ≡ Dict{String, Any}
+    @test leafinfotype(typeof(np)) ≡ DataFrame
 end
 
 @testset "BinaryTree()" begin
@@ -124,14 +127,21 @@ end
     tj = BinaryTree(jdb)
     @test nleaves(tj) == 2
 
-    lij = getiterator(getleafinfo(tj, "Dog"))
+    lij = getleafinfo(tj, "Dog")
     @test sum(map(line -> line.count, lij)) == 8
 
-    lij = getiterator(getleafinfo(tj, "Cat"))
+    lij = getleafinfo(tj, "Cat")
     @test sum(map(line -> line.count, lij)) == 2
 
-    lidf = getiterator(getleafinfo(tdf, "Dog"))
+    lidf = getleafinfo(tdf, "Dog")
     @test sum(map(line -> line.count, lidf)) == 10
+
+    @test branchdatatype(typeof(tdf)) ≡ Nothing
+    @test nodedatatype(typeof(tdf)) ≡ Dict{String, Any}
+    @test leafinfotype(typeof(tdf)) ≡ DataFrame
+    @test branchdatatype(typeof(tj)) ≡ Nothing
+    @test nodedatatype(typeof(tj)) ≡ Dict{String, Any}
+    @test leafinfotype(typeof(tj)) <: IndexedTable
 end
 
 end

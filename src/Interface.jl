@@ -77,21 +77,21 @@ treenametype(treetype::Type{<: AbstractTree}) = _treenametype(treetype)
 
 retrieve the leaf info type of a tree.
 """
-leafinfotype(::Type{<: AbstractTree}) = _leafinfotype(T)
+leafinfotype(t::Type{<: AbstractTree}) = _leafinfotype(t)
 
 """
     nodedatatype(::Type{<: AbstractTree})
 
 retrieve the node info type of a tree.
 """
-nodedatatype(::Type{<: AbstractTree}) = _nodedatatype(T)
+nodedatatype(t::Type{<: AbstractTree}) = _nodedatatype(t)
 
 """
     branchdatatype(::Type{<: AbstractTree})
 
 retrieve the branch info type of a tree.
 """
-branchdatatype(::Type{<: AbstractTree}) = _branchdatatype(T)
+branchdatatype(t::Type{<: AbstractTree}) = _branchdatatype(t)
 
 # AbstractTree methods
 """

@@ -61,7 +61,7 @@ export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _getleafinfo, _setleafinfo!, _leafinfotype, _gettreeinfo
-export _getnodedata, _setnodedata!
+export _getnodedata, _setnodedata!, _nodedatatype, _branchdatatype
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
@@ -90,7 +90,8 @@ include("Interface.jl")
 # AbstractTree methods
 export ntrees, gettrees, nroots, getroots, getroot
 export treenametype, gettreenames, getonetree, gettreename
-export roottype, nodetype, branchtype, nodenametype, branchnametype
+export roottype, nodetype, nodedatatype, nodenametype
+export branchtype, branchdatatype, branchnametype
 export createbranch!, deletebranch!, branch!
 export createnode!, createnodes!, deletenode!
 export getnodenames, getnodename, hasnode, getnode, getnodes

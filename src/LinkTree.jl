@@ -122,7 +122,7 @@ function LinkNode(tree::T, name::NL,
 end
 
 import Phylo.API: _nodedatatype
-_nodedatatype(::Type{LinkNode{RT, NL, Data, B}}) where {RT, NL, B, Data} = Data
+_nodedatatype(::Type{LinkNode{RT, NL, Data, B}}) where {RT, NL, Data, B} = Data
 
 import Phylo.API: _getnodedata
 _getnodedata(::LinkTree, node::LinkNode) = node.data
@@ -387,7 +387,8 @@ function _createnode!(tree::LinkTree{RT, NL, N, B}, name::Union{NL, Missing},
 end
 
 import Phylo.API: _leafinfotype
-leafinfotype(::Type{LinkTree{RT, NL, N, B, TD}}) where {RT, NL, N, B, TD} = TD
+_leafinfotype(::Type{<:LinkTree{RT, NL, N, B, TD}}) where {RT, NL, N, B, TD} =
+    TD
 
 import Phylo.API: _getleafinfo
 _getleafinfo(tree::LinkTree) = tree.tipdata
@@ -397,11 +398,11 @@ _setleafinfo!(tree::LinkTree{RT, NL, N, B, TD}, leafinfo::TD) where
 {RT, NL, N, B, TD} = tree.tipdata = leafinfo
 
 import Phylo.API: _nodedatatype
-_nodedatatype(::Type{LinkTree{RT, NL, N}}) where
-{RT, NL, Data, N <: LinkNode{RT, NL, Data}} = _nodedatatype(N)
+_nodedatatype(::Type{<:LinkTree{RT, NL, N}}) where {RT, NL, N} =
+    _nodedatatype(N)
 
 import Phylo.API: _branchdatatype
-_branchdatatype(::Type{LinkTree{RT, NL, N, B, TD}}) where {RT, NL, N, B, TD} =
+_branchdatatype(::Type{<:LinkTree{RT, NL, N, B}}) where {RT, NL, N, B} =
     _branchdatatype(B)
 
 import Phylo.API: _nnodes

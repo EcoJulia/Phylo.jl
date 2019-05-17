@@ -39,7 +39,8 @@ function _removeinbound!(tree::AbstractBranchTree{<: Rooted, N, B},
 end
 
 import Phylo.API: _leafinfotype
-_leafinfotype(::Type{<: AbstractBranchTree{RT, N, B, LI}}) where {RT, N, B, LI} = LI
+_leafinfotype(::Type{T}) where {RT, N, B, LI,
+                                T <: AbstractBranchTree{RT, N, B, LI}} = LI
 
 import Phylo.API: _nodedatatype
 _nodedatatype(::Type{<: AbstractBranchTree{RT, N, B, LI, ND}}) where {RT, N, B, LI, ND} = ND
