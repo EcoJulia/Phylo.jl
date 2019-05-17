@@ -385,6 +385,17 @@ function _createnode!(tree::LinkTree{RT, NL, N, B}, name::Union{NL, Missing},
     push!(tree.roots, node)
     return node
 end
+function _createnode!(tree::LinkTree{RT, NL, N, B}, name::Union{NL, Missing},
+                      data::Data = newempty(Data)) where
+    {RT <: Unrooted, NL, Data, B, N <: LinkNode{RT, NL, Data, B}}
+    nodename = ismissing(name) ? _newnodelabel(tree) : name
+    _hasnode(tree, nodename) && error("Node $nodename already exists in tree.")
+    node = LinkNode{RT, NL, Data, B}(nodename, data)
+    id = length(tree.nodes) + 1
+    push!(tree.nodes, node)
+    tree.nodedict[nodename] = id
+    return node
+end
 
 import Phylo.API: _leafinfotype
 _leafinfotype(::Type{<:LinkTree{RT, NL, N, B, TD}}) where {RT, NL, N, B, TD} =
