@@ -16,6 +16,7 @@ observations = ["Dog", "Cat", "Dog", "Dog"]
 else
     jdb = table((species = observations, count = 1:4))
 end
+
 @testset "LinkTree()" begin
     lts = RootedTree(species)
     @test nodedatatype(typeof(lts)) ≡ Dict{String, Any}
@@ -34,4 +35,6 @@ end
     @test nodedatatype(typeof(ltjdb)) ≡ Vector{Int}
     @test branchdatatype(typeof(ltjdb)) ≡ Nothing
     @test leafinfotype(typeof(ltjdb)) ≡ typeof(jdb)
+end
+
 end

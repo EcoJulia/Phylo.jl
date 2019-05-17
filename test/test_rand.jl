@@ -51,10 +51,10 @@ end
 end
 
 @testset "TestSets" begin
-    @test ntrees(TreeSet(rand(Ultrametric(10), 10))) == 10
-    @test length(TreeSet(rand(Ultrametric(10), 10))) == 10
+    @test ntrees(rand(Ultrametric(10), 10)) == 10
+    @test length(rand(Ultrametric(10), 10)) == 10
     names = ["One", "Two", "Three"]
-    ts = TreeSet(rand(Nonultrametric(names), 20))
+    ts = rand(Nonultrametric(names), 20)
     @test length(ts) == 20
     @test ntrees(ts) == 20
     @test length(getleafnames(ts)) == length(names)

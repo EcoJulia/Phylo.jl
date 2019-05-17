@@ -19,7 +19,7 @@ end
 @testset "TreeSet" begin
     @test length(rand(Ultrametric(ntips), 10)) ==
         length(rand(Nonultrametric(ntips), 10))
-    ts = TreeSet(rand(Ultrametric(ntips), 1:10))
+    ts = rand(Ultrametric(ntips), 1:10)
     @test length(gettrees(ts)) == length(gettreenames(ts)) == ntrees(ts) == 10
     @test length(getleafnames(ts)) == ntips
     for name in gettreenames(ts)
@@ -36,16 +36,16 @@ end
     @test nleaves(ts) == ntips
     @test getleafnames(TreeSet(Dict{String, NamedTree}(),
                                Dict{String, Dict{String, Any}}())) == String[]
-    @test nleaves(TreeSet(rand(Ultrametric(df), 20))) == length(species)
-    @test nleaves(TreeSet(rand(Ultrametric(jdb), 10))) ==
+    @test nleaves(rand(Ultrametric(df), 20)) == length(species)
+    @test nleaves(rand(Ultrametric(jdb), 10)) ==
         length(unique(observations))
     @test getleafinfo(rand(Ultrametric(df))) == df
-    @test getleafinfo(TreeSet(rand(Ultrametric(jdb), 2))) == jdb
-    @test nleaves(TreeSet(rand(Nonultrametric(df), 20))) == length(species)
-    @test nleaves(TreeSet(rand(Nonultrametric(jdb), 10))) ==
+    @test getleafinfo(rand(Ultrametric(jdb), 2)) == jdb
+    @test nleaves(rand(Nonultrametric(df), 20)) == length(species)
+    @test nleaves(rand(Nonultrametric(jdb), 10)) ==
         length(unique(observations))
     @test getleafinfo(rand(Nonultrametric(df))) == df
-    @test getleafinfo(TreeSet(rand(Nonultrametric(jdb), 2))) == jdb
+    @test getleafinfo(rand(Nonultrametric(jdb), 2)) == jdb
 
     @test nodetype(typeof(ts)) == nodetype(typeof(first(gettrees(ts))))
     @test branchtype(typeof(ts)) == branchtype(typeof(first(gettrees(ts))))
