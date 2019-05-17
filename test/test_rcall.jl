@@ -1,23 +1,23 @@
 module ValidateRCall
 using Compat: @warn
+using Compat: Sys.isunix
 
 # Environment variable to avoid boring R package builds
-mustCrossvalidate = haskey(ENV, "JULIA_MUST_CROSSVALIDATE") && ENV["JULIA_MUST_CROSSVALIDATE"] == "1"
+mustCrossvalidate = haskey(ENV, "JULIA_MUST_CROSSVALIDATE") &&
+    ENV["JULIA_MUST_CROSSVALIDATE"] == "1"
 
 # Only run R on unix or when R is installed because JULIA_MUST_CROSSVALIDATE is set to 1
-global skipR = !mustCrossvalidate &&
-    !((VERSION < v"0.7.0-" && is_unix()) ||
-      (VERSION >= v"0.7.0-" && Sys.isunix()))
+global skipR = !(mustCrossvalidate || isunix())
 try
-    skipR && error("Skipping R testing...")
+    skipR && error("Not on unix...")
     using RCall
     global skipR = false
 catch
     global skipR = true
-    if mustCrossvalidate && VERSION < v"0.7.0-"
-        error("R not installed, but JULIA_MUST_CROSSVALIDATE is set")
+    if mustCrossvalidate
+        error("R not installed, JULIA_MUST_CROSSVALIDATE set")
     else
-        @warn "R or appropriate Phylo package not installed, skipping R cross-validation."
+        @warn "R not installed, skipping R cross-validation."
     end
 end
 

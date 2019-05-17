@@ -3,27 +3,20 @@ using Compat.Test
 using Compat: @warn
 using Phylo
 using RCall
+using DataFrames
 
-# Create a temporary directory to work in
-libdir = mktempdir();
+global skipR = !rcopy(R"require(ape)")
 
-global skipR = false
-if !rcopy(R"require(ape)")
-    rcall(Symbol(".libPaths"), libdir);
-    reval("install.packages(\"ape\", lib=\"$libdir\", " *
-          "repos=\"http://cran.r-project.org\")");
-    global skipR = !rcopy(R"require(ape, lib.loc=c(\"$libdir\", .libPaths()))") &&
-        !mustCrossvalidate;
-    skipR && @warn "ape R package not installed and would not install, " *
-        "skipping R crossvalidation"
-end
+# Run tree comparisons on increasing numbers of tips
+@testset "RCall - testing Phylo vs ape" begin
+    @testset "For $TreeType" for TreeType in
+        (skipR ? [] : [NamedTree, NamedBinaryTree,
+                       BinaryTree{ManyRoots, DataFrame, Vector{Float64}},
+                       RootedTree, ManyRootTree])
 
-if !skipR
-    # Run tree comparisons on increasing numbers of tips
-    @testset "RCall - testing Phylo vs ape" begin
-        @testset "Testing with R rtree($i)" for i in 5:5:50
+        @testset "Testing with R rtree($i)" for i in 10:10:50
             rt = rcall(:rtree, i)
-            jt = rcopy(RootedTree, rt)
+            jt = rcopy(TreeType, rt)
             jl = Set(getleafnames(jt))
             rl = Set(rcopy(rcall(Symbol("[["), rt, "tip.label")))
             @test jl == rl
@@ -38,12 +31,32 @@ if !skipR
             @test rcopy(rcall(Symbol("all.equal"), rt, jt3))
         end
 
-        @testset "Testing with julia rand(Nonultrametric($i))" for i in 5:5:50
-            jt = rand(Nonultrametric(i))
+        @testset "Testing with julia rand(Nonultrametric($i))" for i in 10:10:50
+            jt = rand(Nonultrametric{TreeType}(i))
             rt = RObject(jt)
             @test Set(getleafnames(jt)) ==
                 Set(rcopy(rcall(Symbol("[["), rt, "tip.label")))
-            jt2 = rcopy(NamedTree, rt)
+            jt2 = rcopy(TreeType, rt)
+            @test getleafnames(jt) == getleafnames(jt2)
+            @test rcopy(rcall(Symbol("all.equal"), rt, RObject(jt2)))
+        end
+
+        @testset "Testing with julia rand(Ultrametric($i))" for i in 10:10:50
+            jt = rand(Ultrametric{TreeType}(i))
+            rt = RObject(jt)
+            @test Set(getleafnames(jt)) ==
+                Set(rcopy(rcall(Symbol("[["), rt, "tip.label")))
+            jt2 = rcopy(TreeType, rt)
+            @test getleafnames(jt) == getleafnames(jt2)
+            @test rcopy(rcall(Symbol("all.equal"), rt, RObject(jt2)))
+        end
+
+        @testset "Testing with julia rand(Ultrametric($i), [...])" for i in 10:10:50
+            jt = rand(Ultrametric{TreeType}(i), ["one", "two"])
+            rt = RObject(jt["one"])
+            @test Set(getleafnames(jt)) ==
+                Set(rcopy(rcall(Symbol("[["), rt, "tip.label")))
+            jt2 = rcopy(TreeType, rt)
             @test getleafnames(jt) == getleafnames(jt2)
             @test rcopy(rcall(Symbol("all.equal"), rt, RObject(jt2)))
         end
@@ -64,6 +77,5 @@ if !skipR
         end
     end
 end
-rm(libdir, force=true, recursive=true);
 
 end
