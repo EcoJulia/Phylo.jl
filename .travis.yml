@@ -2,6 +2,7 @@ language: julia
 os:
   - linux
   - osx
+
 julia:
   - 0.6
   - 1.0
@@ -36,5 +37,5 @@ before_install:
 after_success:
   # linux
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'using Pkg; Pkg.add("Coverage"); Pkg.add("Documenter")'; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'using Coverage; p = process_folder(); Coveralls.submit(p); Codecov.submit(p); fi'
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'using Coverage; p = process_folder(); Coveralls.submit(p); Codecov.submit(p)'; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'include(joinpath("docs", "make.jl"))'; fi
