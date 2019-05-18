@@ -131,9 +131,6 @@ export getrootdistance
 @deprecate getbranchinfo getbranchdata
 @deprecate setbranchinfo! setbranchdata!
 
-#include("Info.jl")
-#export LeafInfo
-
 include("Branch.jl")
 export Branch
 
