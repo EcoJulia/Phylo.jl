@@ -11,7 +11,8 @@ julia:
 matrix:
   fast_finish: true
   allow_failures:
-    - julia: 0.6, nightly
+    - julia: 0.6
+    - julia: nightly
 
 notifications:
   email: false
@@ -33,6 +34,7 @@ before_install:
   - sudo R -e 'install.packages("ape", repos="http://cran.r-project.org")'
 
 after_success:
-  - julia --color=yes -e 'using Pkg; Pkg.add("Coverage"); Pkg.add("Documenter")'
-  - julia --color=yes -e 'using Coverage; p = process_folder(); Coveralls.submit(p); Codecov.submit(p)'
-  - julia --color=yes -e 'include(joinpath("docs", "make.jl"))'
+  # linux
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'using Pkg; Pkg.add("Coverage"); Pkg.add("Documenter")'; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'using Coverage; p = process_folder(); Coveralls.submit(p); Codecov.submit(p); fi'
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'include(joinpath("docs", "make.jl"))'; fi

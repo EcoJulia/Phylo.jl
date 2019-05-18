@@ -1,6 +1,6 @@
 name = "Phylo"
 uuid = "aea672f4-3940-5932-aa44-993d1c3ff149"
-version = "0.5.0"
+version = "0.4.0"
 author = ["Richard Reeve <Richard.Reeve@glasgow.ac.uk>"]
 
 [deps]
