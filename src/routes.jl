@@ -93,7 +93,7 @@ function nodehistory end
 end
 @traitfn function nodehistory(tree::T, node::N) where
     {N, T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T, N}}
-    return getnodename(tree, _treehistory(tree, getnode(tree, node))[2])
+    return getnodename.(tree, _treehistory(tree, getnode(tree, node))[2])
 end
 
 """
@@ -103,11 +103,11 @@ Find the branches between a node on a tree and its leaves
 """
 function branchfuture end
 @traitfn function branchfuture(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted}; MatchBranchType{T, N}}
+    {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
     return _treefuture(tree, node)[1]
 end
 @traitfn function branchfuture(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted, N}; !MatchBranchType{T, N}}
+    {N, T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T, N}}
     return _treefuture(tree, getnode(tree, node))[1]
 end
 
@@ -123,7 +123,7 @@ function nodefuture end
 end
 @traitfn function nodefuture(tree::T, node::N) where
     {N, T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T, N}}
-    return getnodename(tree, _treefuture(tree, getnode(tree, node))[2])
+    return getnodename.(tree, _treefuture(tree, getnode(tree, node))[2])
 end
 
 """

@@ -457,8 +457,8 @@ end
 Delete a node (or a name) from a tree
 """
 function deletenode! end
-@traitfn deletenode!(tree::T, node::N) where
-{T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}} =
+@traitfn deletenode!(tree::T, node::NL) where
+{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
     deletenode!(tree, getnode(tree, node))
 @traitfn function deletenode!(tree::T, node::N) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
@@ -491,8 +491,8 @@ node types, it will be able to extract the node name without reference to
 the tree.
 """
 function getnodename end
-@traitfn function getnodename(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
+@traitfn function getnodename(tree::T, node::NL) where
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _getnodename(tree, node)
 end
@@ -618,8 +618,8 @@ end
 Is the node (referenced by name or node object) a leaf of the tree?
 """
 function isleaf end
-@traitfn function isleaf(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
+@traitfn function isleaf(tree::T, node::NL) where
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _isleaf(tree, _getnode(tree, node))
 end
@@ -635,8 +635,8 @@ end
 Is the node (referenced by name or node object) a root of the tree?
 """
 function isroot end
-@traitfn function isroot(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
+@traitfn function isroot(tree::T, node::NL) where
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _isroot(tree, _getnode(tree, node))
 end
@@ -653,8 +653,8 @@ Is the node (referenced by name or node object) internal to the tree (neither
 root nor leaf)?
 """
 function isinternal end
-@traitfn function isinternal(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
+@traitfn function isinternal(tree::T, node::NL) where
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _isinternal(tree, _getnode(tree, node))
 end
@@ -671,8 +671,8 @@ Is the node (referenced by name or node object) unattached (i.e. not connected
 to other nodes)?
 """
 function isunattached end
-@traitfn function isunattached(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
+@traitfn function isunattached(tree::T, node::NL) where
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _isunattached(tree, _getnode(tree, node))
 end
@@ -688,8 +688,8 @@ end
 Return in degree of node.
 """
 function indegree end
-@traitfn function indegree(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function indegree(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _indegree(tree, _getnode(tree, node))
 end
@@ -705,8 +705,8 @@ end
 Return out degree of node.
 """
 function outdegree end
-@traitfn function outdegree(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function outdegree(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _outdegree(tree, _getnode(tree, node))
 end
@@ -722,8 +722,8 @@ end
 Return the degree of a node including all connections.
 """
 function degree end
-@traitfn function degree(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
+@traitfn function degree(tree::T, node::NL) where
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _degree(tree, _getnode(tree, node))
 end
@@ -739,8 +739,8 @@ end
 Does the node have space for an[other] outbound connection?
 """
 function hasoutboundspace end
-@traitfn function hasoutboundspace(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function hasoutboundspace(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _hasoutboundspace(tree, _getnode(tree, node))
 end
@@ -756,8 +756,8 @@ end
 Does the node have an inbound connection?
 """
 function hasinbound end
-@traitfn function hasinbound(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function hasinbound(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _hasinbound(tree, _getnode(tree, node))
 end
@@ -773,8 +773,8 @@ end
 Does the node have space for an inbound connection?
 """
 function hasinboundspace end
-@traitfn function hasinboundspace(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function hasinboundspace(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _hasinboundspace(tree, _getnode(tree, node))
 end
@@ -791,8 +791,8 @@ return the inbound branch to this node (returns name for node name, branch for
 node).
 """
 function getinbound end
-@traitfn function getinbound(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function getinbound(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _getinbound(tree, _getnode(tree, node))
 end
@@ -809,10 +809,10 @@ Return [the name of] the parent node for this node [name]. Second method may
 not be implemented for some node types.
 """
 function getparent end
-@traitfn function getparent(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function getparent(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
-    return _getparent(tree, _getnode(tree, node))
+    return _getnodename(tree, _getparent(tree, _getnode(tree, node)))
 end
 @traitfn function getparent(tree::T, node::N) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
@@ -826,8 +826,8 @@ end
 Return the names of the outbound branches from this node.
 """
 function getoutbounds end
-@traitfn function getoutbounds(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function getoutbounds(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _getoutbounds(tree, _getnode(tree, node))
 end
@@ -843,10 +843,10 @@ end
 Return the [name(s) of] the child node(s) for this node [name].
 """
 function getchildren end
-@traitfn function getchildren(tree::T, node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
+@traitfn function getchildren(tree::T, node::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
-    return _getchildren(tree, _getnode(tree, node))
+    return _getnodename.(tree, _getchildren(tree, _getnode(tree, node)))
 end
 @traitfn function getchildren(tree::T, node::N) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
@@ -860,8 +860,8 @@ end
 Returns all of the branches connected to a node.
 """
 function getconnections end
-@traitfn function getconnections(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
+@traitfn function getconnections(tree::T, node::NL) where
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _getconnections(tree, _getnode(tree, node))
 end
@@ -879,11 +879,9 @@ AbstractNode subtype, can be inferred from _getparent and _getchildren for
 a rooted node.
 """
 function getsiblings end
-@traitfn function getsiblings(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
-    hasnode(tree, node) || error("Node $node does not exist")
-    return _getsiblings(tree, _getnode(tree, node))
-end
+@traitfn getsiblings(tree::T, node::NL) where
+{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    _getsiblings(tree, getnode(tree, node))
 @traitfn function getsiblings(tree::T, node::N) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
     _hasnode(tree, node) || error("Node $node does not exist")
@@ -896,8 +894,13 @@ end
 Does the node have a height defined?
 """
 function hasheight end
-hasheight(tree::AbstractTree, node) = false
-function hasheight(tree::AbstractTree{OneTree, <: Rooted}, node)
+@traitfn hasheight(tree::T, node::NL) where
+{NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
+    hasheight(tree,  getnode(tree, node))
+@traitfn function hasheight(tree::AbstractTree{OneTree, <: Rooted},
+                            node::N) where
+    {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
+    hasnode(tree, node) || error("Node $node does not exist")
     return _hasheight(tree, node) ||
         (_hasrootheight(tree) &&
          mapreduce(b -> haslength(tree, b), &, branchhistory(tree, node);
@@ -909,7 +912,13 @@ end
 
 Return the height of the node.
 """
-function getheight(tree::AbstractTree{OneTree, <: Rooted}, node)
+function getheight end
+@traitfn getheight(tree::T, node::NL) where
+{NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
+    getheight(tree,  getnode(tree, node))
+@traitfn function getheight(tree::T, node::N) where
+    {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
+    _hasnode(tree, node) || error("Node $node does not exist")
     return _hasheight(tree, node) ? _getheight(tree, node) :
         mapreduce(b -> getlength(tree, b), +, branchhistory(tree, node);
                   init = hasrootheight(tree) ? getrootheight(tree) : 0)
@@ -921,12 +930,10 @@ end
 Set the height of the node.
 """
 function setheight! end
-@traitfn function setheight!(tree::T, node::N, height) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; !MatchNodeType{T, N}}
-    hasnode(tree, node) || error("Node $node does not exist")
-    return _setheight!(tree, _getnode(tree, node), height)
-end
-@traitfn function setheight!(tree::T, node::N, height) where
+@traitfn setheight!(tree::T, node::NL, height::Number) where
+{NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
+    _setheight!(tree, getnode(tree, node), height)
+@traitfn function setheight!(tree::T, node::N, height::Number) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
     _hasnode(tree, node) || error("Node $node does not exist")
     return _setheight!(tree, node, height)
@@ -939,11 +946,9 @@ end
 Return the source node for this branch.
 """
 function src end
-@traitfn function src(tree::T, branch::B) where
-    {T <: AbstractTree{OneTree, <: Rooted}, B; !MatchBranchType{T, B}}
-    hasbranch(tree, branch) || error("Branch $branch does not exist")
-    return _src(tree, getbranch(tree, branch))
-end
+@traitfn src(tree::T, branch::B) where
+{T <: AbstractTree{OneTree, <: Rooted}, B; !MatchBranchType{T, B}} =
+    _src(tree, getbranch(tree, branch))
 @traitfn function src(tree::T, branch::B) where
     {T <: AbstractTree{OneTree, <: Rooted}, B; MatchBranchType{T, B}}
     _hasbranch(tree, branch) || error("Branch $branch does not exist")
@@ -1046,22 +1051,14 @@ retrieve the leaf info for a leaf of the tree.
 """
 function getleafinfo end
 getleafinfo(tree::AbstractTree) = _getleafinfo(tree)
-@traitfn getleafinfo(tree::T, leaf::NL) where {RT, NL,
-                                               T <: AbstractTree{OneTree,
-                                                                 RT, NL};
-                                               !MatchNodeType{T, NL}} =
-                                                   _getleafinfo(tree,
-                                                                getnode(tree,
-                                                                        leaf))
-@traitfn getleafinfo(tree::T, leaf::N) where {RT, NL, N,
-                                              T <: AbstractTree{OneTree,
-                                                                RT, NL, N};
-                                              MatchNodeType{T, N}} =
-                                                  _getleafinfo(tree, leaf)
-@traitfn getleafinfo(tree::T, leaf::NL) where {TT, RT, NL,
-                                               T <: AbstractTree{TT, RT, NL};
-                                               MatchNodeType{T, NL}} =
-                                                   _getleafinfo(tree, leaf)
+@traitfn getleafinfo(tree::T, leaf::NL) where
+{RT, NL, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    _getleafinfo(tree, getnode(tree, leaf))
+@traitfn function getleafinfo(tree::T, leaf::N) where
+    {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
+    _hasnode(tree, leaf) || error("Node $node does not exist")
+    return _getleafinfo(tree, leaf)
+end
 
 """
     setleafinfo!(::AbstractTree, table)
@@ -1079,11 +1076,9 @@ end
 retrieve the node data for a node of the tree.
 """
 function getnodedata end
-@traitfn function getnodedata(tree::T, node::N) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
-    hasnode(tree, node) || error("Node $node does not exist")
-    return _getnodedata(tree, _getnode(tree, node))
-end
+@traitfn getnodedata(tree::T, node::NL) where
+{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    _getnodedata(tree, getnode(tree, node))
 @traitfn function getnodedata(tree::T, node::N) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
     _hasnode(tree, node) || error("Node $node does not exist")
@@ -1097,21 +1092,17 @@ end
 Set the node data for a node of the tree.
 """
 function setnodedata! end
-@traitfn function setnodedata!(tree::T, node::N, label, value) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
-    hasnode(tree, node) || error("Node $node does not exist")
-    return _setnodedata!(tree, _getnode(tree, node), label, value)
-end
+@traitfn setnodedata!(tree::T, node::NL, label, value) where
+{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    _setnodedata!(tree, getnode(tree, node), label, value)
 @traitfn function setnodedata!(tree::T, node::N, label, value) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
     _hasnode(tree, node) || error("Node $node does not exist")
     return _setnodedata!(tree, node, label, value)
 end
-@traitfn function setnodedata!(tree::T, node::N, data) where
-    {T <: AbstractTree{OneTree}, N; !MatchNodeType{T, N}}
-    hasnode(tree, node) || error("Node $node does not exist")
-    return _setnodedata!(tree, _getnode(tree, node), data)
-end
+@traitfn setnodedata!(tree::T, node::NL, data) where
+{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    _setnodedata!(tree, getnode(tree, node), data)
 @traitfn function setnodedata!(tree::T, node::N, data) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
     _hasnode(tree, node) || error("Node $node does not exist")
@@ -1215,11 +1206,10 @@ preorder, inorder, postorder or breadthfirst - optionally starting from init.
 function traversal end
 traversal(tree::AbstractTree{OneTree}, order::TraversalOrder = preorder) =
     _traversal(tree, order)
-function traversal(tree::AbstractTree{OneTree, RT, NL},
-                   order::TraversalOrder, init::NL) where {RT, NL}
+@traitfn function traversal(tree::T, order::TraversalOrder, init::NL) where
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, init) || error("Node $init does not exist")
-    return [getnodename(tree, n) for n in _traversal(tree, order,
-                                                     [getnode(tree, init)])]
+    return _getnodename.(tree, _traversal(tree, order, [getnode(tree, init)]))
 end
 @traitfn function traversal(tree::T, order::TraversalOrder, init::N) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
@@ -1233,15 +1223,14 @@ end
 Return the name of all of the nodes that are ancestral to this node.
 """
 function getancestors end
-function getancestors(tree::AbstractTree{OneTree, <: Rooted, NL},
-                      init::NL) where NL
+@traitfn function getancestors(tree::T, init::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, init) || error("Node $init does not exist")
-    return [getnodename(tree, n)
-            for n in _treehistory(tree, getnode(tree, init))[2][2:end]]
+    return getnodename.(tree, _treehistory(tree, getnode(tree, init))[2][2:end])
 end
 @traitfn function getancestors(tree::T, init::N) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
-    _hasnode(tree, init) || error("Node $init does not exist")
+    hasnode(tree, init) || error("Node $init does not exist")
     return _treehistory(tree, init)[2][2:end]
 end
 
@@ -1251,14 +1240,13 @@ end
 Return the names of all of the nodes that descend from this node.
 """
 function getdescendants end
-function getdescendants(tree::AbstractTree{OneTree, <: Rooted, NL},
-                        init::NL) where NL
+@traitfn function getdescendants(tree::T, init::NL) where
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, init) || error("Node $init does not exist")
-    return [getnodename(tree, n)
-            for n in _treefuture(tree, getnode(tree, init))[2][2:end]]
+    return getnodename.(tree, _treefuture(tree, getnode(tree, init))[2][2:end])
 end
 @traitfn function getdescendants(tree::T, init::N) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
-    _hasnode(tree, init) || error("Node $init does not exist")
+    hasnode(tree, init) || error("Node $init does not exist")
     return _treefuture(tree, init)[2][2:end]
 end
