@@ -1,4 +1,4 @@
-module TestTrees
+module TestLinkTree
 
 using Phylo
 using DataFrames
