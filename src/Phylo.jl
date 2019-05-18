@@ -148,10 +148,6 @@ include("LinkTree.jl")
 export LinkBranch, LinkNode, LinkTree
 export RootedTree, ManyRootTree, UnrootedTree
 
-#include("MetaTree.jl")
-#export UnrootedMetaTree, RootedMetaTree, SimpleNode, SimpleBranch
-#export RootedTree, ManyRootTree, UnrootedTree
-
 include("routes.jl")
 export branchhistory, branchfuture, branchroute
 export nodehistory, nodefuture, noderoute
