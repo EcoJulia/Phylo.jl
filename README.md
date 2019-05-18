@@ -16,17 +16,11 @@ installed with `add`. For example on Julia v1.1:
 (v1.1) pkg> add Phylo
  Resolving package versions...
   Updating `~/.julia/environments/v1.1/Project.toml`
-  [aea672f4] + Phylo v0.5.0
+  [aea672f4] + Phylo v0.4.0
   Updating `~/.julia/environments/v1.1/Manifest.toml`
 
 (v1.1) pkg>
 ```
-
-Note some features [occasionally
-fail](https://github.com/JuliaLang/julia/issues/30612#issuecomment-451774694)
-on the binary release of Julia v1.0.3 for linux. Unfortunately, this
-appears to be a bug in the Julia release. The obvious fix is to
-upgrade to Julia [v1.1.0](https://julialang.org/downloads/).
 
 ## Project Status
 
@@ -82,17 +76,38 @@ nodes, branchnames and nodenames of a tree, though this may soon be superseded
 by a simpler strategy.
 
 ```julia
-julia> getnodename.(tree, traversal(tree))
+julia> traversal(tree, inorder)
+9-element Array{LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},1}:
+ LinkNode tip 1, a tip of the tree with an incoming connection (branch 5).
+
+ LinkNode Node 8, an internal node with 1 inbound and 2 outbound connections (branches 7 and 5, 6)
+
+ LinkNode tip 3, a tip of the tree with an incoming connection (branch 6).
+
+ LinkNode Node 9, a root node with 2 outbound connections (branches 7, 8)
+
+ LinkNode tip 5, a tip of the tree with an incoming connection (branch 3).
+
+ LinkNode Node 7, an internal node with 1 inbound and 2 outbound connections (branches 8 and 3, 4)
+
+ LinkNode tip 2, a tip of the tree with an incoming connection (branch 1).
+
+ LinkNode Node 6, an internal node with 1 inbound and 2 outbound connections (branches 4 and 1, 2)
+
+ LinkNode tip 4, a tip of the tree with an incoming connection (branch 2).
+
+
+julia> getnodename.(tree, traversal(tree, preorder))
 9-element Array{String,1}:
  "Node 9"
- "tip 5"
  "Node 8"
- "Node 7"
- "tip 4"
- "Node 6"
- "tip 3"
  "tip 1"
+ "tip 3"
+ "Node 7"
+ "tip 5"
+ "Node 6"
  "tip 2"
+ "tip 4"
 
 julia> collect(nodenamefilter(isleaf, tree))
 5-element Array{String,1}:
@@ -101,7 +116,7 @@ julia> collect(nodenamefilter(isleaf, tree))
  "tip 3"
  "tip 4"
  "tip 5"
- ```
+```
 
 The current main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity][diversity-url] package, and

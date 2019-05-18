@@ -453,11 +453,11 @@ function show(io::IO, node::LinkNode)
         end
     else
         if length(node.other) == 0
-            println(io, "a tip of the tree with an incoming connection ($(node.inbound.name)).")
+            println(io, "a tip of the tree with an incoming connection (branch $(node.inbound.name)).")
         elseif length(node.other) == 1
             println(io, "an internal node with 1 inbound and 1 outbound connection (branches $(node.inbound.name) and $(node.other[1].name))")
         else
-            print(io, "an internal node with $(length(node.other)) outbound connections (branches $(node.inbound.name) and $(node.other[1].name)")
+            print(io, "an internal node with 1 inbound and $(length(node.other)) outbound connections (branches $(node.inbound.name) and $(node.other[1].name)")
             for i in 2:length(node.other)
                 print(io, ", $(node.other[i].name)")
             end
