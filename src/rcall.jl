@@ -40,17 +40,19 @@ import .RCall.sexp
 
 function sexp(tree::T) where T <: AbstractTree
     validate!(tree) || @warn "Tree does not internally validate"
+    leafnames = [getnodename(tree, node)
+                 for node in traversal(tree, preorder) if isleaf(tree, node)]
 
-    tipnames = getleafnames(tree)
-    root = [getnodename(tree, node) for node in getroots(tree)]
+    root = getnodename.(tree, getroots(tree))
     if (length(root) != 1)
         error("Can't currently translate tree with > 1 roots")
     end
-    nontips = collect(nodenamefilter(isinternal, tree))
+    nontips = [getnodename(tree, node) for node in traversal(tree, preorder)
+               if isinternal(tree, node)]
     tor = Dict{Symbol, Any}()
     tor[:Nnode] = length(nontips) + length(root)
-    tor[Symbol("tip.label")] = tipnames
-    nodes = copy(tipnames)
+    tor[Symbol("tip.label")] = leafnames
+    nodes = copy(leafnames)
     push!(nodes, root[1])
     append!(nodes, nontips)
     bi = branchiter(tree)
