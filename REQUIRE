@@ -9,5 +9,5 @@ Requires
 DataFrames
 RecipesBase
 LightGraphs
-MetaGraphs
 SimpleTraits
+AxisArrays

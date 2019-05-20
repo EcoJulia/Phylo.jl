@@ -1,6 +1,7 @@
 using SimpleTraits
 using Phylo.API
 using Compat: mapreduce
+using AxisArrays
 
 @traitfn function _treehistory(tree::T, node::N1) where
     {N1, NL, N, B, T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
@@ -190,8 +191,10 @@ end
 Pairwise distances between all leaf nodes on a tree
 """
 function distances(tree::AbstractTree)
-    leaves = getleaves(tree)
-    return [distance(tree, li, lj) for li in leaves, lj in leaves]
+    leaves = [node for node in traversal(tree, preorder) if isleaf(tree, node)]
+    names = getnodename.(tree, leaves)
+    return AxisArray([distance(tree, li, lj) for li in leaves, lj in leaves],
+                     Axis{:x}(names), Axis{:y}(names))
 end
 
 """
@@ -210,5 +213,7 @@ end
 Height of all of the leaves of the tree above the root
 """
 function heightstoroot(tree::AbstractTree)
-    return [heighttoroot(tree, leaf) for leaf in getleaves(tree)]
+    leaves = [node for node in traversal(tree, preorder) if isleaf(tree, node)]
+    return AxisArray([heighttoroot(tree, leaf) for leaf in leaves],
+                     Axis{:x}(getnodename.(tree, leaves)))
 end
