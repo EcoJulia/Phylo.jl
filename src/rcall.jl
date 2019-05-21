@@ -40,9 +40,7 @@ import .RCall.sexp
 
 function sexp(tree::T) where T <: AbstractTree
     validate!(tree) || @warn "Tree does not internally validate"
-    leafnames = [getnodename(tree, node)
-                 for node in traversal(tree, preorder) if isleaf(tree, node)]
-
+    leafnames = getleafnames(tree)
     root = getnodename.(tree, getroots(tree))
     if (length(root) != 1)
         error("Can't currently translate tree with > 1 roots")

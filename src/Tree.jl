@@ -188,7 +188,7 @@ import Phylo.API: _validate!
 function _validate!(tree::TREE) where {RT, TREE <: AbstractBranchTree{RT}}
     if _leafinfotype(TREE) != Nothing && length(getiterator(tree.leafinfos)) > 0
         if Set(info[1] for info in getiterator(tree.leafinfos)) !=
-            Set(_getleafnames(tree))
+            Set(_getleafnames(tree, anyorder))
             @warn "LeafInfo names do not match actual leaves of tree"
             return false
         end

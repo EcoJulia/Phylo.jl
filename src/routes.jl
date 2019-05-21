@@ -191,7 +191,7 @@ end
 Pairwise distances between all leaf nodes on a tree
 """
 function distances(tree::AbstractTree)
-    leaves = [node for node in traversal(tree, preorder) if isleaf(tree, node)]
+    leaves = getleafnames(tree)
     names = getnodename.(tree, leaves)
     return AxisArray([distance(tree, li, lj) for li in leaves, lj in leaves],
                      Axis{:x}(names), Axis{:y}(names))
@@ -213,7 +213,7 @@ end
 Height of all of the leaves of the tree above the root
 """
 function heightstoroot(tree::AbstractTree)
-    leaves = [node for node in traversal(tree, preorder) if isleaf(tree, node)]
+    leaves = getleafnames(tree)
     return AxisArray([heighttoroot(tree, leaf) for leaf in leaves],
                      Axis{:x}(getnodename.(tree, leaves)))
 end

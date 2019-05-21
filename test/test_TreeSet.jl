@@ -34,8 +34,9 @@ end
         @test nleaves(tree) == ntips
     end
     @test nleaves(ts) == ntips
-    @test getleafnames(TreeSet(Dict{String, NamedTree}(),
-                               Dict{String, Dict{String, Any}}())) == String[]
+    @test_throws ArgumentError getleafnames(TreeSet(Dict{String, NamedTree}(),
+                                                    Dict{String, Dict{String,
+                                                                      Any}}()))
     @test nleaves(rand(Ultrametric(df), 20)) == length(species)
     @test nleaves(rand(Ultrametric(jdb), 10)) ==
         length(unique(observations))

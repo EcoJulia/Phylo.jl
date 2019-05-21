@@ -202,16 +202,19 @@ getroot(trees::AbstractTree{ManyTrees}) =
          for name in _gettreenames(trees))
 
 """
-    getnodes(::AbstractTree)
+    getnodes(::AbstractTree[, ::TraversalOrder])
 
 Returns the vector of nodes of a single tree, or a Dict of vectors of nodes
 for multiple trees.
 """
 function getnodes end
-getnodes(tree::AbstractTree{OneTree}) = _getnodes(tree)
-getnodes(trees::AbstractTree{ManyTrees}, name) = getnodes(gettree(trees, name))
-getnodes(trees::AbstractTree{ManyTrees}) =
-    Dict(name => getnodes(gettree(trees, name))
+getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder = preorder) =
+    _getnodes(tree, order)
+getnodes(trees::AbstractTree{ManyTrees}, name,
+         order::TraversalOrder = preorder) =
+             getnodes(gettree(trees, name), order)
+getnodes(trees::AbstractTree{ManyTrees}, order::TraversalOrder = preorder) =
+    Dict(name => getnodes(gettree(trees, name), order)
          for name in _gettreenames(trees))
 
 """
@@ -242,17 +245,19 @@ nbranches(trees::AbstractTree{ManyTrees}) =
          for name in _gettreenames(trees))
 
 """
-    getnodenames(tree::AbstractTree)
+    getnodenames(::AbstractTree[, ::TraversalOrder])
 
 Return a vector of node names of a single tree (identified by id for a
 ManyTrees tree), or a Dict of vectors of node names for multiple trees.
 """
 function getnodenames end
-getnodenames(tree::AbstractTree{OneTree}) = _getnodenames(tree)
-getnodenames(trees::AbstractTree{ManyTrees}, name) =
-    getnodenames(gettree(trees, name))
-getnodenames(trees::AbstractTree{ManyTrees}) =
-    Dict(name => getnodenames(gettree(trees, name))
+getnodenames(tree::AbstractTree{OneTree}, order::TraversalOrder = preorder) =
+    _getnodenames(tree, order)
+getnodenames(trees::AbstractTree{ManyTrees}, name,
+             order::TraversalOrder = preorder) =
+    getnodenames(gettree(trees, name), order)
+getnodenames(trees::AbstractTree{ManyTrees}, order::TraversalOrder = preorder) =
+    Dict(name => getnodenames(gettree(trees, name), order)
          for name in _gettreenames(trees))
 
 """
@@ -1026,22 +1031,25 @@ end
 end
 
 """
-    getleafnames(::AbstractTree)
+    getleafnames(::AbstractTree[, ::TraversalOrder])
 
-Retrieve the leaf names from the tree.
+Retrieve the leaf names from the tree (in some specific order).
 """
-getleafnames(tree::AbstractTree) = _getleafnames(tree)
+getleafnames(tree::AbstractTree, order::TraversalOrder = preorder) =
+    _getleafnames(tree, order)
 
 """
-    getleaves(::AbstractTree)
+    getleaves(::AbstractTree[, ::TraversalOrder])
 
 Retrieve the leaves from the tree.
 """
-getleaves(tree::AbstractTree{OneTree}) = _getleaves(tree)
-getleaves(trees::AbstractTree{ManyTrees}, name) =
-    _getleaves(gettree(trees, name))
-getleaves(trees::AbstractTree{ManyTrees}) =
-    Dict(name => _getleaves(gettree(trees, name))
+getleaves(tree::AbstractTree{OneTree}, order::TraversalOrder = preorder) =
+    _getleaves(tree, order)
+getleaves(trees::AbstractTree{ManyTrees}, name,
+          order::TraversalOrder = preorder) =
+    _getleaves(gettree(trees, name), order)
+getleaves(trees::AbstractTree{ManyTrees}, order::TraversalOrder = preorder) =
+    Dict(name => _getleaves(gettree(trees, name), order)
          for name in _gettreenames(trees))
 
 """

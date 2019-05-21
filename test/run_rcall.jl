@@ -34,20 +34,18 @@ global skipR = !rcopy(R"require(ape)")
         @testset "Testing with julia rand(Nonultrametric($i))" for i in 10:10:50
             jt = rand(Nonultrametric{TreeType}(i))
             rt = RObject(jt)
-            @test Set(getleafnames(jt)) ==
-                Set(rcopy(rcall(Symbol("[["), rt, "tip.label")))
+            @test getleafnames(jt) == rcopy(rcall(Symbol("[["), rt, "tip.label"))
             jt2 = rcopy(TreeType, rt)
-            @test getleafnames(jt) == getleafnames(jt2)
+            @test Set(getleafnames(jt)) == Set(getleafnames(jt2))
             @test rcopy(rcall(Symbol("all.equal"), rt, RObject(jt2)))
         end
 
         @testset "Testing with julia rand(Ultrametric($i))" for i in 10:10:50
             jt = rand(Ultrametric{TreeType}(i))
             rt = RObject(jt)
-            @test Set(getleafnames(jt)) ==
-                Set(rcopy(rcall(Symbol("[["), rt, "tip.label")))
+            @test getleafnames(jt) == rcopy(rcall(Symbol("[["), rt, "tip.label"))
             jt2 = rcopy(TreeType, rt)
-            @test getleafnames(jt) == getleafnames(jt2)
+            @test Set(getleafnames(jt)) == Set(getleafnames(jt2))
             @test rcopy(rcall(Symbol("all.equal"), rt, RObject(jt2)))
         end
 
@@ -57,7 +55,8 @@ global skipR = !rcopy(R"require(ape)")
             @test Set(getleafnames(jt)) ==
                 Set(rcopy(rcall(Symbol("[["), rt, "tip.label")))
             jt2 = rcopy(TreeType, rt)
-            @test getleafnames(jt) == getleafnames(jt2)
+            @test Set(getleafnames(jt)) == Set(getleafnames(jt2))
+            
             @test rcopy(rcall(Symbol("all.equal"), rt, RObject(jt2)))
         end
 

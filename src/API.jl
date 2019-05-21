@@ -198,6 +198,8 @@ Returns a vector of nodes for a OneTree tree. Either _getnodes() must be
 implemented for any OneTree tree type.
 """
 function _getnodes end
+_getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder) =
+    _traversal(tree, order)
 
 """
     _getnodenames(tree::AbstractTree{OneTree})
@@ -206,12 +208,11 @@ Returns a vector of node names for a OneTree tree. Can
 be implemented for any OneTree tree type, especially PreferNodeObjects trees.
 """
 function _getnodenames end
-@traitfn _getnodenames(tree::T) where {T <: AbstractTree{OneTree};
-                                       !PreferNodeObjects{T}} = _getnodes(tree)
-@traitfn _getnodenames(tree::T) where {T <: AbstractTree{OneTree};
-                                       PreferNodeObjects{T}} =
-                                           [_getnodename(tree, node)
-                                            for node in _getnodes(tree)]
+@traitfn _getnodenames(tree::T, order::TraversalOrder) where
+{T <: AbstractTree{OneTree}; !PreferNodeObjects{T}} = _getnodes(tree)
+@traitfn _getnodenames(tree::T, order::TraversalOrder) where
+{T <: AbstractTree{OneTree}; PreferNodeObjects{T}} =
+    _getnodename.(tree, _getnodes(tree))
 
 """
     _nnodes(::AbstractTree)
@@ -219,7 +220,7 @@ function _getnodenames end
 Returns the number of nodes (internal nodes and leaves) in a single tree. May
 be implemented for any OneTree tree type (otherwise infers from _getnodes()).
 """
-_nnodes(tree::AbstractTree{OneTree}) = length(_getnodes(tree))
+_nnodes(tree::AbstractTree{OneTree}) = length(_getnodes(tree, anyorder))
 
 """
     _getleafnames(::AbstractTree)
@@ -228,10 +229,11 @@ Returns the leaf names of a tree. May be implemented for any
 tree type (otherwise determined from _getnodenames() and _isleaf() functions).
 """
 function _getleafnames end
-_getleafnames(tree::AbstractTree{OneTree}) =
-    [getnodename(tree, node) for node in _getnodes(tree) if _isleaf(tree, node)]
-_getleafnames(tree::AbstractTree{ManyTrees}) =
-    _getleafnames(_gettree(tree, first(_gettreenames(tree))))
+_getleafnames(tree::AbstractTree{OneTree}, order::TraversalOrder) =
+    [_getnodename(tree, node)
+     for node in _traversal(tree, order) if _isleaf(tree, node)]
+_getleafnames(tree::AbstractTree{ManyTrees}, order::TraversalOrder) =
+    _getleafnames(_gettree(tree, first(_gettreenames(tree))), order)
 
 """
     _getleaves(::AbstractTree)
@@ -240,8 +242,8 @@ Returns the leaves (tips) of a single tree. May be implemented for any
 OneTree type (otherwise determined from _getnodes() and _isleaf() functions).
 """
 function _getleaves end
-_getleaves(tree::AbstractTree{OneTree}) =
-    [node for node in _getnodes(tree) if _isleaf(tree, node)]
+_getleaves(tree::AbstractTree{OneTree}, order::TraversalOrder) =
+    [node for node in _traversal(tree, order) if _isleaf(tree, node)]
 
 """
     _nleaves(::AbstractTree)
@@ -249,7 +251,7 @@ _getleaves(tree::AbstractTree{OneTree}) =
 Returns the number of leaves (tips) in a tree. May be implemented for any
 tree type (otherwise determined from the _getleafnames() function).
 """
-_nleaves(tree::AbstractTree) = length(_getleafnames(tree))
+_nleaves(tree::AbstractTree) = length(_getleafnames(tree, anyorder))
 
 """
     _getroots(::AbstractTree)
