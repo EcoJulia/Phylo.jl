@@ -1,6 +1,5 @@
 using Compat.Random
 import Distributions: ValueSupport, Sampleable
-import Distributions: _rand!
 import Base: eltype, rand
 using Phylo
 using Distributions
@@ -166,10 +165,6 @@ function rand(rng::AbstractRNG, t::Ultrametric{T, SAMP}) where {T, SAMP}
     return tree
 end
 
-rand(s::S, n::Int) where {TREE <: AbstractTree,
-                          S <: Sampleable{Univariate, Phylogenetics{TREE}}} =
-                              rand(Random.GLOBAL_RNG, s, n)
-
 rand(s::S, treenames::AbstractVector{LABEL}) where
 {LABEL, TREE <: AbstractTree,
  S <: Sampleable{Univariate, Phylogenetics{TREE}}} =
@@ -178,17 +173,6 @@ rand(s::S, treenames::AbstractVector{LABEL}) where
 function rand(rng::AbstractRNG, s::S, treenames::AbstractVector{LABEL}) where
     {LABEL, TREE <: AbstractTree{OneTree},
      S <: Sampleable{Univariate, Phylogenetics{TREE}}}
-    trees = Dict{eltype(treenames), TREE}()
-    for name in treenames
-        trees[name] = rand(rng, s)
-    end
-    return TreeSet(trees)
-end
-
-function rand(rng::AbstractRNG, s::S, n::Int) where
-    {LABEL, TREE <: AbstractTree{OneTree},
-     S <: Sampleable{Univariate, Phylogenetics{TREE}}}
-    treenames = 1:n
     trees = Dict{eltype(treenames), TREE}()
     for name in treenames
         trees[name] = rand(rng, s)
