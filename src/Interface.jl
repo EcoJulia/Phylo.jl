@@ -1092,6 +1092,14 @@ function getnodedata end
     _hasnode(tree, node) || error("Node $node does not exist")
     return _getnodedata(tree, node)
 end
+@traitfn getnodedata(tree::T, node::NL, label) where
+{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    _getnodedata(tree, getnode(tree, node), label)
+@traitfn function getnodedata(tree::T, node::N, label) where
+    {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
+    _hasnode(tree, node) || error("Node $node does not exist")
+    return _getnodedata(tree, node, label)
+end
 
 """
     setnodedata!(::AbstractTree, node, label, value)
