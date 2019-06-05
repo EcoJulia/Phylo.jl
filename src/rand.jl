@@ -195,3 +195,189 @@ function rand(rng::AbstractRNG, s::S, n::Int) where
     end
     return TreeSet(trees)
 end
+
+rand(rng::AbstractRNG, s::S, n::Tuple{Int}) where
+    {TREE <: AbstractTree{OneTree},
+     S <: Sampleable{Univariate, Phylogenetics{TREE}}} =
+    rand(rng, s, 1:n[1])
+
+abstract type EvolvedTrait{T <: AbstractTree} <: ValueSupport end
+Base.eltype(::Type{EvolvedTrait{T}}) where T <: AbstractTree = T
+Base.eltype(::Sampleable{S, P}) where {S, P <: EvolvedTrait} = eltype(P)
+
+struct BMTrait{T <: AbstractTree, N <: Number} <:
+    Sampleable{Univariate, EvolvedTrait{T}}
+    tree::T
+    trait::String
+    start::N
+    _rand::Function
+    f::Function
+end
+
+function BMTrait(tree::T, trait::String, start::N = 0.0;
+                 σ² = missing, σ = missing, f::Function = identity) where
+    {T <: AbstractTree, N <: Number}
+    if ismissing(σ)
+        σ = sqrt(σ²)
+    end
+    if f ≢ identity && f(start) ≉ start
+            @warn "Note that the third argument (the starting state) for trait '$trait' is untransformed, so transformed version is $(f(start))"
+    end
+    
+    return ismissing(σ) ?
+          BMTrait{T, N}(tree, trait, start,
+                               ((rng::AbstractRNG, start, length) ->
+                                start + randn(rng) * sqrt(length)), f) :
+          BMTrait{T, N}(tree, trait, start,
+                               ((rng::AbstractRNG, start, length) ->
+                                start + σ * randn(rng) * sqrt(length)), f)
+end
+
+function rand(rng::AbstractRNG, bm::BMTrait{TREE}) where TREE <: AbstractTree
+    trait = Dict{nodetype(TREE), typeof(bm.start)}()
+    use_dict = (bm.f ≢ identity)
+    for node in traversal(bm.tree, preorder)
+        if isroot(bm.tree, node)
+            if use_dict
+                trait[node] = bm.start
+                setnodedata!(bm.tree, node, bm.trait, bm.f(bm.start))
+            else
+                setnodedata!(bm.tree, node, bm.trait, bm.start)
+            end                
+        else
+            inb = getinbound(bm.tree, node)
+            prt = src(bm.tree, inb)
+            previous = use_dict ? trait[prt] :
+                getnodedata(bm.tree, prt, bm.trait)
+            value = bm._rand(rng, previous, getlength(bm.tree, inb))
+            if use_dict
+                trait[node] = value
+                setnodedata!(bm.tree, node, bm.trait, bm.f(value))
+            else
+                setnodedata!(bm.tree, node, bm.trait, value)
+            end
+        end
+    end
+    return bm.tree
+end
+
+abstract type AbstractDiscreteTrait{T <: AbstractTree, E <: Enum} <:
+    Sampleable{Univariate, EvolvedTrait{T}} end
+
+struct DiscreteTrait{T <: AbstractTree, E <: Enum} <:
+    Sampleable{Univariate, EvolvedTrait{T}}
+    tree::T
+    transition_matrix::Matrix{Float64}
+    trait::String
+end
+
+function DiscreteTrait(tree::TREE, ttype::Type{TRAIT},
+                       transition_matrix::AbstractMatrix{Float64},
+                       trait::String = "$ttype") where
+    {TREE <: AbstractTree, TRAIT <: Enum}
+    return DiscreteTrait{TREE, TRAIT}(tree, transition_matrix, trait)
+end
+
+function enum_rand(rng::AbstractRNG, current::E,
+                   mat::AbstractMatrix{Float64}) where E <: Enum
+    p = @view mat[Int(current) + 1, :]
+    km1 = length(p) - 1
+
+    rp = 1.0  # remaining total probability
+    i = 0
+    
+    while i < km1
+        i += 1
+        @inbounds pi = p[i]
+        if pi < rp
+            if rand(rng) < pi / rp
+                return E(i-1)
+            end
+            rp -= pi
+        else
+            return E(i-1)
+        end
+    end
+    
+    return E(km1)
+end
+
+function rand(rng::AbstractRNG, dt::DiscreteTrait{TREE, TRAIT}) where
+    {TREE <: AbstractTree, TRAIT <: Enum}
+    num = Int(typemax(E))
+    for node in traversal(dt.tree, preorder)
+        if isroot(dt.tree, node)
+            setnodedata!(dt.tree, node, dt.trait, TRAIT(sample(0:num)))
+        else
+            inb = getinbound(dt.tree, node)
+            prt = src(dt.tree, inb)
+            previous = getnodedata(dt.tree, prt, dt.trait)
+            value = enum_rand(rng, previous,
+                              exp(getlength(dt.tree, inb) .*
+                                  dt.transition_matrix))
+            setnodedata!(dt.tree, node, dt.trait, value)
+        end
+    end
+    return dt.tree
+end
+
+struct SymmetricDiscreteTrait{T <: AbstractTree, TRAIT <: Enum} <:
+    Sampleable{Univariate, EvolvedTrait{T}}
+    tree::T
+    transition_rate::Float64
+    trait::String
+end
+
+function SymmetricDiscreteTrait(tree::TREE, ttype::Type{TRAIT},
+                                transition_rate::Float64,
+                                trait::String = "$ttype") where
+    {TREE <: AbstractTree, TRAIT <: Enum}
+    return SymmetricDiscreteTrait{TREE, TRAIT}(tree, transition_rate, trait)
+end
+
+function enum_rand(rng::AbstractRNG, current::TRAIT,
+                   p_stay::Float64) where TRAIT <: Enum
+    if rand(rng) < p_stay
+        return current
+    end
+
+    km1 = Int(typemax(TRAIT))
+    rp = km1  # remaining total options
+    e = Int(current)
+    passed = false
+    i = Int(typemin(TRAIT))
+    
+    while i < km1
+        passed |= (e == i)
+        if rp > 1
+            if rand(rng) < 1.0 / rp
+                return TRAIT(i+passed)
+            end
+            i += 1
+            rp -= 1
+        else
+            return TRAIT(i+passed)
+        end
+    end
+end
+
+function rand(rng::AbstractRNG, dt::SymmetricDiscreteTrait{TREE, TRAIT}) where
+    {TREE <: AbstractTree, TRAIT <: Enum}
+    num = Int(typemax(TRAIT))
+    frac = 1.0 / num
+    for node in traversal(dt.tree, preorder)
+        if isroot(dt.tree, node)
+            setnodedata!(dt.tree, node, dt.trait, TRAIT(sample(0:num)))
+        else
+            inb = getinbound(dt.tree, node)
+            prt = src(dt.tree, inb)
+            previous = getnodedata(dt.tree, prt, dt.trait)
+            value = enum_rand(rng, previous,
+                              frac + (1.0 - frac) *
+                              exp(-num * getlength(dt.tree, inb) *
+                                  dt.transition_rate))
+            setnodedata!(dt.tree, node, dt.trait, value)
+        end
+    end
+    return dt.tree
+end

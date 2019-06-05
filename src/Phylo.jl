@@ -164,6 +164,7 @@ export TreeSet, gettreeinfo
 # Random tree generator
 include("rand.jl")
 export Nonultrametric, Ultrametric
+export BMTrait, DiscreteTrait, SymmetricDiscreteTrait
 
 # Read Newick Tree
 include("newick.jl")
