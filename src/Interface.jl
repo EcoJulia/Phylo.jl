@@ -93,6 +93,13 @@ retrieve the branch info type of a tree.
 """
 branchdatatype(t::Type{<: AbstractTree}) = _branchdatatype(t)
 
+"""
+    branchdims(::Type{<: AbstractTree})
+
+retrieve the dimensions of the branch lengths for the tree.
+"""
+branchdims(t::Type{<: AbstractTree}) = _branchdims(t)
+
 # AbstractTree methods
 """
     ntrees(tree::AbstractTree)
@@ -289,14 +296,14 @@ getbranchnames(trees::AbstractTree{ManyTrees}) =
          for name in _gettreenames(trees))
 
 """
-    createbranch!(tree::AbstractTree, src, dst[, len::Float64];
+    createbranch!(tree::AbstractTree, src, dst[, len::Number];
                   data)
 
 Add a branch from `src` to `dst` on `tree` with optional length and
 data. `source` and `destination` can be either nodes or nodenames.
 """
 function createbranch! end
-@traitfn function createbranch!(tree::T, src::N1, dst::N2, len::Float64 = NaN;
+@traitfn function createbranch!(tree::T, src::N1, dst::N2, len = missing;
                                 name = missing, data = missing) where
     {T <: AbstractTree{OneTree, <: Rooted}, N1, N2;
      !MatchNodeTypes{T, N1, N2}}
@@ -319,7 +326,7 @@ function createbranch! end
         _createbranch!(tree, sn, dn, len, name) :
         _createbranch!(tree, sn, dn, len, name, data)
 end
-@traitfn function createbranch!(tree::T, src::N1, dst::N2, len::Float64 = NaN;
+@traitfn function createbranch!(tree::T, src::N1, dst::N2, len = missing;
                                 name = missing, data = missing) where
     {T <: AbstractTree{OneTree, <: Rooted}, N1, N2; MatchNodeTypes{T, N1, N2}}
     _hasnode(tree, src) ||
@@ -339,7 +346,7 @@ end
         _createbranch!(tree, src, dst, len, name) :
         _createbranch!(tree, src, dst, len, name, data)
 end
-@traitfn function createbranch!(tree::T, src::N1, dst::N2, len::Float64 = NaN;
+@traitfn function createbranch!(tree::T, src::N1, dst::N2, len = missing;
                                 name = missing, data = missing) where
     {T <: AbstractTree{OneTree, Unrooted}, N1, N2;
      !MatchNodeTypes{T, N1, N2}}
@@ -363,7 +370,7 @@ end
         _createbranch!(tree, sn, dn, len, name, data)
 end
 @traitfn function createbranch!(tree::T,
-                                src::N1, dst::N2, len::Float64 = NaN;
+                                src::N1, dst::N2, len = missing;
                                 name = missing, data = missing) where
     {T <: AbstractTree{OneTree, Unrooted}, N1, N2; MatchNodeTypes{T, N1, N2}}
     _hasnode(tree, src) ||
@@ -926,7 +933,9 @@ function getheight end
     _hasnode(tree, node) || error("Node $node does not exist")
     return _hasheight(tree, node) ? _getheight(tree, node) :
         mapreduce(b -> getlength(tree, b), +, branchhistory(tree, node);
-                  init = hasrootheight(tree) ? getrootheight(tree) : 0)
+                  init = hasrootheight(tree) ?
+                  getrootheight(tree) :
+                  0.0 * upreferred(branchdims(T)))
 end
 
 """

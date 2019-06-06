@@ -2,13 +2,14 @@ using Missings
 using Compat
 using Compat: @warn
 using SimpleTraits
+using Unitful
 
 newempty(::Type{Data}) where Data = Data()
 
-struct LinkBranch{RT, NL, Data} <: AbstractBranch{RT, NL}
+struct LinkBranch{RT, NL, Data, LenUnits} <: AbstractBranch{RT, NL}
     name::Int
     inout::Tuple{AbstractNode{RT, NL}, AbstractNode{RT, NL}}
-    length::Float64
+    length::Union{Missing, LenUnits}
     data::Data
 end
 
@@ -36,15 +37,15 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
     branches::Vector{Union{B, Missing}}
     data::Dict{String, Any}
     tipdata::TD
-    rootheight::Float64
+    rootheight
     isvalid::Union{Bool, Missing}
     cache::Dict{TraversalOrder, Vector{N}}
     
-    function LinkTree{RT, NL, N, B, TD}(tipnames::Vector{NL} = NL[];
-                                        treename::Union{String, Missing} = missing,
-                                        tipdata::TD = newempty(TD),
-                                        rootheight = NaN) where
-        {RT, NL, N, B, TD}
+    function LinkTree{RT, NL, N,
+                      B, TD}(tipnames::Vector{NL} = NL[];
+                             treename::Union{String, Missing} = missing,
+                             tipdata::TD = newempty(TD),
+                             rootheight = missing) where {RT, NL, N, B, TD}
         tree = new{RT, NL, N, B, TD}(treename, Dict{NL, N}(), Vector{N}(),
                                      Vector{Union{N, Missing}}(), Vector{B}(),
                                      Dict{String, Any}(),
@@ -64,26 +65,35 @@ function LinkTree{RT, NL, N, B, TD}(leafinfos::TD) where {RT, NL, N, B, TD}
     return LinkTree{RT, NL, N, B, TD}(leafnames; tipdata = leafinfos)
 end
 
-const LB{RT} = LinkBranch{RT, String, Dict{String, Any}}
-const LN{RT} = LinkNode{RT, String, Dict{String, Any}, LB{RT}}
-const LT{RT, TD} = LinkTree{RT, String, LN{RT}, LB{RT}, TD}
-const RootedTree = LT{OneRoot, Dict{String, Any}}
-const ManyRootTree = LT{ManyRoots, Dict{String, Any}}
-const UnrootedTree = LT{Unrooted, Dict{String, Any}}
+import Phylo.API: _branchdims
+_branchdims(T::Type{<:LinkTree}) = _branchdims(branchtype(T))
+
+const LB{RT, LenUnits} = LinkBranch{RT, String, Dict{String, Any}, LenUnits}
+const LN{RT, LenUnits} = LinkNode{RT, String, Dict{String, Any}, LB{RT, LenUnits}}
+const LT{RT, TD, LenUnits} = LinkTree{RT, String, LN{RT, LenUnits}, LB{RT, LenUnits}, TD}
+const LTD{RT, LenUnits} = LT{RT, Dict{String, Any}, LenUnits}
+const RootedTree = LTD{OneRoot, Float64}
+const ManyRootTree = LTD{ManyRoots, Float64}
+const UnrootedTree = LTD{Unrooted, Float64}
 
 # LinkBranch methods
 function LinkBranch(name::Int,
                     from::LinkNode{RT, NL},
                     to::LinkNode{RT, NL},
-                    len::Float64 = NaN,
+                    len = missing,
                     data::Data = nothing) where {RT, NL, Data}
-    len >= 0.0 || isnan(len) ||
-        error("Branch length must be positive or NaN (no recorded length), not $len")
-    return LinkBranch{RT, NL, Data}(name, (from, to), len, data)
+    ustrip(len) >= 0.0 || ismissing(len) ||
+        error("Branch length must be positive or missing (no recorded length), not $len")
+    return ismissing(len) ?
+        LinkBranch{RT, NL, Data, Float64}(name, (from, to), len, data) :
+        LinkBranch{RT, NL, Data, typeof(len)}(name, (from, to), len, data)
 end
 
 import Phylo.API: _preferbranchobjects
 _preferbranchobjects(::Type{<:LinkBranch}) = true
+_branchdims(::Type{B}) where {RT, NL, Data, LenUnits,
+                               B <: LinkBranch{RT, NL, Data, LenUnits}} =
+    dimension(LenUnits)
 
 import Phylo.API: _src
 _src(::AbstractTree, branch::LinkBranch{<:Rooted}) = branch.inout[1]
@@ -299,10 +309,11 @@ _getbranch(tree::LinkTree, id::Int) = tree.branches[id]
 
 import Phylo.API: _createbranch!
 function _createbranch!(tree::LinkTree{RT, NL, N, B},
-                        from::N, to::N, len::Float64 = NaN,
+                        from::N, to::N, len::Union{LenUnits, Missing} = missing,
                         name::Union{Int, Missing} = missing,
                         data::Data = newempty(Data)) where
-    {RT <: Rooted, NL, N, Data, B <: LinkBranch{RT, NL, Data}}
+    {RT <: Rooted, NL, N, Data, LenUnits,
+     B <: LinkBranch{RT, NL, Data, LenUnits}}
     id = ismissing(name) ? length(tree.branches) + 1 : name
     branch = LinkBranch(id, from, to, len, data)
     if ismissing(name)
@@ -323,10 +334,11 @@ function _createbranch!(tree::LinkTree{RT, NL, N, B},
     return branch
 end
 function _createbranch!(tree::LinkTree{Unrooted, NL, N, B},
-                        from::N, to::N, len::Float64 = NaN,
+                        from::N, to::N, len::Union{LenUnits, Missing} = missing,
                         name::Union{Int, Missing} = missing,
                         data::Data = newempty(Data)) where
-    {NL, N, Data, B <: LinkBranch{Unrooted, NL, Data}}
+    {NL, N, Data, LenUnits,
+     B <: LinkBranch{Unrooted, NL, Data, LenUnits}}
     id = ismissing(name) ? length(tree.branches) + 1 : name
     branch = LinkBranch(id, tree, from, to, len, data)
     push!(tree.branches, branch)

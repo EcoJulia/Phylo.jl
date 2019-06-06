@@ -65,7 +65,7 @@ export _getnodedata, _setnodedata!, _nodedatatype, _branchdatatype
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
-export _validate!, _traversal
+export _validate!, _traversal, _branchdims
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 export HoldsNodeData, MatchTreeNameType
 
@@ -99,7 +99,7 @@ export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
 export hasrootheight, getrootheight, setrootheight!
 export hasparent, getparent, getancestors
 export haschildren, getchildren, getdescendants
-export validate!, traversal
+export validate!, traversal, branchdims
 
 @deprecate addnode! createnode!
 @deprecate addnodes! createnodes!
@@ -164,7 +164,7 @@ export TreeSet, gettreeinfo
 # Random tree generator
 include("rand.jl")
 export Nonultrametric, Ultrametric
-export BMTrait, DiscreteTrait, SymmetricDiscreteTrait
+export BrownianTrait, DiscreteTrait, SymmetricDiscreteTrait
 
 # Read Newick Tree
 include("newick.jl")

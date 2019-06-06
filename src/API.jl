@@ -3,6 +3,7 @@ using Phylo: Rootedness, Rooted, TreeType, TraversalOrder
 using Phylo: AbstractNode, AbstractBranch, AbstractTree
 using Compat
 using SimpleTraits
+using Unitful
 
 @traitdef PreferNodeObjects{X}
 @traitimpl PreferNodeObjects{X} <- _prefernodeobjects(X)
@@ -438,7 +439,7 @@ _hasbranch(tree::AbstractTree{OneTree},
 
 """
     _createbranch!(tree::AbstractTree, source, destination,
-                   length::Float64, data)
+                   length, data)
 
 Create a new branch and add it to a tree. Must be implemented for any
 AbstractTree subtype.
@@ -781,8 +782,7 @@ end
 
 """
 function _getheight(::AbstractTree, _)
-    throw(NullException())
-    return NaN
+    return missing
 end
 
 """
@@ -844,7 +844,7 @@ Return length of a branch. May be implemented for any AbstractBranch
 subtype.
 """
 function _getlength end
-_getlength(::AbstractTree, _) = NaN
+_getlength(::AbstractTree, _) = missing
 
 """
     _leafinfotype(::Type{<:AbstractTree})
@@ -861,6 +861,14 @@ Returns the type of the node info data.
 """
 function _nodedatatype end
 _nodedatatype(::Type{<:AbstractTree}) = Nothing
+
+"""
+    _branchdims(::Type{<:AbstractTree})
+
+Returns the dimensions of the branch lengths for the tree.
+"""
+function _branchdims end
+_branchdims(::Type{<:AbstractTree}) = NoDims
 
 """
     _branchdatatype(::Type{<:AbstractTree})
