@@ -24,8 +24,9 @@ installed with `add`. For example on Julia v1.1:
 
 ## Project Status
 
-The package is tested against the current Julia v1.1 release, but also
-the v0.6 and v1.0 versions on Linux, macOS, and Windows.
+The package is tested against the current Julia v1.1 release and
+v1.0.x on Linux, macOS, and Windows. It is also tested against
+nightly, and currently works with v1.2 release candidates.
 
 ## Contributing and Questions
 
@@ -38,16 +39,24 @@ just like to ask a question.
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
 functionality for generating phylogenetic trees to feed into our
 [Diversity][diversity-url] package to calculate phylogenetic
-diversity. `Phylo` is currently in *alpha*, and is missing much
-functionality that people may desire, so please
+diversity. `Phylo` is currently in *beta*, but is probably still
+missing much of the functionality that people may desire, so please
 [raise an issue][issues-url] if/when you find problems or missing
-functionality - don't assume that I know! Currently the package can
-be used to make trees manually, to generate random trees using the
-framework from `Distributions`, and to read newick and nexus format
-trees from files. For instance, to construct a sampler for 5 tip
-non-ultrametric trees, and then generate one or two random tree of
-that type (the examples below are from the master branch, but work similarly
-on the current release):
+functionality - don't assume that I know!
+
+Currently the package can be used to make trees manually, to generate
+random trees using the framework from `Distributions`, and to read
+newick and nexus format trees from files. It can also be used to
+evolve continuous and discrete traits on the resultant phylogenies,
+and plot all of this using `Plots` recipes. Finally, the trees and
+traits are capable of handling `Unitful` units, so the branch lengths
+can be time based, and traits that relate directly to physical units
+(e.g. size) can be directly evolved.
+
+For instance, to construct a sampler for 5 tip non-ultrametric trees,
+and then generate one or two random tree of that type (the examples
+below are from the master branch, but work similarly on the current
+release):
 
 ```julia
 julia> using Phylo

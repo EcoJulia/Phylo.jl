@@ -4,12 +4,17 @@
   - trait-based dispatch to use faster code paths
   - New interface to allow an easier changeover of tree, node and branch types
   - Defaults to polytomies
+  - Can now evolve discrete and continuous traits on the tree
+  - Compatible with Unitful to allow time-based branch lengths, and
+    traits based on physical units
+  - Only compatible with Julia v1.0+
 - v0.3.3
+  - Final version compatible with Julia v0.6
   - Enable plotting
 - v0.3.2
-  - RCall interface now up and running with 1.0.
+  - RCall interface now up and running with Julia v1.0.
 - v0.3.1
-  - Working with Julia 0.7 and 1.0!
+  - Working with Julia v0.7 and v1.0!
 - v0.3
   - Allow polytomies
   - Allow TreeSets containing multiple trees
