@@ -374,9 +374,9 @@ function DiscreteTrait(tree::TREE, ttype::Type{TRAIT},
     return DiscreteTrait{TREE, TRAIT, N}(tree, transition_matrix, trait)
 end
 
-function enum_rand(rng::AbstractRNG, current::E,
-                   mat::AbstractMatrix{Float64}) where E <: Enum
-    traits = instances(E)
+function enum_rand(rng::AbstractRNG, current::TRAIT,
+                   mat::AbstractMatrix{Float64}) where TRAIT <: Enum
+    traits = instances(TRAIT)
     row = findfirst(x -> x == current, traits)
     p = @view mat[row, :]
     tot = length(traits)
@@ -401,10 +401,12 @@ end
 
 function rand(rng::AbstractRNG, dt::DiscreteTrait{TREE, TRAIT}) where
     {TREE <: AbstractTree, TRAIT <: Enum}
-    num = Int(typemax(TRAIT))
+    traits = instances(TRAIT)
+    num = length(traits)
     for node in traversal(dt.tree, preorder)
         if isroot(dt.tree, node)
-            setnodedata!(dt.tree, node, dt.trait, TRAIT(sample(0:num)))
+            setnodedata!(dt.tree, node, dt.trait,
+                         sample(rng, collect(traits)))
         else
             inb = getinbound(dt.tree, node)
             prt = src(dt.tree, inb)
@@ -458,34 +460,36 @@ function enum_rand(rng::AbstractRNG, current::TRAIT,
     if rand(rng) < p_stay
         return current
     end
-
-    km1 = Int(typemax(TRAIT))
-    rp = km1  # remaining total options
-    e = Int(current)
-    passed = false
-    i = Int(typemin(TRAIT))
     
-    while i < km1
-        passed |= (e == i)
-        if rp > 1
-            if rand(rng) < 1.0 / rp
-                return TRAIT(i+passed)
+    traits = instances(TRAIT)
+    num = length(traits)
+    remain = num - 1  # remaining total options
+    from = findfirst(x -> x == current, traits)
+    passed = false
+    i = 1
+    while i < num
+        passed |= (from == i)
+        if remain > 1
+            if rand(rng) < inv(remain)
+                return traits[i+passed]
             end
             i += 1
-            rp -= 1
+            remain -= 1
         else
-            return TRAIT(i+passed)
+            return traits[i+passed]
         end
     end
 end
 
 function rand(rng::AbstractRNG, dt::SymmetricDiscreteTrait{TREE, TRAIT}) where
     {TREE <: AbstractTree, TRAIT <: Enum}
-    num = Int(typemax(TRAIT))
-    frac = 1.0 / num
+    traits = instances(TRAIT)
+    num = length(traits)
+    frac = inv(num)
     for node in traversal(dt.tree, preorder)
         if isroot(dt.tree, node)
-            setnodedata!(dt.tree, node, dt.trait, TRAIT(sample(0:num)))
+            setnodedata!(dt.tree, node, dt.trait,
+                         sample(rng, collect(instances(TRAIT))))
         else
             inb = getinbound(dt.tree, node)
             prt = src(dt.tree, inb)
