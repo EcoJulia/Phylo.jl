@@ -102,7 +102,7 @@ function rand(rng::AbstractRNG, t::Nonultrametric{T, SAMP, U}) where
     end
     while nroots(tree) > 1
         roots = getroots(tree)
-        children = sample(collect(roots), 2, replace=false)
+        children = sample(rng, collect(roots), 2, replace=false)
         parent = createnode!(tree)
         createbranch!(tree, parent, children[1],
                       rand(rng, t.sampleable) * t.height)
@@ -202,7 +202,7 @@ function rand(rng::AbstractRNG, t::Ultrametric{T, SAMP}) where {T, SAMP}
     while nroots(tree) > 1
         roots = getroots(tree)
         tocoalesce = collect(roots)
-        coalescers = sample(tocoalesce, 2, replace=false)
+        coalescers = sample(rng, tocoalesce, 2, replace=false)
         parent = createnode!(tree)
         depth += rand(rng, t.sampleable) * 2.0 / length(tocoalesce) * t.height
         d1 = getheight(tree, first(nodefuture(tree, coalescers[1]) ∩
