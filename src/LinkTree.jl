@@ -82,7 +82,7 @@ function LinkBranch(name::Int,
                     to::LinkNode{RT, NL},
                     len = missing,
                     data::Data = nothing) where {RT, NL, Data}
-    ustrip(len) >= 0.0 || ismissing(len) ||
+    ismissing(len) || ustrip(len) >= 0.0 ||
         error("Branch length must be positive or missing (no recorded length), not $len")
     return ismissing(len) ?
         LinkBranch{RT, NL, Data, Float64}(name, (from, to), len, data) :
@@ -116,8 +116,9 @@ function _getbranchname(tree::LinkTree{RT, NL, N, B}, branch::B) where
     branch ≡ tree.branches[id] || error("Branch $id not in tree")
     return id
 end
+
 import Phylo.API: _branchdatatype
-_branchdatatype(::Type{LinkBranch{RT, NL, Data}}) where {RT, NL, Data} = Data
+_branchdatatype(::Type{<: LinkBranch{RT, NL, Data}}) where {RT, NL, Data} = Data
 import Phylo.API: _getbranchdata
 _getbranchdata(::AbstractTree, branch::LinkBranch) = branch.data
 import Phylo.API: _setbranchdata!

@@ -23,7 +23,7 @@ end
     @test branchdatatype(typeof(lts)) ≡ Dict{String, Any}
     @test leafinfotype(typeof(lts)) ≡ Dict{String, Any}
     
-    ltdf = Phylo.LT{OneRoot, DataFrame}(df)
+    ltdf = Phylo.LT{OneRoot, DataFrame, Float64}(df)
     @test nodedatatype(typeof(ltdf)) ≡ Dict{String, Any}
     @test branchdatatype(typeof(ltdf)) ≡ Dict{String, Any}
     @test leafinfotype(typeof(ltdf)) ≡ DataFrame

@@ -104,7 +104,7 @@ export validate!, traversal, branchdims
 @deprecate addnode! createnode!
 @deprecate addnodes! createnodes!
 @deprecate addbranch! createbranch!
-@deprecate(branch!(tree, source, length = NaN;
+@deprecate(branch!(tree, source, length = missing;
                    destination = _newnodelabel(tree),
                    branchname = _newbranchlabel(tree)),
            createbranch!(tree, source, createnode!(tree, destination),

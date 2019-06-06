@@ -7,12 +7,12 @@ mutable struct Branch{RT, NL} <: AbstractBranch{RT, NL}
     name::Int
     source::NL
     destination::NL
-    length::Float64
+    length::Union{Float64, Missing}
 
     function Branch{RT}(name::Int, source::NL, destination::NL,
-                        len::Float64 = NaN) where {RT, NL}
-        len >= 0.0 || isnan(len) ||
-            error("Branch length must be positive or NaN (no recorded length), not $len")
+                        len::Union{Float64, Missing} = missing) where {RT, NL}
+        ismissing(len) || len >= 0.0 ||
+            error("Branch length must be positive or missing (no recorded length), not $len")
         new{RT, NL}(name, source, destination, len)
     end
 end
