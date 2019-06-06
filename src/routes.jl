@@ -1,6 +1,5 @@
 using SimpleTraits
 using Phylo.API
-using Compat: mapreduce
 using AxisArrays
 
 @traitfn function _treehistory(tree::T, node::N1) where

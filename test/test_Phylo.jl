@@ -1,5 +1,5 @@
 module TestPhylo
-using Compat.Test
+using Test
 
 using Phylo
 

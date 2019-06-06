@@ -1,6 +1,5 @@
 using IterableTables
 using IterableTables: getiterator
-using Compat: findall
 using Phylo.API
 
 """

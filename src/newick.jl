@@ -1,4 +1,3 @@
-using Compat: @warn, @info
 using Tokenize
 using Tokenize.Lexers
 using Missings
@@ -24,27 +23,15 @@ isTRANSLATE(token) = isIDENTIFIER(token, "translate")
 isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end")
 
 function iterateskip(tokens, state = nothing)
-    if VERSION < v"0.7.0-"
-        if state !== nothing && done(tokens, state)
-            return nothing
-        end
-        token, state = (state === nothing) ?
-            next(tokens, start(tokens)) : next(tokens, state)
-        while isWHITESPACE(token)
-            token, state = next(tokens, state)
-        end
-        return token, state
-    else
-        result = (state === nothing) ? iterate(tokens) : iterate(tokens, state)
+    result = (state === nothing) ? iterate(tokens) : iterate(tokens, state)
+    result === nothing && return nothing
+    token, state = result
+    while isWHITESPACE(token)
+        result = iterate(tokens, state)
         result === nothing && return nothing
         token, state = result
-        while isWHITESPACE(token)
-            result = iterate(tokens, state)
-            result === nothing && return nothing
-            token, state = result
-        end
-        return token, state
     end
+    return token, state
 end
 
 function tokensgetkey(token, state, tokens, finished::Function = isEQ)

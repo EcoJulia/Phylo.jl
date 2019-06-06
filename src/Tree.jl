@@ -1,6 +1,4 @@
 using DataStructures
-using Compat
-using Compat: @warn
 using IterableTables: getiterator
 using DataFrames
 

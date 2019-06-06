@@ -3,8 +3,7 @@ module TestShow
 using Phylo
 using DataFrames
 
-using Compat.Test
-using Compat: @info
+using Test
 
 @info """
 These tests only check that the show() commands

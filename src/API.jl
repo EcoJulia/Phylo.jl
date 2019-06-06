@@ -1,7 +1,6 @@
 using Phylo
 using Phylo: Rootedness, Rooted, TreeType, TraversalOrder
 using Phylo: AbstractNode, AbstractBranch, AbstractTree
-using Compat
 using SimpleTraits
 using Unitful
 

@@ -1,7 +1,7 @@
 module TestRoutes
 
 using Phylo
-using Compat.Test
+using Test
 
 @testset "Routes" begin
     @testset "For $TreeType" for TreeType in

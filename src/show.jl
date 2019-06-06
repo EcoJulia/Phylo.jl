@@ -1,7 +1,6 @@
 using Phylo
 using Phylo.API
-using Compat
-using Compat.Printf
+using Printf
 
 function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
               n::String = "")

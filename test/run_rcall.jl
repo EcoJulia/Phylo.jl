@@ -1,6 +1,5 @@
 module ValidateRCall_ape
-using Compat.Test
-using Compat: @warn
+using Test
 using Phylo
 using RCall
 using DataFrames

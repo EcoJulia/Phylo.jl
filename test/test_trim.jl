@@ -3,7 +3,7 @@ module TestTrim
 using Phylo
 using DataFrames
 using IterableTables: getiterator
-using Compat.Test
+using Test
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10

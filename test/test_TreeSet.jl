@@ -4,17 +4,13 @@ using Phylo
 using DataFrames
 using JuliaDB
 
-using Compat.Test
+using Test
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10
 df = DataFrame(species = species, count=[10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
-@static if VERSION < v"0.7.0-"
-    jdb = table(@NT(species = observations, count = [1, 2, 3, 4]))
-else
-    jdb = table((species = observations, count = [1, 2, 3, 4]))
-end
+jdb = table((species = observations, count = [1, 2, 3, 4]))
 
 @testset "TreeSet" begin
     @test length(rand(Ultrametric(ntips), 10)) ==

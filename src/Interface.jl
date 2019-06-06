@@ -1,5 +1,4 @@
 using Phylo.API
-using Compat: mapreduce, @warn
 import LightGraphs: src, dst, indegree, outdegree, degree
 using SimpleTraits
 

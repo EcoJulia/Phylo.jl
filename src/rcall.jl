@@ -1,5 +1,4 @@
 using Phylo
-using Compat: undef, @warn
 using .RCall
 using .RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
 import .RCall: rcopy

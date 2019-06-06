@@ -1,7 +1,7 @@
 module TestNewick
 
 using Phylo
-using Compat.Test
+using Test
 
 @testset "newick and nexus parsing" begin
     @testset "For $TreeType" for TreeType in [NamedBinaryTree]
@@ -22,9 +22,6 @@ using Compat.Test
         @test getnodedata(tree, "MyLeaf")["Real"] == 23
         @test 5 ∈ getnodedata(tree, "MyLeaf")["Not real"]
         @test 4 ∈ getnodedata(tree, "MyLeaf")["Not real"]
-        if VERSION < v"0.7.0-"
-            @test_warn "Tree ended but not finished" parsenewick("((,),(,));a")
-        end
         @test_throws Exception parsenewick("((,),(,)));", TreeType)
         @test_throws Exception parsenewick("((,),(,))", TreeType)
         @test_throws Exception parsenewick("((,),(,);", TreeType)

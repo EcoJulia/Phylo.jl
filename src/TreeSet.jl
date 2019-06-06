@@ -1,5 +1,3 @@
-using Compat
-
 mutable struct TreeSet{LABEL, RT, NL, N, B, TREE <:
                        AbstractTree{OneTree, RT, NL, N, B}} <:
     AbstractTree{ManyTrees, RT, NL, N, B}
@@ -16,12 +14,12 @@ end
 TreeSet(trees::AbstractVector{T}) where T <: AbstractTree{OneTree} =
     TreeSet(Dict(Pair.(Base.OneTo(length(trees)), trees)))
 
-import Compat.IteratorSize
+import Base.IteratorSize
 function IteratorSize(::Type{TreeSet})
     return HasLength()
 end
 
-import Compat.IteratorEltype
+import Base.IteratorEltype
 function IteratorEltype(::Type{TreeSet})
     return HasEltype()
 end

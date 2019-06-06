@@ -3,7 +3,7 @@ module TestRand
 using Phylo
 using DataFrames
 
-using Compat.Test
+using Test
 
 @testset "Nonultrametric()" begin
     # Create a 10 tip tree

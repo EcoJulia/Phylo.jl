@@ -1,5 +1,3 @@
-using Compat
-
 """
     BinaryNode{B}(AbstractVector{B}, AbstractVector{B}) <: AbstractNode
 

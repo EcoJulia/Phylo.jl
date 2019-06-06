@@ -1,14 +1,14 @@
-using Compat: Random
-import Compat: IteratorSize, IteratorEltype
 import Base: length, eltype
 using Base: HasLength, HasEltype
 using Phylo.API
 
 # For a single tree
+import Base.IteratorSize
 function IteratorSize(::Type{<: AbstractTree{OneTree}})
     return HasLength()
 end
 
+import Base.IteratorEltype
 function IteratorEltype(::Type{<: AbstractTree{OneTree}})
     return HasEltype()
 end
@@ -133,7 +133,6 @@ branchnamefilter(filterfn::Function, tree::T) where T <: AbstractTree =
 
 eltype(bi::BranchNameIterator{T}) where T <: AbstractTree = branchnametype(T)
 
-@static if VERSION >= v"0.7.0"
 import Base: iterate
 function iterate(tree::AbstractTree, state = nothing)
     if state === nothing
@@ -249,142 +248,4 @@ function iterate(bi::BranchNameIterator, state = nothing)
     name = _getbranchname(bi.tree, val)
 
     return name, state
-end
-
-else
-import Base.start, Base.next, Base.done
-function start(ni::It) where It <: AbstractNodeIterator
-    nodes = _getnodes(ni.tree)
-    state = start(nodes)
-
-    if ni.filterfn === nothing || done(nodes, state)
-        return state
-    end
-
-    val, after = next(nodes, state)
-    while !ni.filterfn(ni.tree, _getnode(ni.tree, val))
-        state = after
-        if done(nodes, state)
-            return state
-        end
-        val, after = next(nodes, state)
-    end
-
-    return state
-end
-
-function done(ni::It, state) where It <: AbstractNodeIterator
-    return done(_getnodes(ni.tree), state)
-end
-
-function next(ni::NodeIterator, state)
-    nodes = _getnodes(ni.tree)
-    val, state = next(nodes, state)
-    node = _getnode(ni.tree, val)
-
-    if ni.filterfn === nothing || done(ni, state)
-        return node, state
-    end
-
-    val, after = next(nodes, state)
-    while !ni.filterfn(ni.tree, _getnode(ni.tree, val))
-        state = after
-        if done(nodes, state)
-            return node, state
-        end
-        val, after = next(nodes, state)
-    end
-
-    return node, state
-end
-
-function next(ni::NodeNameIterator, state)
-    nodes = getnodes(ni.tree)
-    val, state = next(nodes, state)
-    node = _getnode(ni.tree, val)
-    name = _getnodename(ni.tree, val)
-
-    if ni.filterfn === nothing || done(ni, state)
-        return name, state
-    end
-
-    val, after = next(nodes, state)
-    while !ni.filterfn(ni.tree, _getnode(ni.tree, val))
-        state = after
-        if done(nodes, state)
-            return name, state
-        end
-        val, after = next(nodes, state)
-    end
-
-    return name, state
-end
-
-function start(bi::It) where It <: AbstractBranchIterator
-    branches = _getbranches(bi.tree)
-    state = start(branches)
-
-    if bi.filterfn === nothing || done(branches, state)
-        return state
-    end
-
-    val, after = next(branches, state)
-    while !bi.filterfn(bi.tree, _getbranch(bi.tree, val))
-        state = after
-        if done(branches, state)
-            return state
-        end
-        val, after = next(branches, state)
-    end
-
-    return state
-end
-
-function done(bi::It, state) where It <: AbstractBranchIterator
-    return done(_getbranches(bi.tree), state)
-end
-
-function next(bi::BranchIterator, state)
-    branches = _getbranches(bi.tree)
-    val, state = next(branches, state)
-    branch = _getbranch(bi.tree, val)
-
-    if bi.filterfn === nothing || done(bi, state)
-        return branch, state
-    end
-
-    val, after = next(branches, state)
-    while !bi.filterfn(bi.tree, _getbranch(bi.tree, val))
-        state = after
-        if done(branches, state)
-            return branch, state
-        end
-        val, after = next(branches, state)
-    end
-
-    return branch, state
-end
-
-function next(bi::BranchNameIterator, state)
-    branches = _getbranches(bi.tree)
-    val, state = next(branches, state)
-    branch = _getbranch(bi.tree, val)
-    name = _getbranchname(bi.tree, val)
-
-    if bi.filterfn === nothing || done(bi, state)
-        return name, state
-    end
-
-    val, after = next(branches, state)
-    while !bi.filterfn(bi.tree, _getbranch(bi.tree, val))
-        state = after
-        if done(branches, state)
-            return name, state
-        end
-        val, after = next(branches, state)
-    end
-
-    return name, state
-end
-
 end

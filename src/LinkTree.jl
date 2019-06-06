@@ -1,6 +1,4 @@
 using Missings
-using Compat
-using Compat: @warn
 using SimpleTraits
 using Unitful
 

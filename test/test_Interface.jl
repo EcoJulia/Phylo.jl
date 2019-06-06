@@ -2,7 +2,7 @@ module TestInterface
 
 using Phylo
 using DataFrames
-using Compat.Test
+using Test
 
 @testset "Build and tear down trees" begin
     @testset "For $TreeType" for TreeType in

@@ -4,18 +4,15 @@ using Phylo
 using DataFrames
 using JuliaDB
 
-using Compat.Test
+using Test
 using IterableTables: getiterator
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10
 df = DataFrame(species = species, count = [10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
-@static if VERSION < v"0.7.0-"
-    jdb = table(@NT(species = observations, count = 1:4))
-else
-    jdb = table((species = observations, count = 1:4))
-end
+jdb = table((species = observations, count = 1:4))
+
 @testset "NamedBinaryTree()" begin
     ntn = NamedBinaryTree(ntips)
     @test length(nodefilter(isroot, ntn)) == ntips
@@ -49,11 +46,7 @@ end
     @test getleafinfo(nb) === getleafinfo(BinaryTree(nb))
     @test getleafinfo(nb) !== getleafinfo(BinaryTree(nb; copyinfo = true))
     @test_nowarn createnode!(nb, "Dog")
-    if VERSION < v"0.7.0-"
-        @test_warn "LeafInfo names do not match actual leaves of tree" !validate!(nb) || error("validate!() should have returned false")
-    else
-        @test !validate!(nb)
-    end
+    @test !validate!(nb)
     np = PolytomousTree{OneRoot}(DataFrame(name=["Human", "Cat"]))
     @test_throws Exception PolytomousTree(np)
     np = PolytomousTree(DataFrame(name=["Human", "Cat"]))
@@ -63,11 +56,7 @@ end
     np = PolytomousTree{ManyRoots}(DataFrame(name=["Human", "Cat"]))
     @test getleafinfo(np) !== getleafinfo(PolytomousTree(np; copyinfo = true))
     @test_nowarn createnode!(np, "Dog")
-    if VERSION < v"0.7.0-"
-        @test_warn "LeafInfo names do not match actual leaves of tree" !validate!(np) || error("validate!() should have returned false")
-    else
-        @test !validate!(np)
-    end
+    @test !validate!(np)
     @test_throws Exception PolytomousTree(np)
     @test getleafnames(nb) ⊆ getleafnames(np)
     @test getleafinfo(BinaryTree(df)) == df

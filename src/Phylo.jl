@@ -19,8 +19,6 @@ interact cleanly with other phylogenetic packages.
 module Phylo
 
 import Base: Pair, Tuple, show, eltype, length, getindex
-import Compat: IteratorSize, IteratorEltype
-
 abstract type Rootedness end
 struct Unrooted <: Rootedness end
 abstract type Rooted <: Rootedness end
@@ -177,26 +175,17 @@ include("show.jl")
 include("trim.jl")
 export droptips!, keeptips!
 
-# Plot recipes, only works on Julia v0.7 and up
-@static if VERSION > v"0.7.0-"
-    include("plot.jl")
-end
+# Plot recipes
+include("plot.jl")
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
 using Requires
-@static if VERSION < v"0.7.0-"
-    @require RCall begin
+function __init__()
+    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
         println("Creating Phylo RCall interface...")
         include("rcall.jl")
-    end
-else
-    function __init__()
-        @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
-            println("Creating Phylo RCall interface...")
-            include("rcall.jl")
-        end
     end
 end
 
