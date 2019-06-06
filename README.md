@@ -25,7 +25,8 @@ installed with `add`. For example on Julia v1.1:
 ## Project Status
 
 The package is tested against the current Julia v1.1 release and
-v1.0.x on Linux, macOS, and Windows. It is also tested against
+v1.0.x on Linux, macOS, and Windows (though v1.0.4 fails on 64 bit
+windows with appveyor due to a compiler error). It is also tested against
 nightly, and currently works with v1.2 release candidates.
 
 ## Contributing and Questions
