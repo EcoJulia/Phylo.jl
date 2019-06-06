@@ -54,6 +54,8 @@ traits are capable of handling `Unitful` units, so the branch lengths
 can be time based, and traits that relate directly to physical units
 (e.g. size) can be directly evolved.
 
+### Random tree generation
+
 For instance, to construct a sampler for 5 tip non-ultrametric trees,
 and then generate one or two random tree of that type (the examples
 below are from the master branch, but work similarly on the current
@@ -80,6 +82,8 @@ Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 Tree 1: LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
 Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 ```
+
+### Tree traversal
 
 The code also provides iterators, and filtered iterators over the branches,
 nodes, branchnames and nodenames of a tree, though this may soon be superseded
@@ -133,6 +137,8 @@ phylogenetics to use in our [Diversity][diversity-url] package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
 
+### Reading from a file
+
 It can also read newick trees either from strings or files:
 
 ```julia
@@ -182,6 +188,8 @@ julia> gettreeinfo(ts, "TREE1")
 Dict{String,Any} with 1 entry:
   "lnP" => 1.0
 ```
+
+### R interface
 
 And while we wait for me (or kind [contributors][pr-url]!) to fill out
 the other extensive functionality that many phylogenetics packages
@@ -248,6 +256,68 @@ R> if (all.equal(rt, jt)) "no damage in translation"
 For the time being the code will only work with rooted trees
 with named tips and branch lengths. If there's [demand][issues-url]
 for other types of trees, I'll look into it.
+
+### Trait evolution
+
+As far as traits are concerned, these can be continuous pr
+discrete. First a continuous trait:
+
+```julia
+julia> using Phylo, Plots, DataFrames
+
+julia> tree = rand(Nonultrametric(100)) # Defaults to mean tree depth of 1.0
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any},Float64}},LinkBranch{OneRoot,String,Dict{String,Any},Float64},Dict{String,Any}} with 100 tips, 199 nodes and 198 branches.
+Leaf names are tip 21, tip 81, tip 32, tip 12, tip 51, ... [94 omitted] ... and tip 93
+
+julia> rand(BrownianTrait(tree, "Trait"))  # Defaults to starting at 0.0, variance 1.0
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any},Float64}},LinkBranch{OneRoot,String,Dict{String,Any},Float64},Dict{String,Any}} with 100 tips, 199 nodes and 198 branches.
+Leaf names are tip 21, tip 81, tip 32, tip 12, tip 51, ... [94 omitted] ... and tip 93
+
+julia> plot(tree, marker_z = getnodedata.(tree, traversal(tree, postorder), "Trait"))
+
+julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), trait=getnodedata.(tree, traversal(tree, preorder), "Trait"))
+199×2 DataFrame
+│ Row │ nodename │ trait     │
+│     │ String   │ Float64   │
+├─────┼──────────┼───────────┤
+│ 1   │ Node 199 │ 0.0       │
+│ 2   │ Node 198 │ -0.517593 │
+│ 3   │ Node 197 │ -0.314101 │
+│ 4   │ Node 172 │ -0.391149 │
+│ 5   │ Node 164 │ -0.797994 │
+⋮
+│ 195 │ tip 67   │ -0.21145  │
+│ 196 │ Node 125 │ 0.236189  │
+│ 197 │ tip 79   │ 0.218236  │
+│ 198 │ tip 40   │ 0.745802  │
+│ 199 │ tip 81   │ -0.408055 │
+```
+
+Then a discrete trait:
+```julia
+julia> @enum TemperatureTrait lowTempPref midTempPref highTempPref
+
+julia> rand(SymmetricDiscreteTrait(tree, TemperatureTrait, 0.4));
+
+julia> plot(tree, marker_z = Int.(getnodedata.(tree, traversal(tree, postorder), "TemperatureTrait")))
+
+julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), trait=getnodedata.(tree, traversal(tree, preorder), "TemperatureTrait"))
+199×2 DataFrame
+│ Row │ nodename │ trait        │
+│     │ String   │ Temperat…    │
+├─────┼──────────┼──────────────┤
+│ 1   │ Node 199 │ highTempPref │
+│ 2   │ Node 198 │ highTempPref │
+│ 3   │ Node 197 │ highTempPref │
+│ 4   │ Node 172 │ highTempPref │
+│ 5   │ Node 164 │ highTempPref │
+⋮
+│ 195 │ tip 67   │ lowTempPref  │
+│ 196 │ Node 125 │ midTempPref  │
+│ 197 │ tip 79   │ midTempPref  │
+│ 198 │ tip 40   │ lowTempPref  │
+│ 199 │ tip 81   │ highTempPref │
+```
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest
