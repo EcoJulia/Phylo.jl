@@ -125,7 +125,7 @@ function Base.sort!(tree::AbstractTree)
 
         sizes = map(loc!, getchildren(tree, clade))
         node = getnode(tree, clade)
-        node.outbounds .= node.outbounds[sortperm(sizes)]
+        node.other .= node.other[sortperm(sizes)]
         sum(sizes) + 1
     end
 
