@@ -91,7 +91,7 @@ end
     if !isempty(fan.marker_x) || sa !== nothing
         @series begin
             seriestype := :scatter
-            a !== nothing && (series_annotations := sa)
+            sa !== nothing && (series_annotations := sa)
             _xcirc.(adjust(fan.marker_y), fan.marker_x), _ycirc.(adjust(fan.marker_y), fan.marker_x)
         end
     end
