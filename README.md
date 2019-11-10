@@ -2,10 +2,10 @@
 
 *Package for creating and manipulating phylogenies*
 
-| **Documentation** | **PackageEvaluator** | **Build Status of master** |
-|:-----------------:|:--------------------:|:--------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.6-img]][pkg-0.6-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
-| [![][docs-latest-img]][docs-latest-url] | [![Works with 1.0!][pkg-1.0-img]][pkg-1.0-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| **Documentation** | **Build Status of master** |
+|:-----------------:|:--------------------------:|
+| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
+| [![][docs-latest-img]][docs-latest-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
 
@@ -273,7 +273,7 @@ julia> rand(BrownianTrait(tree, "Trait"))  # Defaults to starting at 0.0, varian
 LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any},Float64}},LinkBranch{OneRoot,String,Dict{String,Any},Float64},Dict{String,Any}} with 100 tips, 199 nodes and 198 branches.
 Leaf names are tip 21, tip 81, tip 32, tip 12, tip 51, ... [94 omitted] ... and tip 93
 
-julia> plot(tree, marker_z = getnodedata.(tree, traversal(tree, postorder), "Trait"))
+julia> plot(tree, line_z = getnodedata.(tree, traversal(tree, postorder), "Trait"))
 
 julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), trait=getnodedata.(tree, traversal(tree, preorder), "Trait"))
 199×2 DataFrame
@@ -299,7 +299,7 @@ julia> @enum TemperatureTrait lowTempPref midTempPref highTempPref
 
 julia> rand(SymmetricDiscreteTrait(tree, TemperatureTrait, 0.4));
 
-julia> plot(tree, marker_z = Int.(getnodedata.(tree, traversal(tree, postorder), "TemperatureTrait")))
+julia> plot(tree, line_z = Int.(getnodedata.(tree, traversal(tree, postorder), "TemperatureTrait")))
 
 julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), trait=getnodedata.(tree, traversal(tree, preorder), "TemperatureTrait"))
 199×2 DataFrame
@@ -336,12 +336,6 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 
 [codecov-img]: https://codecov.io/gh/richardreeve/Phylo.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/richardreeve/Phylo.jl
-
-[pkg-0.6-img]: http://pkg.julialang.org/badges/Phylo_0.6.svg
-[pkg-0.6-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.6
-
-[pkg-1.0-img]: http://pkg.julialang.org/badges/Phylo_1.0.svg
-[pkg-1.0-url]: http://pkg.julialang.org/?pkg=Phylo&ver=1.0
 
 [issues-url]: https://github.com/richardreeve/Phylo.jl/issues
 [pr-url]: https://github.com/richardreeve/Phylo.jl/pulls
