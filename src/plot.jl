@@ -117,6 +117,13 @@ function _extend(tmp, x)
     return ret
 end
 
+"""
+    sort!(::AbstractTree)
+
+Sorts the branches descending from each node by total number of
+descendants. This creates a clearer tree for plotting. The
+process is also called "ladderizing" the tree
+"""
 function Base.sort!(tree::AbstractTree)
     function loc!(clade::String)
         if isleaf(tree, clade)
