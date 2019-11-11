@@ -9,6 +9,11 @@ using RecipesBase
     colorbar --> true
     size --> (1000, 1000)
 
+    lz = get(plotattributes, :line_z, nothing)
+    mz = get(plotattributes, :marker_z, nothing)
+    isnothing(lz) || (line_z := _handlez(lz, tree))
+    isnothing(mz) || (marker_z := _handlez(mz, tree))
+
     d, h, n = _findxy(tree)
     adj = 0.03maximum(values(d))
     tipannotations = map(x->(d[x] + adj, h[x], x), getleafnames(tree))
@@ -107,6 +112,9 @@ end
     end
     [],[]
 end
+
+_handlez(x, tree) = x
+_handlez(x::Union{String, Symbol}, tree) = getnodedata.(tree, traversal(tree, preorder), x)
 
 function _extend(tmp, x)
     tmp isa AbstractVector && abs(length(tmp) - count(isnan, x)) < 2 || return nothing
