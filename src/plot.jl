@@ -41,6 +41,8 @@ struct Dendrogram; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; 
 struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
 
 @recipe function f(dend::Dendrogram)
+    ex = extrema(filter(isfinite, dend.x))
+    xlims --> (ex[1] - 0.05 * ex[2], ex[2] * 1.15)
 
     sa = get(plotattributes, :series_annotations, nothing)
     @series begin
