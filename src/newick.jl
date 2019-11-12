@@ -519,29 +519,40 @@ function parsenexus(token, state, tokens, ::Type{TREE}) where
     trees = missing
     treedata = missing
     taxa = Dict{NL, NL}()
-    while isBEGIN(token)
-        result = iterateskip(tokens, state)
-        result === nothing && return nothing
-        token, state = result
-        if checktosemi(isTAXA, token, state, tokens)
-            result = iterateskip(tokens, state)
-            result === nothing && return nothing
-            token, state = result
-            token, state = parsetaxa(token, state, tokens, taxa)
-        elseif checktosemi(isTREES, token, state, tokens)
-            result = iterateskip(tokens, state)
-            result === nothing && return nothing
-            token, state = result
-            token, state, trees, treedata = parsetrees(token, state, tokens, TREE, taxa)
-        else
-            @warn "Unexpected nexus block '$(untokenize(token))', skipping..."
-            result = iterateskip(tokens, state)
-            result === nothing && return nothing
-            token, state = result
-            while !checktosemi(isEND, token, state, tokens) && token.kind != T.ENDMARKER
+    while isBEGIN(token) || token.kind == T.LSQUARE
+        if token.kind == T.LSQUARE
+            while token.kind != T.RSQUARE
                 result = iterateskip(tokens, state)
                 result === nothing && return nothing
                 token, state = result
+            end
+            result = iterateskip(tokens, state)
+            result === nothing && return nothing
+            token, state = result
+        else
+            result = iterateskip(tokens, state)
+            result === nothing && return nothing
+            token, state = result
+            if checktosemi(isTAXA, token, state, tokens)
+                result = iterateskip(tokens, state)
+                result === nothing && return nothing
+                token, state = result
+                token, state = parsetaxa(token, state, tokens, taxa)
+            elseif checktosemi(isTREES, token, state, tokens)
+                result = iterateskip(tokens, state)
+                result === nothing && return nothing
+                token, state = result
+                token, state, trees, treedata = parsetrees(token, state, tokens, TREE, taxa)
+            else
+                @warn "Unexpected nexus block '$(untokenize(token))', skipping..."
+                result = iterateskip(tokens, state)
+                result === nothing && return nothing
+                token, state = result
+                while !checktosemi(isEND, token, state, tokens) && token.kind != T.ENDMARKER
+                    result = iterateskip(tokens, state)
+                    result === nothing && return nothing
+                    token, state = result
+                end
             end
         end
     end
