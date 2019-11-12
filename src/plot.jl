@@ -91,7 +91,7 @@ end
     if !isempty(fan.marker_x) || sa !== nothing
         @series begin
             seriestype := :scatter
-            a !== nothing && (series_annotations := sa)
+            sa !== nothing && (series_annotations := sa)
             _xcirc.(adjust(fan.marker_y), fan.marker_x), _ycirc.(adjust(fan.marker_y), fan.marker_x)
         end
     end
@@ -117,6 +117,13 @@ function _extend(tmp, x)
     return ret
 end
 
+"""
+    sort!(::AbstractTree)
+
+Sorts the branches descending from each node by total number of
+descendants. This creates a clearer tree for plotting. The
+process is also called "ladderizing" the tree
+"""
 function Base.sort!(tree::AbstractTree)
     function loc!(clade::String)
         if isleaf(tree, clade)
@@ -125,7 +132,7 @@ function Base.sort!(tree::AbstractTree)
 
         sizes = map(loc!, getchildren(tree, clade))
         node = getnode(tree, clade)
-        node.outbounds .= node.outbounds[sortperm(sizes)]
+        node.other .= node.other[sortperm(sizes)]
         sum(sizes) + 1
     end
 
@@ -163,7 +170,7 @@ function _findxy(tree::Phylo.AbstractTree)
     end
 
     root = getnodename(tree, getroot(tree))
-    height = Dict(tip => float(i) for (i, tip) in enumerate(nodefuture(tree, root)) if isleaf(tree, tip))
+    height = Dict(tip => float(i) for (i, tip) in enumerate(getnodename(tree, x) for x in traversal(tree, preorder) if isleaf(tree, x)))
     sizehint!(height, nnodes(tree))
     findheights!(root)
 
