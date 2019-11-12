@@ -31,6 +31,13 @@ function iterateskip(tokens, state = nothing)
         result === nothing && return nothing
         token, state = result
     end
+    ut = untokenize(token)
+    if ut[length(ut)] == '\r'
+        token = T.Token(token.kind, token.startpos, token.endpos,
+                        token.startbyte, token.endbyte,
+                        token.val[1:(length(token.val)-1)],
+                        token.token_error, token.dotop, token.suffix)
+    end
     return token, state
 end
 
