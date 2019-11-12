@@ -20,7 +20,7 @@ isTREES(token) = isIDENTIFIER(token, "trees")
 isDIMENSIONS(token) = isIDENTIFIER(token, "dimensions")
 isTAXLABELS(token) = isIDENTIFIER(token, "taxlabels")
 isTRANSLATE(token) = isIDENTIFIER(token, "translate")
-isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end")
+isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end") | isIDENTIFIER(token, "endblock")
 
 function iterateskip(tokens, state = nothing)
     result = (state === nothing) ? iterate(tokens) : iterate(tokens, state)
