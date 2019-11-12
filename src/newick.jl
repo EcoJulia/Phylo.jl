@@ -32,7 +32,7 @@ function iterateskip(tokens, state = nothing)
         token, state = result
     end
     ut = untokenize(token)
-    if ut[length(ut)] == '\r'
+    if length(ut) > 1 && ut[length(ut)] == '\r'
         token = T.Token(token.kind, token.startpos, token.endpos,
                         token.startbyte, token.endbyte,
                         token.val[1:(length(token.val)-1)],
@@ -487,7 +487,7 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
         token, state = result
         token, state, treename = tokensgetkey(token, state, tokens,
                                               t -> t.kind ∈ [T.LSQUARE, T.EQ])
-        @info "Created a tree called '$treename'"
+        @info "Created a tree called \"$treename\""
         trees[treename] = TREE()
         createnodes!(trees[treename], collect(values(taxa)))
         if token.kind == T.LSQUARE
