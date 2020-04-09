@@ -21,7 +21,7 @@ julia = "1"
 
 Compat = "0.61, 1, 2, 3"
 DataFrames = "0"
-DataStructures = "0.4.3"
+DataStructures = "0"
 Distributions = "0"
 IterableTables = "0"
 Missings = "0"
