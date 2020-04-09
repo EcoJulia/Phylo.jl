@@ -1,13 +1,20 @@
 using RecipesBase
 
-@recipe function f(tree::Phylo.AbstractTree; treetype = :dendrogram, showtips = true, tipfont = (7,))
+@recipe function f(tree::Phylo.AbstractTree; treetype = :dendrogram, marker_group = nothing, line_group = nothing, showtips = true, tipfont = (7,))
 
-    #linecolor --> :black
+    linecolor --> :black
     grid --> false
     framestyle --> :none
     legend --> false
     colorbar --> true
     size --> (1000, 1000)
+
+    lz = get(plotattributes, :line_z, nothing)
+    mz = get(plotattributes, :marker_z, nothing)
+    isnothing(lz) || (line_z := _handlez(lz, tree))
+    isnothing(mz) || (marker_z := _handlez(mz, tree))
+    mg = _handlez(marker_group, tree)
+    lg = _handlez(line_group, tree)
 
     d, h, n = _findxy(tree)
     adj = 0.03maximum(values(d))
@@ -21,26 +28,23 @@ using RecipesBase
         end
     end
 
-    marker_x, marker_y = Float64[], Float64[]
-    if any(x->occursin(r"marker", String(x)), keys(plotattributes))
-        f = nodenamefilter(!isleaf, tree)
-        append!(marker_x, getindex.(Ref(d), f))
-        append!(marker_y, getindex.(Ref(h), f))
-    end
+    marker_x, marker_y = _handlemarkers(plotattributes, mg, tree, d, h)
 
     if treetype == :dendrogram
-        Dendrogram(x, y, tipannotations, marker_x, marker_y, showtips, tipfont)
+        Dendrogram(x, y, tipannotations, marker_x, marker_y, showtips, tipfont, mg, lg)
     elseif treetype == :fan
-        Fan(x, y, tipannotations, marker_x, marker_y, showtips, tipfont)
+        Fan(x, y, tipannotations, marker_x, marker_y, showtips, tipfont, mg, lg)
     else
         throw(ArgumentError("Unsupported `treetype`; valid values are `:dendrogram` or `:fan`"))
     end
 end
 
-struct Dendrogram; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
-struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
+struct Dendrogram; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_group; line_group; end
+struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_group; line_group; end
 
 @recipe function f(dend::Dendrogram)
+    ex = extrema(filter(isfinite, dend.x))
+    xlims --> (ex[1] - 0.05 * ex[2], ex[2] * 1.15)
 
     sa = get(plotattributes, :series_annotations, nothing)
     @series begin
@@ -48,6 +52,8 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
         markersize := 0
         markershape := :none
         series_annotations := nothing
+        label --> ""
+    #    primary := false
 
         lc = _extend(get(plotattributes, :linecolor, nothing), dend.x)
         lc !== nothing && (linecolor := lc)
@@ -59,14 +65,30 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; end
         dend.x, dend.y
     end
     if !isempty(dend.marker_x) || sa !== nothing
-        @series begin
-            seriestype := :scatter
-            sa !== nothing && (series_annotations := sa)
-            dend.marker_x, dend.marker_y
+        if isnothing(dend.marker_group)
+            @series begin
+                seriestype := :scatter
+                sa !== nothing && (series_annotations := sa)
+                label --> ""
+                dend.marker_x, dend.marker_y
+            end
+        else
+            groups = sort(unique(dend.marker_group))
+            for group in groups
+                idxs = findall(==(group), dend.marker_group)
+                @series begin
+                    seriestype := :scatter
+                    sa !== nothing && (series_annotations := sa[idxs])
+                    label --> string(group)
+                    dend.marker_x[idxs], dend.marker_y[idxs]
+                end
+            end
         end
     end
     dend.showtips && (annotations := map(x -> (x[1], x[2], (x[3], :left, dend.tipfont...)), dend.tipannotations))
-    [],[]
+    primary = false
+    label = ""
+    nothing
 end
 
 @recipe function f(fan::Fan)
@@ -78,6 +100,7 @@ end
         markersize := 0
         markershape := :none
         series_annotations := nothing
+        label := ""
 
         x, y = _circle_transform_segments(fan.x, adjust(fan.y))
         lc = _extend(get(plotattributes, :linecolor, nothing), x)
@@ -89,10 +112,24 @@ end
         x, y
     end
     if !isempty(fan.marker_x) || sa !== nothing
-        @series begin
-            seriestype := :scatter
-            sa !== nothing && (series_annotations := sa)
-            _xcirc.(adjust(fan.marker_y), fan.marker_x), _ycirc.(adjust(fan.marker_y), fan.marker_x)
+        if isnothing(fan.marker_group)
+            @series begin
+                seriestype := :scatter
+                sa !== nothing && (series_annotations := sa)
+                label --> ""
+                _xcirc.(adjust(fan.marker_y), fan.marker_x), _ycirc.(adjust(fan.marker_y), fan.marker_x)
+            end
+        else
+            groups = sort(unique(fan.marker_group))
+            for group in groups
+                idxs = findall(==(group), fan.marker_group)
+                @series begin
+                    seriestype := :scatter
+                    sa !== nothing && (series_annotations := sa[idxs])
+                    label --> string(group)
+                    _xcirc.(adjust(fan.marker_y[idxs]), fan.marker_x[idxs]), _ycirc.(adjust(fan.marker_y[idxs]), fan.marker_x[idxs])
+                end
+            end
         end
     end
     aspect_ratio := 1
@@ -103,7 +140,24 @@ end
         annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., (x[3], :left,
             rad2deg(adjust(x[2])), fan.tipfont...)), fan.tipannotations)
     end
-    [],[]
+    nothing
+end
+
+_handlez(x, tree) = x
+_handlez(x::Union{String, Symbol}, tree) = getnodedata.(tree, traversal(tree, preorder), x)
+_mylength(x) = 1
+_mylength(x::AbstractVector) = length(x)
+function _handlemarkers(plotattributes, marker_group, tree, d, h)
+    marker_x, marker_y = Float64[], Float64[]
+    markerfields = filter(x->occursin(r"marker", String(x)), keys(plotattributes))
+    isempty(markerfields) && isnothing(marker_group) && return(marker_x, marker_y)
+    maxlengthfields = isempty(markerfields) ? 1 : maximum([_mylength(plotattributes[k]) for k in markerfields])
+    maxlengthgroup = isnothing(marker_group) ? 1 : length(marker_group)
+    maxlength = max(maxlengthfields, maxlengthgroup)
+    f = maxlength ∈ (1, count(x->!isleaf(tree, x), traversal(tree))) ? nodenamefilter(!isleaf, tree) : nodenameiter(tree)
+    append!(marker_x, getindex.(Ref(d), f))
+    append!(marker_y, getindex.(Ref(h), f))
+    marker_x, marker_y
 end
 
 function _extend(tmp, x)
