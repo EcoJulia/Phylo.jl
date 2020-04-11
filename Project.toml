@@ -23,8 +23,9 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 [compat]
 DataStructures = "≥ 0.4.3"
 Distributions = "≥ 0.12.2"
+IterableTables = "≥ 1.0.0"
 Tokenize = "≥ 0.1.0"
-julia = "≥ 0.7"
+julia = "≥ 1.0"
 
 [extras]
 JuliaDB = "a93385a2-3734-596a-9a66-3cfbb77141e6"
