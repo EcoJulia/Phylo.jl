@@ -1,6 +1,7 @@
 using Random
 import Distributions: ValueSupport, Sampleable
 import Base: eltype, rand
+import Random: rand!
 using Phylo
 using Distributions
 using Missings
@@ -15,6 +16,8 @@ iscontinuous(::Type{N}) where N <: Number = numtype(N) <: AbstractFloat
 struct Phylogenetics{T <: AbstractTree} <: ValueSupport end
 Base.eltype(::Type{Phylogenetics{T}}) where T <: AbstractTree = T
 Base.eltype(::Sampleable{S, P}) where {S, P <: Phylogenetics} = eltype(P)
+
+Random.rand!(s::Sampleable, t::AbstractTree) = rand!(Random.GLOBAL_RNG, s, t)
 
 """
     Nonultrametric{T <: AbstractTree,
@@ -284,49 +287,75 @@ function BrownianTrait(tree::T, trait::String, start::N = 0.0;
         @warn "Note that the third argument (the starting state) for trait '$trait' is untransformed - transformed version is $(f(start))"
     
     if ismissing(σ)
-        dimension(start) ==
+        dimension(N) ≡
             dimension(sqrt(getlength(tree, first(getbranches(tree))))) ||
             throw(DimensionMismatch("Dimensions of start, σ[²] and branch lengths must combine correctly if using Unitful"))
         return BrownianTrait{T, N}(tree, trait, start,
-                                   ((rng::AbstractRNG, start, length) ->
-                                    start + randn(rng) * sqrt(length)), f)
+                                   ((rng::AbstractRNG, start::N, length) ->
+                                    start + randn(rng, typeof(one(start))) *
+                                    sqrt(length)), f)
     else
-        dimension(start) == dimension(σ*sqrt(getlength(tree,
-                                                       first(getbranches(tree))))) ||
-                                                      throw(DimensionMismatch("Dimensions of start, σ[²] and branch lengths must combine correctly if using Unitful"))
+        dimension(N) ≡
+            dimension(σ*sqrt(getlength(tree,
+                                       first(getbranches(tree))))) ||
+                                           throw(DimensionMismatch("Dimensions of start, σ[²] and branch lengths must combine correctly if using Unitful"))
         return BrownianTrait{T, N}(tree, trait, start,
-                                   ((rng::AbstractRNG, start, length) ->
-                                    start + σ * randn(rng) * sqrt(length)), f)
+                                   ((rng::AbstractRNG, start::N, length) ->
+                                    start +
+                                    σ * randn(rng, typeof(one(start))) *
+                                    sqrt(length)), f)
     end
 end
 
-function rand(rng::AbstractRNG,
-              bm::BrownianTrait{TREE}) where TREE <: AbstractTree
-    trait = Dict{nodetype(TREE), typeof(bm.start)}()
+function rand!(rng::AbstractRNG,
+               bm::BrownianTrait{TREE, N},
+               tree::TREE) where {TREE <: AbstractTree, N <: Number}
+    trait = Dict{nodetype(TREE), N}()
     use_dict = (bm.f ≢ identity)
-    for node in traversal(bm.tree, preorder)
-        if isroot(bm.tree, node)
+    for node in traversal(tree, preorder)
+        if isroot(tree, node)
             if use_dict
                 trait[node] = bm.start
-                setnodedata!(bm.tree, node, bm.trait, bm.f(bm.start))
+                setnodedata!(tree, node, bm.trait, bm.f(bm.start))
             else
-                setnodedata!(bm.tree, node, bm.trait, bm.start)
+                setnodedata!(tree, node, bm.trait, bm.start)
             end                
         else
-            inb = getinbound(bm.tree, node)
-            prt = src(bm.tree, inb)
+            inb = getinbound(tree, node)
+            prt = src(tree, inb)
             previous = use_dict ? trait[prt] :
-                getnodedata(bm.tree, prt, bm.trait)
-            value = bm._rand(rng, previous, getlength(bm.tree, inb))
+                getnodedata(tree, prt, bm.trait)
+            value = bm._rand(rng, previous, N(getlength(tree, inb)))
             if use_dict
                 trait[node] = value
-                setnodedata!(bm.tree, node, bm.trait, bm.f(value))
+                setnodedata!(tree, node, bm.trait, bm.f(value))
             else
-                setnodedata!(bm.tree, node, bm.trait, value)
+                setnodedata!(tree, node, bm.trait, value)
             end
         end
     end
-    return bm.tree
+    return tree
+end
+
+function rand(rng::AbstractRNG,
+              bm::BrownianTrait{TREE, N}) where {TREE <: AbstractTree,
+                                                 N <: Number}
+    untrait = Dict{nodetype(TREE), N}()
+    traitbyname = Dict{nodenametype(TREE), typeof(bm.f(bm.start))}()
+    for node in traversal(bm.tree, preorder)
+        if isroot(bm.tree, node)
+            untrait[node] = bm.start
+            traitbyname[getnodename(bm.tree, node)] = bm.f(bm.start)
+        else
+            inb = getinbound(bm.tree, node)
+            prt = src(bm.tree, inb)
+            previous = untrait[prt]
+            value = bm._rand(rng, previous, N(getlength(bm.tree, inb)))
+            untrait[node] = value
+            traitbyname[getnodename(bm.tree, node)] = bm.f(value)
+        end
+    end
+    return traitbyname
 end
 
 abstract type AbstractDiscreteTrait{T <: AbstractTree, E <: Enum} <:

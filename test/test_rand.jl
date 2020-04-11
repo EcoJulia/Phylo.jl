@@ -2,6 +2,7 @@ module TestRand
 
 using Phylo
 using DataFrames
+using Random
 
 using Test
 
@@ -27,6 +28,16 @@ using Test
     for name in nodenameiter(t3)
         @test all(getnodedata(t3, name) .== nodehistory(t3, name))
     end
+    d = rand(BrownianTrait(t, "trait", σ² = 1.0))
+    @test d ≢ t
+    @test species ⊆ collect(keys(d))
+    @test eltype(values(d)) ≡ typeof(1.0)
+    t4 = rand!(BrownianTrait(t, "trait64", σ² = 1.0), t)
+    @test t4 ≡ t
+    @test typeof(getnodedata(t4, species[1])["trait64"]) ≡ typeof(1.0)
+    t5 = rand!(BrownianTrait(t, "trait32", 0.0f0, σ² = 1.0f0), t)
+    @test typeof(getnodedata(t5, species[1])["trait32"]) ≡ typeof(1.0f0)
+    @test t5 ≡ t
 end
 
 @testset "Ultrametric()" begin
@@ -48,6 +59,16 @@ end
     u2 = rand(ul)
     @test eltype(ul) == BinaryTree{OneRoot, DataFrame, Vector{Float64}}
     @test length(nodefilter(isinternal, u2)) == numnodes - 2
+
+    d = rand(BrownianTrait(t, "trait", σ² = 1.0))
+    @test species ⊆ collect(keys(d))
+    @test eltype(values(d)) ≡ typeof(1.0)
+    t4 = rand!(BrownianTrait(t, "trait64", σ² = 1.0), t)
+    @test t4 ≡ t
+    @test typeof(getnodedata(t4, species[1])["trait64"]) ≡ typeof(1.0)
+    t5 = rand!(BrownianTrait(t, "trait32", 0.0f0, σ² = 1.0f0), t)
+    @test typeof(getnodedata(t5, species[1])["trait32"]) ≡ typeof(1.0f0)
+    @test t5 ≡ t
 end
 
 @testset "TestSets" begin
