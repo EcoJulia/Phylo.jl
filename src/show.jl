@@ -113,9 +113,16 @@ end
 
 function show(io::IO, object::TreeSet)
     showsimple(io, object)
-    for name in _gettreenames(object)
-        @printf(io, "\n%s: ", name)
-        showsimple(io, object[name])
+    tn =  sort(collect(_gettreenames(object)))
+    index = 0
+    for name in tn
+        index += 1
+        if index ≤ 5 || index == length(tn)
+            @printf(io, "\n%s: ", name)
+            showsimple(io, object[name])
+        elseif index == 6
+            println("\n[$(length(tn)-6) trees omitted]\n")
+        end
     end
 end
 
