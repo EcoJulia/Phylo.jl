@@ -483,13 +483,19 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
 
     trees = Dict{String, TREE}()
     treedata = Dict{String, Dict{String, Any}}()
+    numTrees = 0
     while isTREE(token)
         result = iterateskip(tokens, state)
         result === nothing && return nothing
         token, state = result
         token, state, treename = tokensgetkey(token, state, tokens,
                                               t -> t.kind ∈ [T.LSQUARE, T.EQ])
-        @info "Created a tree called \"$treename\""
+        numTrees += 1
+        if numTrees < 10
+            @info "Created a tree called \"$treename\""
+        elseif numTrees == 10
+            @info "[Stopping reporting on tree creation]"
+        end
         trees[treename] = TREE()
         createnodes!(trees[treename], collect(values(taxa)))
         if token.kind == T.LSQUARE
@@ -562,6 +568,9 @@ function parsenexus(token, state, tokens, ::Type{TREE}) where
                     result === nothing && return nothing
                     token, state = result
                 end
+                result = iterateskip(tokens, state)
+                result === nothing && return nothing
+                token, state = result
             end
         end
     end
