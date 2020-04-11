@@ -1008,14 +1008,14 @@ end
 Return the other node connected to `branch` that is not `exclude`.
 """
 function conn end
-function conn(tree::AbstractTree{OneTree}, branch, exclude)
+@traitfn function conn(tree::T, branch::B, exclude::N) where
+    {T <: AbstractTree{OneTree}, B, N; !MatchBranchNodeType{T, B, N}}
     hasbranch(tree, branch) || error("Branch $branch does not exist")
     hasnode(tree, exclude) || error("Node $exclude does not exist")
     return _conn(tree, _getbranch(tree, branch), _getnode(tree, exclude))
 end
 @traitfn function conn(tree::T, branch::B, exclude::N) where
-    {T <: AbstractTree{OneTree}, B, N;
-     MatchBranchType{T, B}, MatchNodeType{T, N}}
+    {T <: AbstractTree{OneTree}, B, N; MatchBranchNodeType{T, B, N}}
     _hasbranch(tree, branch) || error("Branch $branch does not exist")
     _hasnode(tree, exclude) || error("Node $exclude does not exist")
     return _conn(tree, branch, exclude)

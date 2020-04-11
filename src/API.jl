@@ -22,6 +22,9 @@ using Unitful
 @traitdef MatchBranchType{T, B}
 @traitimpl MatchBranchType{T, B} <- _matchbranchtype(T, B)
 
+@traitdef MatchBranchNodeType{T, B, N}
+@traitimpl MatchBranchNodeType{T, B, N} <- _matchbranchnodetype(T, N)
+
 @traitdef MatchTreeNameType{T, TN}
 @traitimpl MatchTreeNameType{T, TN} <- _matchtreenametype(T, TN)
 
@@ -62,8 +65,8 @@ _matchnodetypes(::Type{<:AbstractTree}, ::Type{<:Any}, ::Type{<:Any}) = false
 _matchnodetypes(::Type{T}, ::Type{N}, ::Type{N}) where {T, N} =
     _prefernodeobjects(T, N)
 
-"""
-    _preferbranchtype(::Type{<:AbstractTree}, ::Type{<:AbstractBranch})
+    """
+    _matchbranchtype(::Type{<:AbstractTree}, ::Type{<:AbstractBranch})
 
 Does this tree type prefer the branch or branch label type provided?
 """
@@ -74,6 +77,18 @@ _matchbranchtype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
 _matchbranchtype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
                  ::Type{Int}) where {TT, RT, NL, N, B} =
                      !_preferbranchobjects(B)
+
+"""
+    _matchbranchnodetype(::Type{<:AbstractTree},
+                         ::Type{<:AbstractBranch},
+                         ::Type{<:AbstractNode})
+
+Does this tree type prefer the branch and node types provided?
+"""
+function _matchbranchnodetype end
+_matchbranchtype(::Type{T}, ::Type{B}, ::Type{N}) where
+    {TT, RT, NL, N, B, T <: AbstractTree{TT, RT, NL, N, B}} =
+                    _matchbranchtype(T, B) && _matchnodetype(T, N)
 
 """
     _matchtreenametype(::Type{<:AbstractTree}, ::Type{X})

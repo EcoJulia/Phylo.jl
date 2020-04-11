@@ -79,6 +79,7 @@ export MatchNodeType, MatchNodeTypes, PreferNodeObjects, _prefernodeobjects
 # AbstractBranch methods
 export _src, _dst, _getlength
 export MatchBranchType, PreferBranchObjects, _preferbranchobjects
+export MatchBranchNodeType
 
 # Label names
 export _newnodelabel, _newbranchlabel
