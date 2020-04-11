@@ -133,7 +133,7 @@ Find the branch route between two nodes on a tree
 """
 function branchroute end
 @traitfn function branchroute(tree::T, node1::N, node2::N) where
-    {RT, N, T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
+    {RT, N, T <: AbstractTree{OneTree, RT}; !MatchNodeType{T, N}}
     return branchroute(tree, getnode(tree, node1), getnode(tree, node2))
 end
 @traitfn function branchroute(tree::T, node1::N, node2::N) where
@@ -190,7 +190,7 @@ end
 Pairwise distances between all leaf nodes on a tree
 """
 function distances(tree::AbstractTree)
-    leaves = getleafnames(tree)
+    leaves = getleaves(tree)
     names = getnodename.(tree, leaves)
     return AxisArray([distance(tree, li, lj) for li in leaves, lj in leaves],
                      Axis{:x}(names), Axis{:y}(names))
