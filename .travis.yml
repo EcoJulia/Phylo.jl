@@ -1,26 +1,20 @@
 language: julia
-
-notifications:
-  recipients:
-    - git@richardreeve.net
-  email:
-    on_success: change
-    on_failure: always
-
 os:
   - linux
   - osx
 
 julia:
-  - 0.6
-  - 0.7
   - 1.0
+  - 1.4
   - nightly
 
 matrix:
   fast_finish: true
   allow_failures:
-    - julia: 1.0 # 1.0.3 fails on linux, but nightly is working.
+    - julia: nightly
+
+notifications:
+  email: false
 
 before_install:
   # linux
@@ -29,12 +23,17 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update -qq -y; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install git libxml2-dev r-base r-base-dev r-recommended -y --allow-unauthenticated; fi
 
-script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then JULIA_MUST_CROSSVALIDATE=1 julia -e '(try using Pkg; true catch; false end || Pkg.init()); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
-# (VERSION >= v"0.7.0-" && (ENV["JULIA_MUST_CROSSVALIDATE"] = "0"))
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then julia -e '(try using Pkg; true catch; false end || Pkg.init()); Pkg.clone(pwd()); Pkg.build("Phylo"); Pkg.test("Phylo", coverage=true)'; fi
+  # osx
+  # faster than using homebrew/science tap
+  # but no permalink to release download
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then wget "https://cran.rstudio.com/bin/macosx/$(wget -qO- https://cran.rstudio.com/bin/macosx/ | sed -n 's/.*href="\(R-[^"]*.pkg\)".*/\1/p' | head -n 1)"; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo installer -pkg R-*.pkg -target /; fi
+
+  # both
+  - sudo R -e 'install.packages("ape", repos="http://cran.r-project.org")'
 
 after_success:
-  - julia -e 'try using Pkg; catch end; using Phylo; cd(Phylo.path()); include("coverage.jl")'
-  - julia -e 'try using Pkg; catch end; Pkg.add("Documenter"); using Phylo; cd(Phylo.path(;dir=".")); include(joinpath("docs", "make.jl"))'
+  # linux
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'using Pkg; Pkg.add("Coverage"); Pkg.add("Documenter")'; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'using Coverage; p = process_folder(); Coveralls.submit(p); Codecov.submit(p)'; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then julia --color=yes -e 'include(joinpath("docs", "make.jl"))'; fi

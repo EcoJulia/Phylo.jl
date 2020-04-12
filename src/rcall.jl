@@ -1,5 +1,4 @@
 using Phylo
-using Compat: undef
 using .RCall
 using .RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
 import .RCall: rcopy
@@ -15,12 +14,12 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
 
     dict = rcopy(Dict{Symbol, Any}, rt)
     nodes = dict[:tip_label]
-    tree = NamedTree(nodes)
+    tree = T(nodes)
     edges = dict[:edge]
     nnode = dict[:Nnode]
     lengths = dict[:edge_length]
     nontips = nnode
-    append!(nodes, createnodes!(tree, nontips))
+    append!(nodes, getnodename.(tree, createnodes!(tree, nontips)))
 
     for edge in 1:size(edges, 1)
         createbranch!(tree,
@@ -28,29 +27,29 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
                       lengths[edge])
     end
 
-    validate(tree) || warn("Tree does not internally validate")
+    validate!(tree) || @warn "Tree does not internally validate"
     return tree
 end
 
 import .RCall.rcopytype
 
-rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = NamedTree
+rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = RootedTree
 
 import .RCall.sexp
 
 function sexp(tree::T) where T <: AbstractTree
-    validate(tree) || warn("Tree does not internally validate")
-
-    tipnames = getleafnames(tree)
-    root = [getnodename(tree, node) for node in getroots(tree)]
+    validate!(tree) || @warn "Tree does not internally validate"
+    leafnames = getleafnames(tree)
+    root = getnodename.(tree, getroots(tree))
     if (length(root) != 1)
         error("Can't currently translate tree with > 1 roots")
     end
-    nontips = collect(nodenamefilter(isinternal, tree))
+    nontips = [getnodename(tree, node) for node in traversal(tree, preorder)
+               if isinternal(tree, node)]
     tor = Dict{Symbol, Any}()
     tor[:Nnode] = length(nontips) + length(root)
-    tor[Symbol("tip.label")] = tipnames
-    nodes = copy(tipnames)
+    tor[Symbol("tip.label")] = leafnames
+    nodes = copy(leafnames)
     push!(nodes, root[1])
     append!(nodes, nontips)
     bi = branchiter(tree)
@@ -59,7 +58,8 @@ function sexp(tree::T) where T <: AbstractTree
     index = 1
     for branch in bi
         lengths[index] = getlength(tree, branch)
-        edges[index, :] = indexin([src(tree, branch), dst(tree, branch)], nodes)
+        edges[index, :] = indexin([getnodename(tree, src(tree, branch)),
+                                   getnodename(tree, dst(tree, branch))], nodes)
         index += 1
     end
     tor[:edge] = edges

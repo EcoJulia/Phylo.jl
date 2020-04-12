@@ -2,37 +2,48 @@ module TestRand
 
 using Phylo
 using DataFrames
+using Random
 
-using Compat.Test
+using Test
 
 @testset "Nonultrametric()" begin
     # Create a 10 tip tree
     nu = Nonultrametric(10)
-    @test eltype(nu) == NamedTree
-    @test validate(rand(nu))
+    @test eltype(nu) == RootedTree
+    @test validate!(rand(nu))
     @test Set(getleafnames(rand(nu))) == Set(getleafnames(rand(nu)))
     # Create a tree with named tips
     species = ["Dog", "Cat", "Human"]
     t = rand(Nonultrametric(species))
     @test ntrees(t) == 1
-    @test validate(t)
+    @test validate!(t)
     @test Set(getleafnames(t)) == Set(species)
 
-    t2 = rand(Nonultrametric{BinaryTree{DataFrame, Vector{Float64}}}(species))
-    @test length(getnoderecord(t2, species[1])) == 0
-    t3 = rand(Nonultrametric{BinaryTree{DataFrame, Vector{String}}}(species))
+    t2 = rand(Nonultrametric{BinaryTree{OneRoot, DataFrame, Vector{Float64}}}(species))
+    @test length(getnodedata(t2, species[1])) == 0
+    t3 = rand(Nonultrametric{BinaryTree{OneRoot, DataFrame, Vector{String}}}(species))
     map(nodenameiter(t3)) do name
-        setnoderecord!(t3, name, nodehistory(t3, name))
+        setnodedata!(t3, name, nodehistory(t3, name))
     end
     for name in nodenameiter(t3)
-        @test all(getnoderecord(t3, name) .== nodehistory(t3, name))
+        @test all(getnodedata(t3, name) .== nodehistory(t3, name))
     end
+    d = rand(BrownianTrait(t, "trait", σ² = 1.0))
+    @test d ≢ t
+    @test species ⊆ collect(keys(d))
+    @test eltype(values(d)) ≡ typeof(1.0)
+    t4 = rand!(BrownianTrait(t, "trait64", σ² = 1.0), t)
+    @test t4 ≡ t
+    @test typeof(getnodedata(t4, species[1])["trait64"]) ≡ typeof(1.0)
+    t5 = rand!(BrownianTrait(t, "trait32", 0.0f0, σ² = 1.0f0), t)
+    @test typeof(getnodedata(t5, species[1])["trait32"]) ≡ typeof(1.0f0)
+    @test t5 ≡ t
 end
 
 @testset "Ultrametric()" begin
     # Create a 10 tip tree
     u = Ultrametric(10)
-    @test validate(rand(u))
+    @test validate!(rand(u))
     @test Set(getleafnames(rand(u))) == Set(getleafnames(rand(u)))
     tree = rand(u)
     @test ntrees(tree) == 1
@@ -40,14 +51,24 @@ end
     @test all(h -> h ≈ heights[1], heights)
     species = ["Dog", "Cat", "Human"]
     t = rand(Ultrametric(species))
-    @test validate(t)
+    @test validate!(t)
     @test Set(getleafnames(t)) == Set(species)
 
     numnodes = 50
-    ul = Ultrametric{BinaryTree{DataFrame, Vector{Float64}}}(numnodes)
+    ul = Ultrametric{BinaryTree{OneRoot, DataFrame, Vector{Float64}}}(numnodes)
     u2 = rand(ul)
-    @test eltype(ul) == BinaryTree{DataFrame, Vector{Float64}}
+    @test eltype(ul) == BinaryTree{OneRoot, DataFrame, Vector{Float64}}
     @test length(nodefilter(isinternal, u2)) == numnodes - 2
+
+    d = rand(BrownianTrait(t, "trait", σ² = 1.0))
+    @test species ⊆ collect(keys(d))
+    @test eltype(values(d)) ≡ typeof(1.0)
+    t4 = rand!(BrownianTrait(t, "trait64", σ² = 1.0), t)
+    @test t4 ≡ t
+    @test typeof(getnodedata(t4, species[1])["trait64"]) ≡ typeof(1.0)
+    t5 = rand!(BrownianTrait(t, "trait32", 0.0f0, σ² = 1.0f0), t)
+    @test typeof(getnodedata(t5, species[1])["trait32"]) ≡ typeof(1.0f0)
+    @test t5 ≡ t
 end
 
 @testset "TestSets" begin
@@ -58,6 +79,6 @@ end
     @test length(ts) == 20
     @test ntrees(ts) == 20
     @test length(getleafnames(ts)) == length(names)
-    @test length(getnodenames(ts)) == length(names) * 2 - 1
+    @test length(getnodenames(first(gettrees(ts)))) .== length(names) * 2 - 1
 end
 end

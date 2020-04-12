@@ -1,4 +1,3 @@
-using Compat: @warn, @info
 using Tokenize
 using Tokenize.Lexers
 using Missings
@@ -21,30 +20,27 @@ isTREES(token) = isIDENTIFIER(token, "trees")
 isDIMENSIONS(token) = isIDENTIFIER(token, "dimensions")
 isTAXLABELS(token) = isIDENTIFIER(token, "taxlabels")
 isTRANSLATE(token) = isIDENTIFIER(token, "translate")
-isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end")
+isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end") | isIDENTIFIER(token, "endblock")
 
 function iterateskip(tokens, state = nothing)
-    if VERSION < v"0.7.0-"
-        if state !== nothing && done(tokens, state)
-            return nothing
-        end
-        token, state = (state === nothing) ?
-            next(tokens, start(tokens)) : next(tokens, state)
-        while isWHITESPACE(token)
-            token, state = next(tokens, state)
-        end
-        return token, state
-    else
-        result = (state === nothing) ? iterate(tokens) : iterate(tokens, state)
+    result = (state === nothing) ? iterate(tokens) : iterate(tokens, state)
+    result === nothing && return nothing
+    token, state = result
+    while isWHITESPACE(token)
+        result = iterate(tokens, state)
         result === nothing && return nothing
         token, state = result
-        while isWHITESPACE(token)
-            result = iterate(tokens, state)
-            result === nothing && return nothing
-            token, state = result
-        end
-        return token, state
     end
+    ut = untokenize(token)
+    if length(ut) > 1
+        if ut[length(ut)] == '\r'
+            token = T.Token(token.kind, token.startpos, token.endpos,
+                            token.startbyte, token.endbyte,
+                            token.val[1:(length(token.val)-1)],
+                            token.token_error, token.dotop, token.suffix)
+        end
+    end
+    return token, state
 end
 
 function tokensgetkey(token, state, tokens, finished::Function = isEQ)
@@ -220,9 +216,9 @@ function parsedict(token, state, tokens)
 end
 
 function parsenode(token, state, tokens, tree::TREE,
-                   lookup, siblings, istip) where {RT, NL, N, B,
-                                                   TREE <: AbstractTree{OneTree, RT, NL, N, B}}
-    myname = ""
+                   lookup, siblings, istip) where
+    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+    myname = missing
     endkinds = [T.SEMICOLON, T.COLON, T.COMMA, T.RPAREN, T.LSQUARE]
     if token.kind ∉ endkinds # We got a nodename
         token, state, name = tokensgetkey(token, state, tokens,
@@ -261,11 +257,11 @@ function parsenode(token, state, tokens, tree::TREE,
         token, state = result
     end
 
-    siblings[myname] = Dict{String, Any}()
+    siblings[getnodename(tree, myname)] = Dict{String, Any}()
     if token.kind == T.LSQUARE
         token, state, dict = parsedict(token, state, tokens)
-        siblings[myname]["dict"] = dict
-        setnoderecord!(tree, myname, dict)
+        siblings[getnodename(tree, myname)]["dict"] = dict
+        setnodedata!(tree, myname, dict)
     end
 
     if token.kind == T.COLON || foundcolon
@@ -287,7 +283,8 @@ function parsenode(token, state, tokens, tree::TREE,
             token, state = result
         end
         if token.kind ∈ [T.INTEGER, T.FLOAT]
-            siblings[myname]["length"] = sgn(parse(Float64, untokenize(token)))
+            siblings[getnodename(tree, myname)]["length"] =
+                sgn(parse(Float64, untokenize(token)))
         else
             tokenerror(token, "a length")
         end
@@ -341,15 +338,16 @@ function parsenewick!(token, state, tokens, tree::TREE,
         else
             error("At end of tree, but not ';'")
         end
-        tree = resetleaves!(tree)
+        if !validate!(tree)
+            error("Tree $(gettreename(tree)) does not validate!")
+        end
     end
 
     return token, state
 end
 
-function parsenewick(tokens::Tokenize.Lexers.Lexer,
-                     ::Type{TREE}) where {RT, N, B,
-                                                     TREE <: AbstractTree{OneTree, RT, String, N, B}}
+function parsenewick(tokens::Tokenize.Lexers.Lexer, ::Type{TREE}) where
+    {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
     result = iterateskip(tokens)
     if result === nothing
         error("Unexpected end of file at start of newick file")
@@ -382,7 +380,7 @@ function parsenewick(ios::IOStream, ::Type{TREE}) where TREE <: AbstractTree
     return parsenewick(buf, TREE)
 end
 
-parsenewick(inp) = parsenewick(inp, NamedTree)
+parsenewick(inp) = parsenewick(inp, RootedTree)
 
 function parsetaxa(token, state, tokens, taxa)
     if !isDIMENSIONS(token)
@@ -447,8 +445,8 @@ function parsetaxa(token, state, tokens, taxa)
     return iterateskip(tokens, state)
 end
 
-function parsetrees(token, state, tokens,
-                    ::Type{TREE}, taxa) where {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
+function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
+    {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
     notaxa = isempty(taxa)
     if isTRANSLATE(token)
         result = iterateskip(tokens, state)
@@ -485,13 +483,19 @@ function parsetrees(token, state, tokens,
 
     trees = Dict{String, TREE}()
     treedata = Dict{String, Dict{String, Any}}()
+    numTrees = 0
     while isTREE(token)
         result = iterateskip(tokens, state)
         result === nothing && return nothing
         token, state = result
         token, state, treename = tokensgetkey(token, state, tokens,
                                               t -> t.kind ∈ [T.LSQUARE, T.EQ])
-        @info "Created a tree called '$treename'"
+        numTrees += 1
+        if numTrees < 10
+            @info "Created a tree called \"$treename\""
+        elseif numTrees == 10
+            @info "[Stopping reporting on tree creation]"
+        end
         trees[treename] = TREE()
         createnodes!(trees[treename], collect(values(taxa)))
         if token.kind == T.LSQUARE
@@ -525,32 +529,45 @@ function parsetrees(token, state, tokens,
     return token, state, trees, treedata
 end
 
-function parsenexus(token, state, tokens,
-                    ::Type{TREE}) where {RT, NL, N, B,
-                                                    TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+function parsenexus(token, state, tokens, ::Type{TREE}) where
+    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     trees = missing
     treedata = missing
     taxa = Dict{NL, NL}()
-    while isBEGIN(token)
-        result = iterateskip(tokens, state)
-        result === nothing && return nothing
-        token, state = result
-        if checktosemi(isTAXA, token, state, tokens)
+    while isBEGIN(token) || token.kind == T.LSQUARE
+        if token.kind == T.LSQUARE
+            while token.kind != T.RSQUARE
+                result = iterateskip(tokens, state)
+                result === nothing && return nothing
+                token, state = result
+            end
             result = iterateskip(tokens, state)
             result === nothing && return nothing
             token, state = result
-            token, state = parsetaxa(token, state, tokens, taxa)
-        elseif checktosemi(isTREES, token, state, tokens)
-            result = iterateskip(tokens, state)
-            result === nothing && return nothing
-            token, state = result
-            token, state, trees, treedata = parsetrees(token, state, tokens, TREE, taxa)
         else
-            @warn "Unexpected nexus block '$(untokenize(token))', skipping..."
             result = iterateskip(tokens, state)
             result === nothing && return nothing
             token, state = result
-            while !checktosemi(isEND, token, state, tokens) && token.kind != T.ENDMARKER
+            if checktosemi(isTAXA, token, state, tokens)
+                result = iterateskip(tokens, state)
+                result === nothing && return nothing
+                token, state = result
+                token, state = parsetaxa(token, state, tokens, taxa)
+            elseif checktosemi(isTREES, token, state, tokens)
+                result = iterateskip(tokens, state)
+                result === nothing && return nothing
+                token, state = result
+                token, state, trees, treedata = parsetrees(token, state, tokens, TREE, taxa)
+            else
+                @warn "Unexpected nexus block '$(untokenize(token))', skipping..."
+                result = iterateskip(tokens, state)
+                result === nothing && return nothing
+                token, state = result
+                while !checktosemi(isEND, token, state, tokens) && token.kind != T.ENDMARKER
+                    result = iterateskip(tokens, state)
+                    result === nothing && return nothing
+                    token, state = result
+                end
                 result = iterateskip(tokens, state)
                 result === nothing && return nothing
                 token, state = result
@@ -592,4 +609,4 @@ function parsenexus(ios::IOStream, ::Type{TREE}) where {RT, NL, N, B,
     return parsenexus(buf, TREE)
 end
 
-parsenexus(inp) = parsenexus(inp, NamedTree)
+parsenexus(inp) = parsenexus(inp, RootedTree)

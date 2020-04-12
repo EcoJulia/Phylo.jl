@@ -1,7 +1,6 @@
 using Phylo
 using Phylo.API
-using Compat
-using Compat.Printf
+using Printf
 
 function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
               n::String = "")
@@ -9,18 +8,18 @@ function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
     if !isempty(n)
         node *= " $n"
     end
-    if !_hasinbound(object[1], object[2])
-        if _outdegree(object[1], object[2]) > 0
+    if !hasinbound(object[1], object[2])
+        if outdegree(object[1], object[2]) > 0
             blank = repeat(" ", length(" [root $node]") + (isempty(n) ? 0 : 1))
             for (i, bn) in zip(Base.OneTo(_outdegree(object[1], object[2])),
-                               _getoutbounds(object[1], object[2]))
+                               getoutbounds(object[1], object[2]))
                 b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
-                if _outdegree(object[1], object[2]) == 1
+                if outdegree(object[1], object[2]) == 1
                     print(io, "[root $node]-->[branch $b]")
                 elseif get(io, :compact, false)
                     if i == 1
                         print(io, "[root $node]-->[branches $b")
-                    elseif i < _outdegree(object[1], object[2])
+                    elseif i < outdegree(object[1], object[2])
                         print(io, ", $b")
                     else
                         print(io, " and $b]")
@@ -28,7 +27,7 @@ function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
                 else # multiline view
                     if i == 1
                         println(io, "[root $node]-->[branch $b]")
-                    elseif i < _outdegree(object[1], object[2])
+                    elseif i < outdegree(object[1], object[2])
                         println(io, "$blank-->[branch $b]")
                     else
                         print(io, "$blank-->[branch $b]")
@@ -39,25 +38,25 @@ function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
             print(io, "[unattached $node]")
         end
     else # hasinbound
-        inb = typeof(_getinbound(object[1], object[2])) <: Number ?
+        inb = typeof(getinbound(object[1], object[2])) <: Number ?
             "$(_getinbound(object[1], object[2]))" :
             "\"$(_getinbound(object[1], object[2]))\""
-        if _outdegree(object[1], object[2]) == 0
+        if outdegree(object[1], object[2]) == 0
             print(io, "[branch $inb]-->[leaf $node]")
-        elseif _hasinbound(object[1], object[2])
+        elseif hasinbound(object[1], object[2])
             blank = repeat(" ",
                            length(" [branch $inb]-->[internal $node]") +
                            (isempty(n) ? 0 : 1))
             for (i, bn) in zip(Base.OneTo(_outdegree(object[1], object[2])),
-                               _getoutbounds(object[1], object[2]))
+                               getoutbounds(object[1], object[2]))
                 b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
-                if _outdegree(object[1], object[2]) == 1
+                if outdegree(object[1], object[2]) == 1
                     print(io, "[branch $inb]-->[internal $node]-->[branch $b]")
                 elseif get(io, :compact, false)
                     if i == 1
                         print(io, "[branch $inb]-->[internal $node]-->" *
                               "[branches $b")
-                    elseif i < _outdegree(object[1], object[2])
+                    elseif i < outdegree(object[1], object[2])
                         print(io, ", $b")
                     else
                         print(io, " and $b]")
@@ -66,7 +65,7 @@ function show(io::IO, object::Tuple{<: AbstractTree, <: AbstractNode},
                     if i == 1
                         println(io, "[branch $inb]-->[internal $node]-->" *
                                 "[branch $b]")
-                    elseif i < _outdegree(object[1], object[2])
+                    elseif i < outdegree(object[1], object[2])
                         println(io, "$blank-->[branch $b]")
                     else
                         print(io, "$blank-->[branch $b]")
@@ -114,9 +113,16 @@ end
 
 function show(io::IO, object::TreeSet)
     showsimple(io, object)
-    for name in _gettreenames(object)
-        @printf(io, "\n%s: ", name)
-        showsimple(io, object[name])
+    tn =  sort(collect(_gettreenames(object)))
+    index = 0
+    for name in tn
+        index += 1
+        if index ≤ 5 || index == length(tn)
+            @printf(io, "\n%s: ", name)
+            showsimple(io, object[name])
+        elseif index == 6
+            println("\n[$(length(tn)-6) trees omitted]\n")
+        end
     end
 end
 
@@ -140,9 +146,9 @@ function show(io::IO, object::AbstractTree)
         println(io, [(object, node) for node in _getnodes(object)])
         println(io, "Branches:")
         println(io, [(object, branch) for branch in _getbranches(object)])
-        if _noderecordtype(TREE) !== Nothing
+        if _nodedatatype(TREE) !== Nothing
             println(io, "Node records:")
-            println(io, Dict(name => _getnoderecord(object, name)
+            println(io, Dict(name => _getnodedata(object, name)
                              for name in _getnodenames(object)))
         end
     end

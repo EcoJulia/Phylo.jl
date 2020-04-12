@@ -1,6 +1,6 @@
 using IterableTables
 using IterableTables: getiterator
-using Compat: findall
+using Phylo.API
 
 """
     getinternalnodes(t::AbstractTree)
@@ -8,72 +8,88 @@ Function to retrieve only the internal nodes from a tree, `t`, which does not
 include tips or root.
 
 """
-function getinternalnodes(t::AbstractTree)
-    return [name for name in getnodenames(t) if isinternal(t, name)]
-end
-"""
-    droptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
-Function to drop tips from a phylogenetic tree `t`, which are found in
-the vector of tip names, `tips`.
+getinternalnodes(t::AbstractTree) = collect(nodenamefilter(isinternal, t))
 
 """
-function droptips!(t::AbstractTree{OneTree, RT, NL}, tips::Vector{NL}) where
-    {RT, NL}
-    tree_names = getleafnames(t)
-    keep_tips = setdiff(tree_names, tips)
+    droptips!(tree::AbstractTree{OneTree}, tips)
+
+Function to drop tips from a phylogenetic tree `tree`, which are found in
+the vector of tips or tip names, `tips`.
+"""
+function droptips! end
+@traitfn function droptips!(tree::T, tips::AbstractVector{N}) where
+    {N, RT, T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
+    return droptips!(tree, [getnode(tree, tip) for tip in tips])
+end
+
+@traitfn function droptips!(tree::T, tips::AbstractVector{N}) where
+    {N, RT, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
+    keep_tips = [tip for tip in getleaves(tree) if tip ∉ tips]
+    tipnames = [getnodename(tree, tip) for tip in tips]
+    
     # Remove nodes that are not in tip names
-    for i in tips
-        deletenode!(t, i)
+    for tip in tips
+        _deletenode!(tree, tip)
     end
+    
     # Remove nodes that are related to the cut tips
-    while length(setdiff(collect(nodenamefilter(isleaf, t)), keep_tips)) > 0
-        nodes = setdiff(collect(nodenamefilter(isleaf, t)), keep_tips)
-        map(x -> deletenode!(t, x), nodes)
+    while length(setdiff(collect(nodefilter(isleaf, tree)), keep_tips)) > 0
+        nodes = setdiff(collect(nodefilter(isleaf, tree)), keep_tips)
+        map(x -> deletenode!(tree, x), nodes)
     end
+    
     # Merge internal nodes that no longer have multiple children
-    while any(map(x -> length(getchildren(t, x)) .< 2,
-                  getinternalnodes(t)))
-        inner_nodes = getinternalnodes(t)
-        remove_nodes = findall(map(x->length(getchildren(t, x)) .< 2,
+    while any(map(x -> length(getchildren(tree, x)) .< 2,
+                  getinternalnodes(tree)))
+        inner_nodes = getinternalnodes(tree)
+        remove_nodes = findall(map(x->length(getchildren(tree, x)) .< 2,
                                    inner_nodes))
         for i in remove_nodes
-            parent = getparent(t, inner_nodes[i])
-            parentbranch = getinbound(t, inner_nodes[i])
+            parent = getparent(tree, inner_nodes[i])
+            parentbranch = getinbound(tree, inner_nodes[i])
 
-            child = getchildren(t, inner_nodes[i])[1]
-            childbranch = getoutbounds(t, getnode(t, inner_nodes[i]))[1]
+            child = getchildren(tree, inner_nodes[i])[1]
+            childbranch = getoutbounds(tree, getnode(tree, inner_nodes[i]))[1]
 
-            len = distance(t, parent, child)
+            len = distance(tree, parent, child)
 
-            deletebranch!(t, parentbranch)
-            deletebranch!(t, childbranch)
-            deletenode!(t, inner_nodes[i])
+            deletebranch!(tree, parentbranch)
+            deletebranch!(tree, childbranch)
+            deletenode!(tree, inner_nodes[i])
 
-            createbranch!(t, parent, child, len)
+            createbranch!(tree, parent, child, len)
         end
     end
+    
     # Remove root if it no longer has two branches
-    root = first(nodenamefilter(isroot, t))
-    if length(getchildren(t, root)) < 2
-        deletenode!(t, root)
+    root = first(nodefilter(isroot, tree))
+    if length(getchildren(tree, root)) < 2
+        deletenode!(tree, root)
     end
 
-    if !isempty(getleafinfo(t))
-        li = leafinfotype(t)(Iterators.filter(line -> line[1] ∉ tips,
-                                              getiterator(getleafinfo(t))))
-        setleafinfo!(t, li)
+    if !isempty(getleafinfo(tree))
+        li = leafinfotype(typeof(tree))(Iterators.
+                                        filter(line -> line[1] ∉ tipnames,
+                                               getiterator(getleafinfo(tree))))
+        setleafinfo!(tree, li)
     end
-    return tips
+    return tipnames
 end
 
 """
-    keeptips!(t::T, tips::Vector{NL}) where {NL, BL, T <: AbstractTree{NL, BL}}
-Function to keep only the tips in a phylogenetic tree, `t`, that are found in
-the vector of tip names, `tip`.
+    keeptips!(tree::AbstractTree{OneTree}, tips)
 
+Function to keep only the tips in a phylogenetic tree, `tree`, that are found in
+the vector of tips or tip names, `tips`.
 """
-function keeptips!(t::AbstractTree, tips::AbstractVector)
-    tree_names = getleafnames(t)
-    cut_names = setdiff(tree_names, tips)
-    droptips!(t, cut_names)
+function keeptips! end
+@traitfn function keeptips!(tree::T, tips::AbstractVector{N}) where
+    {N, RT, T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
+    return keeptips!(tree, [getnode(tree, tip) for tip in tips])
+end
+
+@traitfn function keeptips!(tree::T, tips::AbstractVector{N}) where
+    {N, RT, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
+    drop_tips = [tip for tip in getleaves(tree) if tip ∉ tips]
+    return droptips!(tree, drop_tips)
 end

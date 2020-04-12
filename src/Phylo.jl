@@ -19,8 +19,6 @@ interact cleanly with other phylogenetic packages.
 module Phylo
 
 import Base: Pair, Tuple, show, eltype, length, getindex
-import Compat: IteratorSize, IteratorEltype
-
 abstract type Rootedness end
 struct Unrooted <: Rootedness end
 abstract type Rooted <: Rootedness end
@@ -41,8 +39,8 @@ abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
                            B <: AbstractBranch{RT, NL}} end
 export AbstractTree
 
-@enum TraversalOrder preorder inorder postorder breadthfirst
-export TraversalOrder
+@enum TraversalOrder anyorder preorder inorder postorder breadthfirst
+export TraversalOrder, anyorder, preorder, inorder, postorder, breadthfirst
 
 """
     Phylo.API submodule
@@ -60,13 +58,15 @@ export _createbranch!, _deletebranch!, _createnode!, _deletenode!
 export _getnodenames, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
-export _getleafinfo, _setleafinfo!, _leafinfotype
-export _getnoderecord, _setnoderecord!
+export _getleafinfo, _setleafinfo!, _leafinfotype, _gettreeinfo
+export _getnodedata, _setnodedata!, _nodedatatype
+export _getbranchdata, _setbranchdata!, _branchdatatype
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
-export _validate, _traversal
+export _validate!, _traversal, _branchdims
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
+export HoldsNodeData, MatchTreeNameType
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
@@ -74,9 +74,12 @@ export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _degree
 export _hasinbound, _getinbound, _addinbound!, _removeinbound!
 export _getoutbounds, _addoutbound!, _removeoutbound!
 export _getconnections, _addconnection!, _removeconnection!
+export MatchNodeType, MatchNodeTypes, PreferNodeObjects, _prefernodeobjects
 
 # AbstractBranch methods
 export _src, _dst, _getlength
+export MatchBranchType, PreferBranchObjects, _preferbranchobjects
+export MatchBranchNodeType
 
 # Label names
 export _newnodelabel, _newbranchlabel
@@ -87,7 +90,8 @@ include("Interface.jl")
 # AbstractTree methods
 export ntrees, gettrees, nroots, getroots, getroot
 export treenametype, gettreenames, getonetree, gettreename
-export nodetype, branchtype, nodenametype, branchnametype
+export roottype, nodetype, nodedatatype, nodenametype
+export branchtype, branchdatatype, branchnametype
 export createbranch!, deletebranch!, branch!
 export createnode!, createnodes!, deletenode!
 export getnodenames, getnodename, hasnode, getnode, getnodes
@@ -95,24 +99,38 @@ export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
 export hasrootheight, getrootheight, setrootheight!
 export hasparent, getparent, getancestors
 export haschildren, getchildren, getdescendants
-export validate, traversal
+export validate!, traversal, branchdims
+
+@deprecate addnode! createnode!
+@deprecate addnodes! createnodes!
+@deprecate addbranch! createbranch!
+@deprecate(branch!(tree, source, length = missing;
+                   destination = _newnodelabel(tree),
+                   branchname = _newbranchlabel(tree)),
+           createbranch!(tree, source, createnode!(tree, destination),
+                         length; name = branchname))
 
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, getleaves, resetleaves, nleaves, nnodes
+export getleafnames, getleaves, nleaves, nnodes, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
-export getnoderecord, setnoderecord!
+export getnodedata, setnodedata!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
 export src, dst, getlength
 export hasrootheight, getrootheight, setrootheight!, clearrootheight!
+export getbranchdata, setbranchdata!
 export getrootdistance
 
-#include("Info.jl")
-#export LeafInfo
+@deprecate getnoderecord getnodedata
+@deprecate setnoderecord! setnodedata!
+@deprecate getbranchrecord getbranchdata
+@deprecate setbranchrecord! setbranchdata!
+@deprecate getbranchinfo getbranchdata
+@deprecate setbranchinfo! setbranchdata!
 
 include("Branch.jl")
 export Branch
@@ -124,12 +142,9 @@ include("Tree.jl")
 export BinaryTree, NamedBinaryTree, NamedTree
 export PolytomousTree, NamedPolytomousTree
 
-#include("LinkTree.jl")
-#export LinkBranch, LinkNode, LinkTree
-
-#include("MetaTree.jl")
-#export UnrootedMetaTree, RootedMetaTree, SimpleNode, SimpleBranch
-#export RootedTree, ManyRootTree, UnrootedTree
+include("LinkTree.jl")
+export LinkBranch, LinkNode, LinkTree
+export RootedTree, ManyRootTree, UnrootedTree
 
 include("routes.jl")
 export branchhistory, branchfuture, branchroute
@@ -140,6 +155,8 @@ export distance, distances, heighttoroot, heightstoroot
 include("Iterators.jl")
 export nodeiter, nodefilter, nodenameiter, nodenamefilter,
     branchiter, branchfilter, branchnameiter, branchnamefilter
+@deprecate treeiter gettrees
+@deprecate treenameiter gettreenames
 
 # A set of multiple trees
 include("TreeSet.jl")
@@ -148,6 +165,7 @@ export TreeSet, gettreeinfo
 # Random tree generator
 include("rand.jl")
 export Nonultrametric, Ultrametric
+export BrownianTrait, DiscreteTrait, SymmetricDiscreteTrait
 
 # Read Newick Tree
 include("newick.jl")
@@ -160,26 +178,17 @@ include("show.jl")
 include("trim.jl")
 export droptips!, keeptips!
 
-# Plot recipes, only works on Julia v0.7 and up
-@static if VERSION > v"0.7.0-"
-    include("plot.jl")
-end
+# Plot recipes
+include("plot.jl")
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
 using Requires
-@static if VERSION < v"0.7.0-"
-    @require RCall begin
+function __init__()
+    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
         println("Creating Phylo RCall interface...")
         include("rcall.jl")
-    end
-else
-    function __init__()
-        @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
-            println("Creating Phylo RCall interface...")
-            include("rcall.jl")
-        end
     end
 end
 

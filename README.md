@@ -2,45 +2,31 @@
 
 *Package for creating and manipulating phylogenies*
 
-| **Documentation** | **PackageEvaluator** | **Build Status of master** |
-|:-----------------:|:--------------------:|:--------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][pkg-0.6-img]][pkg-0.6-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
-| [![][docs-latest-img]][docs-latest-url] | [![Works with 1.0!][pkg-1.0-img]][pkg-1.0-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| **Documentation** | **Build Status of master** |
+|:-----------------:|:--------------------------:|
+| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
+| [![][docs-latest-img]][docs-latest-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
 
-The package is registered in `METADATA` on Julia v0.6 and the `General`
-registry on v0.7 and v1.0 and so can be installed with `add`. For example
-on Julia v1.0:
+The package is registered in the `General` registry so can be
+installed with `add`. For example on Julia v1.1:
 
 ```julia
-(v1.0) pkg> add Phylo
+(@v1.4) pkg> add Phylo
  Resolving package versions...
-  Updating `~/.julia/environments/v1.0/Project.toml`
-  [aea672f4] + Phylo v0.3.2
-  Updating `~/.julia/environments/v1.0/Manifest.toml`
-  [7d9fca2a] + Arpack v0.2.2
-  [9e28174c] + BinDeps v0.8.9
-  [31c24e10] + Distributions v0.16.2
-  [90014a1f] + PDMats v0.9.4
-  [aea672f4] + Phylo v0.3.2
-  [1fd47b50] + QuadGK v2.0.0
-  [79098fc4] + Rmath v0.5.0
-  [276daf66] + SpecialFunctions v0.7.0
-  [4c63d2b9] + StatsFuns v0.7.0
-  [0796e94c] + Tokenize v0.5.2
-  [30578b45] + URIParser v0.4.0
-  [4607b0f0] + SuiteSparse
+  Updating `~/.julia/environments/v1.4/Project.toml`
+  [aea672f4] + Phylo v0.4.0
+  Updating `~/.julia/environments/v1.4/Manifest.toml`
 
-(v1.0) pkg>
+(@v1.4) pkg>
 ```
-
-Note some features are [currently broken](https://github.com/JuliaLang/julia/issues/30612#issuecomment-451774694) on the binary release of Julia v1.0.3 for linux. Unfortunately, this appears to be a bug in the Julia release. The current workarounds are to remain on Julia v1.0.2 or to use the Julia [v1.1.0-rc1 release candidate](https://julialang.org/downloads/).
 
 ## Project Status
 
-The package is tested against the current Julia v1.0 release, but also
-the previous v0.6 and v0.7 versions on Linux, macOS, and Windows.
+The package is tested against the current Julia v1.4 release and
+v1.0.x on Linux, macOS, and Windows. It is also tested against
+nightly.
 
 ## Contributing and Questions
 
@@ -53,16 +39,26 @@ just like to ask a question.
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
 functionality for generating phylogenetic trees to feed into our
 [Diversity][diversity-url] package to calculate phylogenetic
-diversity. `Phylo` is currently in *alpha*, and is missing much
-functionality that people may desire, so please
+diversity. `Phylo` is currently in *beta*, but is probably still
+missing much of the functionality that people may desire, so please
 [raise an issue][issues-url] if/when you find problems or missing
-functionality - don't assume that I know! Currently the package can
-be used to make trees manually, to generate random trees using the
-framework from `Distributions`, and to read newick and nexus format
-trees from files. For instance, to construct a sampler for 5 tip
-non-ultrametric trees, and then generate one or two random tree of
-that type (the examples below are from the master branch, but work similarly
-on the current release):
+functionality - don't assume that I know!
+
+Currently the package can be used to make trees manually, to generate
+random trees using the framework from `Distributions`, and to read
+newick and nexus format trees from files. It can also be used to
+evolve continuous and discrete traits on the resultant phylogenies,
+and plot all of this using `Plots` recipes. Finally, the trees and
+traits are capable of handling `Unitful` units, so the branch lengths
+can be time based, and traits that relate directly to physical units
+(e.g. size) can be directly evolved.
+
+### Random tree generation
+
+For instance, to construct a sampler for 5 tip non-ultrametric trees,
+and then generate one or two random tree of that type (the examples
+below are from the master branch, but work similarly on the current
+release):
 
 ```julia
 julia> using Phylo
@@ -70,47 +66,75 @@ julia> using Phylo
 julia> nu = Nonultrametric(5);
 
 julia> tree = rand(nu)
-PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
 Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
-
 
 julia> trees = rand(nu, ["Tree 1", "Tree 2"])
 TreeSet with 2 trees, each with 5 tips.
 Tree names are Tree 2 and Tree 1
 
-Tree 2: PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
+Tree 2: LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
 Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 
-Tree 1: PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
+Tree 1: LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
 Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 ```
+
+### Tree traversal
 
 The code also provides iterators, and filtered iterators over the branches,
 nodes, branchnames and nodenames of a tree, though this may soon be superseded
 by a simpler strategy.
 
 ```julia
-julia> collect(nodeiter(tree))
-9-element Array{Node{ManyRoots,String,Branch{ManyRoots,String}},1}:
- Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 1", Branch{ManyRoots,String}(7, "Node 4", "tip 1", 1.1281538707050067), Branch{ManyRoots,String}[])
- Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 2", Branch{ManyRoots,String}(1, "Node 1", "tip 2", 1.4283209045962866), Branch{ManyRoots,String}[])
- Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 3", Branch{ManyRoots,String}(4, "Node 2", "tip 3", 0.6551342237894014), Branch{ManyRoots,String}[])
- Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 4", Branch{ManyRoots,String}(2, "Node 1", "tip 4", 0.0029623552238387534), Branch{ManyRoots,String}[])
- Node{ManyRoots,String,Branch{ManyRoots,String}}("tip 5", Branch{ManyRoots,String}(3, "Node 2", "tip 5", 0.25029135145968845), Branch{ManyRoots,String}[])
- Node{ManyRoots,String,Branch{ManyRoots,String}}("Node 1", Branch{ManyRoots,String}(5, "Node 3", "Node 1", 0.3763450182758717), Branch{ManyRoots,String}[Branch{ManyRoots,String}(1, "Node 1", "tip 2", 1.42832), Branch{ManyRoots,String}(2, "Node 1", "tip 4", 0.00296236)])
- Node{ManyRoots,String,Branch{ManyRoots,String}}("Node 2", Branch{ManyRoots,String}(6, "Node 3", "Node 2", 0.20796611994615047), Branch{ManyRoots,String}[Branch{ManyRoots,String}(3, "Node 2", "tip 5", 0.250291), Branch{ManyRoots,String}(4, "Node 2", "tip 3", 0.655134)])
- Node{ManyRoots,String,Branch{ManyRoots,String}}("Node 3", Branch{ManyRoots,String}(8, "Node 4", "Node 3", 3.5927792827310996), Branch{ManyRoots,String}[Branch{ManyRoots,String}(5, "Node 3", "Node 1", 0.376345), Branch{ManyRoots,String}(6, "Node 3", "Node 2", 0.207966)])
- Node{ManyRoots,String,Branch{ManyRoots,String}}("Node 4", nothing, Branch{ManyRoots,String}[Branch{ManyRoots,String}(7, "Node 4", "tip 1", 1.12815), Branch{ManyRoots,String}(8, "Node 4", "Node 3", 3.59278)])
+julia> traversal(tree, inorder)
+9-element Array{LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},1}:
+ LinkNode tip 1, a tip of the tree with an incoming connection (branch 5).
 
-julia> collect(nodenamefilter(isroot, tree))
-1-element Array{String,1}:
- "Node 4"
- ```
+ LinkNode Node 8, an internal node with 1 inbound and 2 outbound connections (branches 7 and 5, 6)
+
+ LinkNode tip 3, a tip of the tree with an incoming connection (branch 6).
+
+ LinkNode Node 9, a root node with 2 outbound connections (branches 7, 8)
+
+ LinkNode tip 5, a tip of the tree with an incoming connection (branch 3).
+
+ LinkNode Node 7, an internal node with 1 inbound and 2 outbound connections (branches 8 and 3, 4)
+
+ LinkNode tip 2, a tip of the tree with an incoming connection (branch 1).
+
+ LinkNode Node 6, an internal node with 1 inbound and 2 outbound connections (branches 4 and 1, 2)
+
+ LinkNode tip 4, a tip of the tree with an incoming connection (branch 2).
+
+
+julia> getnodename.(tree, traversal(tree, preorder))
+9-element Array{String,1}:
+ "Node 9"
+ "Node 8"
+ "tip 1"
+ "tip 3"
+ "Node 7"
+ "tip 5"
+ "Node 6"
+ "tip 2"
+ "tip 4"
+
+julia> collect(nodenamefilter(isleaf, tree))
+5-element Array{String,1}:
+ "tip 1"
+ "tip 2"
+ "tip 3"
+ "tip 4"
+ "tip 5"
+```
 
 The current main purpose of this package is to provide a framework for
 phylogenetics to use in our [Diversity][diversity-url] package, and
 they will both be adapted as appropriate until both are functioning as
 required (though they are currently working together reasonably successfully).
+
+### Reading from a file
 
 It can also read newick trees either from strings or files:
 
@@ -118,19 +142,18 @@ It can also read newick trees either from strings or files:
 julia> using Phylo
 
 julia> simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
-PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 3 tips, 5 nodes and 4 branches.
-Leaf names are Node 1, Tip and Node 2
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 3 tips, 5 nodes and 4 branches.
+Leaf names are Node 1, Tip and Node 4
 
-
-julia> getbranches(simpletree)
-Base.ValueIterator for a Dict{Int64,Branch{ManyRoots,String}} with 4 entries. Values:
-  Branch{ManyRoots,String}("Root", "Node 2", NaN)
-  Branch{ManyRoots,String}("Internal", "Node 1", NaN)
-  Branch{ManyRoots,String}("Root", "Internal", NaN)
-  Branch{ManyRoots,String}("Internal", "Tip", 1.0)
+julia> getbranchname.(simpletree, getbranches(simpletree))
+4-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
 
 julia> tree = open(parsenewick, Phylo.path("H1N1.newick"))
-PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
 Leaf names are 44, 429, 294, 295, 227, ... [501 omitted] ... and 418
 ```
 And it can read nexus trees from files too:
@@ -142,15 +165,16 @@ julia> ts = open(parsenexus, Phylo.path("H1N1.trees"))
 TreeSet with 2 trees, each with 507 tips.
 Tree names are TREE2 and TREE1
 
-TREE2: PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
+TREE2: LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
 Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
 
-TREE1: PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
+TREE1: LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
 Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
 
 julia> ts["TREE1"]
-PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
 Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
+
 
 julia> gettreeinfo(ts)
 Dict{String,Dict{String,Any}} with 2 entries:
@@ -161,6 +185,8 @@ julia> gettreeinfo(ts, "TREE1")
 Dict{String,Any} with 1 entry:
   "lnP" => 1.0
 ```
+
+### R interface
 
 And while we wait for me (or kind [contributors][pr-url]!) to fill out
 the other extensive functionality that many phylogenetics packages
@@ -192,14 +218,15 @@ RObject{VecSxp}
 Phylogenetic tree with 10 tips and 9 internal nodes.
 
 Tip labels:
-	t3, t5, t8, t1, t10, t9, ...
+	t1, t4, t3, t6, t9, t7, ...
 
 Rooted; includes branch lengths.
 
 
-julia> jt = rcopy(NamedTree, rt)
-PolytomousTree{ManyRoots,DataFrames.DataFrame,Dict{String,Any}} with 10 tips, 19 nodes and 18 branches.
-Leaf names are t3, t5, t8, t1, t10, ... [4 omitted] ... and t7
+julia> jt = rcopy(RootedTree, rt)
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 10 tips, 19 nodes and 18 branches.
+Leaf names are t1, t4, t3, t6, t9, ... [4 omitted] ... and t8
+
 
 julia> rjt = RObject(jt); # manually translate it back to R
 
@@ -215,17 +242,82 @@ R> jt
 Phylogenetic tree with 10 tips and 9 internal nodes.
 
 Tip labels:
-	t3, t5, t8, t1, t10, t9, ...
+	t1, t4, t3, t6, t9, t7, ...
 
 Rooted; includes branch lengths.
 
-R> all.equal(rt, jt) # check no damage in translations
-[1] TRUE
+R> if (all.equal(rt, jt)) "no damage in translation"
+[1] "no damage in translation"
 ```
 
 For the time being the code will only work with rooted trees
 with named tips and branch lengths. If there's [demand][issues-url]
 for other types of trees, I'll look into it.
+
+### Trait evolution
+
+As far as traits are concerned, these can be continuous pr
+discrete. First a continuous trait:
+
+```julia
+julia> using Phylo, Plots, DataFrames, Random
+
+julia> tree = rand(Nonultrametric(100)) # Defaults to mean tree depth of 1.0
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any},Float64}},LinkBranch{OneRoot,String,Dict{String,Any},Float64},Dict{String,Any}} with 100 tips, 199 nodes and 198 branches.
+Leaf names are tip 21, tip 81, tip 32, tip 12, tip 51, ... [94 omitted] ... and tip 93
+
+julia> rand!(BrownianTrait(tree, "Trait"), tree)  # Defaults to starting at 0.0, variance 1.0
+LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any},Float64}},LinkBranch{OneRoot,String,Dict{String,Any},Float64},Dict{String,Any}} with 100 tips, 199 nodes and 198 branches.
+Leaf names are tip 21, tip 81, tip 32, tip 12, tip 51, ... [94 omitted] ... and tip 93
+
+julia> plot(tree, line_z = "Trait", lw = 2)
+
+julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), trait=getnodedata.(tree, traversal(tree, preorder), "Trait"))
+199×2 DataFrame
+│ Row │ nodename │ trait     │
+│     │ String   │ Float64   │
+├─────┼──────────┼───────────┤
+│ 1   │ Node 199 │ 0.0       │
+│ 2   │ Node 198 │ -0.517593 │
+│ 3   │ Node 197 │ -0.314101 │
+│ 4   │ Node 172 │ -0.391149 │
+│ 5   │ Node 164 │ -0.797994 │
+⋮
+│ 195 │ tip 67   │ -0.21145  │
+│ 196 │ Node 125 │ 0.236189  │
+│ 197 │ tip 79   │ 0.218236  │
+│ 198 │ tip 40   │ 0.745802  │
+│ 199 │ tip 81   │ -0.408055 │
+```
+![Continuous trait tree plot](https://github.com/richardreeve/Phylo.jl/tree/master/docs/img/browniantree.png "Continuous trait tree plot")
+
+Then a discrete trait:
+```julia
+julia> @enum TemperatureTrait lowTempPref midTempPref highTempPref
+
+julia> rand!(SymmetricDiscreteTrait(tree, TemperatureTrait, 0.4), tree);
+
+julia> plot(tree, marker_group = "TemperatureTrait", legend = :topleft,
+            msc = :white, treetype = :fan, c = [:red :blue :green])
+
+julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), trait=getnodedata.(tree, traversal(tree, preorder), "TemperatureTrait"))
+199×2 DataFrame
+│ Row │ nodename │ trait        │
+│     │ String   │ Temperat…    │
+├─────┼──────────┼──────────────┤
+│ 1   │ Node 199 │ highTempPref │
+│ 2   │ Node 198 │ highTempPref │
+│ 3   │ Node 197 │ highTempPref │
+│ 4   │ Node 172 │ highTempPref │
+│ 5   │ Node 164 │ highTempPref │
+⋮
+│ 195 │ tip 67   │ lowTempPref  │
+│ 196 │ Node 125 │ midTempPref  │
+│ 197 │ tip 79   │ midTempPref  │
+│ 198 │ tip 40   │ lowTempPref  │
+│ 199 │ tip 81   │ highTempPref │
+```
+![Discrete trait fan plot](https://github.com/richardreeve/Phylo.jl/tree/master/docs/img/discretefan.png "Discrete trait fan plot")
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest
@@ -244,12 +336,6 @@ for other types of trees, I'll look into it.
 
 [codecov-img]: https://codecov.io/gh/richardreeve/Phylo.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/richardreeve/Phylo.jl
-
-[pkg-0.6-img]: http://pkg.julialang.org/badges/Phylo_0.6.svg
-[pkg-0.6-url]: http://pkg.julialang.org/?pkg=Phylo&ver=0.6
-
-[pkg-1.0-img]: http://pkg.julialang.org/badges/Phylo_1.0.svg
-[pkg-1.0-url]: http://pkg.julialang.org/?pkg=Phylo&ver=1.0
 
 [issues-url]: https://github.com/richardreeve/Phylo.jl/issues
 [pr-url]: https://github.com/richardreeve/Phylo.jl/pulls
