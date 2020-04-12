@@ -13,21 +13,20 @@ The package is registered in the `General` registry so can be
 installed with `add`. For example on Julia v1.1:
 
 ```julia
-(v1.1) pkg> add Phylo
+(@v1.4) pkg> add Phylo
  Resolving package versions...
-  Updating `~/.julia/environments/v1.1/Project.toml`
+  Updating `~/.julia/environments/v1.4/Project.toml`
   [aea672f4] + Phylo v0.4.0
-  Updating `~/.julia/environments/v1.1/Manifest.toml`
+  Updating `~/.julia/environments/v1.4/Manifest.toml`
 
-(v1.1) pkg>
+(@v1.4) pkg>
 ```
 
 ## Project Status
 
-The package is tested against the current Julia v1.1 release and
-v1.0.x on Linux, macOS, and Windows (though v1.0.4 fails on 64 bit
-windows with appveyor due to a compiler error). It is also tested against
-nightly, and currently works with v1.2 release candidates.
+The package is tested against the current Julia v1.4 release and
+v1.0.x on Linux, macOS, and Windows. It is also tested against
+nightly.
 
 ## Contributing and Questions
 
@@ -70,8 +69,6 @@ julia> tree = rand(nu)
 LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any}}},LinkBranch{OneRoot,String,Dict{String,Any}},Dict{String,Any}} with 5 tips, 9 nodes and 8 branches.
 Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 
-
-julia> trees = rand(nu, ["Tree 1", "Tree 2"])
 julia> trees = rand(nu, ["Tree 1", "Tree 2"])
 TreeSet with 2 trees, each with 5 tips.
 Tree names are Tree 2 and Tree 1
@@ -263,17 +260,17 @@ As far as traits are concerned, these can be continuous pr
 discrete. First a continuous trait:
 
 ```julia
-julia> using Phylo, Plots, DataFrames
+julia> using Phylo, Plots, DataFrames, Random
 
 julia> tree = rand(Nonultrametric(100)) # Defaults to mean tree depth of 1.0
 LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any},Float64}},LinkBranch{OneRoot,String,Dict{String,Any},Float64},Dict{String,Any}} with 100 tips, 199 nodes and 198 branches.
 Leaf names are tip 21, tip 81, tip 32, tip 12, tip 51, ... [94 omitted] ... and tip 93
 
-julia> rand(BrownianTrait(tree, "Trait"))  # Defaults to starting at 0.0, variance 1.0
+julia> rand!(BrownianTrait(tree, "Trait"), tree)  # Defaults to starting at 0.0, variance 1.0
 LinkTree{OneRoot,String,LinkNode{OneRoot,String,Dict{String,Any},LinkBranch{OneRoot,String,Dict{String,Any},Float64}},LinkBranch{OneRoot,String,Dict{String,Any},Float64},Dict{String,Any}} with 100 tips, 199 nodes and 198 branches.
 Leaf names are tip 21, tip 81, tip 32, tip 12, tip 51, ... [94 omitted] ... and tip 93
 
-julia> plot(tree, line_z = getnodedata.(tree, traversal(tree, postorder), "Trait"))
+julia> plot(tree, line_z = "Trait", lw = 2)
 
 julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), trait=getnodedata.(tree, traversal(tree, preorder), "Trait"))
 199×2 DataFrame
@@ -292,14 +289,16 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 │ 198 │ tip 40   │ 0.745802  │
 │ 199 │ tip 81   │ -0.408055 │
 ```
+![Continuous trait tree plot](https://github.com/richardreeve/Phylo.jl/tree/master/docs/img/browniantree.png "Continuous trait tree plot")
 
 Then a discrete trait:
 ```julia
 julia> @enum TemperatureTrait lowTempPref midTempPref highTempPref
 
-julia> rand(SymmetricDiscreteTrait(tree, TemperatureTrait, 0.4));
+julia> rand!(SymmetricDiscreteTrait(tree, TemperatureTrait, 0.4), tree);
 
-julia> plot(tree, line_z = Int.(getnodedata.(tree, traversal(tree, postorder), "TemperatureTrait")))
+julia> plot(tree, marker_group = "TemperatureTrait", legend = :topleft,
+            msc = :white, treetype = :fan, c = [:red :blue :green])
 
 julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), trait=getnodedata.(tree, traversal(tree, preorder), "TemperatureTrait"))
 199×2 DataFrame
@@ -318,6 +317,7 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 │ 198 │ tip 40   │ lowTempPref  │
 │ 199 │ tip 81   │ highTempPref │
 ```
+![Discrete trait fan plot](https://github.com/richardreeve/Phylo.jl/tree/master/docs/img/discretefan.png "Discrete trait fan plot")
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest

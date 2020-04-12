@@ -1,4 +1,5 @@
 - v0.4.0
+  - Improved trait plotting
   - New linked list tree, node and branch type
   - Improved, more consistent and faster interface
   - trait-based dispatch to use faster code paths
