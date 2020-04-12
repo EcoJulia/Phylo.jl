@@ -428,26 +428,26 @@ function enum_rand(rng::AbstractRNG, current::TRAIT,
     return traits[tot]
 end
 
-function rand(rng::AbstractRNG, dt::DiscreteTrait{TREE, TRAIT}) where
-    {TREE <: AbstractTree, TRAIT <: Enum}
+function rand!(rng::AbstractRNG, dt::DiscreteTrait{TREE, TRAIT},
+               tree::TREE) where {TREE <: AbstractTree, TRAIT <: Enum}
     traits = instances(TRAIT)
     num = length(traits)
-    for node in traversal(dt.tree, preorder)
-        if isroot(dt.tree, node)
-            setnodedata!(dt.tree, node, dt.trait,
+    for node in traversal(tree, preorder)
+        if isroot(tree, node)
+            setnodedata!(tree, node, dt.trait,
                          sample(rng, collect(traits)))
         else
-            inb = getinbound(dt.tree, node)
-            prt = src(dt.tree, inb)
-            previous = getnodedata(dt.tree, prt, dt.trait)
+            inb = getinbound(tree, node)
+            prt = src(tree, inb)
+            previous = getnodedata(tree, prt, dt.trait)
             value = enum_rand(rng, previous,
                               exp(uconvert.(NoUnits,
-                                            getlength(dt.tree, inb) .*
+                                            getlength(tree, inb) .*
                                             dt.transition_matrix)))
-            setnodedata!(dt.tree, node, dt.trait, value)
+            setnodedata!(tree, node, dt.trait, value)
         end
     end
-    return dt.tree
+    return tree
 end
 
 """
@@ -510,25 +510,25 @@ function enum_rand(rng::AbstractRNG, current::TRAIT,
     end
 end
 
-function rand(rng::AbstractRNG, dt::SymmetricDiscreteTrait{TREE, TRAIT}) where
-    {TREE <: AbstractTree, TRAIT <: Enum}
+function rand!(rng::AbstractRNG, dt::SymmetricDiscreteTrait{TREE, TRAIT},
+               tree::TREE) where {TREE <: AbstractTree, TRAIT <: Enum}
     traits = instances(TRAIT)
     num = length(traits)
     frac = inv(num)
-    for node in traversal(dt.tree, preorder)
-        if isroot(dt.tree, node)
-            setnodedata!(dt.tree, node, dt.trait,
+    for node in traversal(tree, preorder)
+        if isroot(tree, node)
+            setnodedata!(tree, node, dt.trait,
                          sample(rng, collect(instances(TRAIT))))
         else
-            inb = getinbound(dt.tree, node)
-            prt = src(dt.tree, inb)
-            previous = getnodedata(dt.tree, prt, dt.trait)
+            inb = getinbound(tree, node)
+            prt = src(tree, inb)
+            previous = getnodedata(tree, prt, dt.trait)
             value = enum_rand(rng, previous,
                               frac + (1.0 - frac) *
-                              exp(-num * getlength(dt.tree, inb) *
+                              exp(-num * getlength(tree, inb) *
                                   dt.transition_rate))
-            setnodedata!(dt.tree, node, dt.trait, value)
+            setnodedata!(tree, node, dt.trait, value)
         end
     end
-    return dt.tree
+    return tree
 end
