@@ -10,7 +10,7 @@
 ## Installation
 
 The package is registered in the `General` registry so can be
-installed with `add`. For example on Julia v1.1:
+installed with `add`. For example on Julia v1.4:
 
 ```julia
 (@v1.4) pkg> add Phylo
@@ -24,8 +24,8 @@ installed with `add`. For example on Julia v1.1:
 
 ## Project Status
 
-The package is tested against the current Julia v1.4 release and
-v1.0.x on Linux, macOS, and Windows. It is also tested against
+The package is confirmed to work against the current Julia v1.4 release
+and v1.0.x on Linux, macOS, and Windows. It is also tested against
 nightly.
 
 ## Contributing and Questions
@@ -289,7 +289,7 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 │ 198 │ tip 40   │ 0.745802  │
 │ 199 │ tip 81   │ -0.408055 │
 ```
-![Continuous trait tree plot](https://github.com/richardreeve/Phylo.jl/tree/master/docs/img/browniantree.png "Continuous trait tree plot")
+![Continuous trait tree plot](docs/img/browniantree.png)
 
 Then a discrete trait:
 ```julia
@@ -317,7 +317,7 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 │ 198 │ tip 40   │ lowTempPref  │
 │ 199 │ tip 81   │ highTempPref │
 ```
-![Discrete trait fan plot](https://github.com/richardreeve/Phylo.jl/tree/master/docs/img/discretefan.png "Discrete trait fan plot")
+![Discrete trait fan plot](docs/img/discretefan.png)
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest
