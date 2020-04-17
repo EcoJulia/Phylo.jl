@@ -1,3 +1,5 @@
+- v0.4.2
+  - Permanent dependency fix!
 - v0.4.1
   - Fixing dependencies to allow Diversity.jl to install
 - v0.4.0
