@@ -478,9 +478,9 @@ function show(io::IO, node::LinkNode)
 end
 
 function show(io::IO, branch::LinkBranch{Unrooted})
-    println(io, "Unrooted LinkBranch $(branch.name), connecting nodes $(branch.inout[1].name) and $(branch.inout[2].name)$(isnan(branch.length) ? "" : " (length $(branch.length))").")
+    println(io, "Unrooted LinkBranch $(branch.name), connecting nodes $(branch.inout[1].name) and $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
 end
 
 function show(io::IO, branch::LinkBranch)
-    println(io, "LinkBranch $(branch.name), from node $(branch.inout[1].name) to node $(branch.inout[2].name)$(isnan(branch.length) ? "" : " (length $(branch.length))").")
+    println(io, "LinkBranch $(branch.name), from node $(branch.inout[1].name) to node $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
 end

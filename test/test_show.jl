@@ -12,17 +12,18 @@ do not give warnings or errors, not that they are correct!
 
 ntips = 10
 a = IOBuffer()
-@testset "Nonultrametric()" begin
-    nt = rand(Nonultrametric(ntips))
+@testset "Nonultrametric{$TreeType}" for TreeType in
+    [NamedTree, NamedPolytomousTree, RootedTree]
+
+    nt = rand(Nonultrametric{TreeType}(ntips))
     @test_nowarn show(a, nt)
     @test_nowarn show(a, first(nodeiter(nt)))
     @test_nowarn show(a, first(branchiter(nt)))
-    bt = rand(Nonultrametric{BinaryTree{OneRoot, DataFrame, Vector{String}}}(ntips))
-    @test_nowarn show(a, bt)
-    @test_nowarn show(a, first(nodeiter(bt)))
-    @test_nowarn show(a, first(branchiter(bt)))
-    ts = rand(Nonultrametric(10), 10)
+    ts = rand(Nonultrametric{TreeType}(10), 10)
     @test_nowarn show(a, ts)
-    @test_nowarn show(a, parsenewick("((,),(,,));", NamedPolytomousTree))
+    ps = parsenewick("((,),(,,));", TreeType)
+    @test_nowarn show(a, ps)
+    @test_nowarn show(a, first(nodeiter(ps)))
+    @test_nowarn show(a, first(branchiter(ps)))
 end
 end

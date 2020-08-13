@@ -1,3 +1,5 @@
+- v0.4.3
+  - Fix missing problem in show for branches
 - v0.4.2
   - Permanent dependency fix!
 - v0.4.1
