@@ -320,10 +320,10 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 ![Discrete trait fan plot](docs/img/discretefan.png)
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-latest-url]: https://richardreeve.github.io/Phylo.jl/latest
+[docs-latest-url]: https://ecojuli.github.io/Phylo.jl/latest
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-stable-url]: https://richardreeve.github.io/Phylo.jl/stable
+[docs-stable-url]: https://ecojulia.github.io/Phylo.jl/stable
 
 [travis-img]: https://travis-ci.org/richardreeve/Phylo.jl.svg?branch=master
 [travis-url]: https://travis-ci.org/richardreeve/Phylo.jl?branch=master
@@ -337,6 +337,6 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [codecov-img]: https://codecov.io/gh/richardreeve/Phylo.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/richardreeve/Phylo.jl
 
-[issues-url]: https://github.com/richardreeve/Phylo.jl/issues
-[pr-url]: https://github.com/richardreeve/Phylo.jl/pulls
-[diversity-url]: https://github.com/richardreeve/Diversity.jl/
+[issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
+[pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
+[diversity-url]: https://github.com/EcoJulia/Diversity.jl/
