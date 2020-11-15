@@ -320,7 +320,7 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 ![Discrete trait fan plot](docs/img/discretefan.png)
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-latest-url]: https://ecojuli.github.io/Phylo.jl/latest
+[docs-latest-url]: https://ecojulia.github.io/Phylo.jl/latest
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://ecojulia.github.io/Phylo.jl/stable
