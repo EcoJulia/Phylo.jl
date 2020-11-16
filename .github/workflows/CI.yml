@@ -23,8 +23,7 @@ jobs:
         os:
           - ubuntu-latest
           - macOS-latest
-          - windows-latest
-        R: [ '3.5.3', '3.6.1' ]
+        R: [ '3.6.1' ]
         arch:
           - x64
         experimental: [false]
