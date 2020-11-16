@@ -37,7 +37,7 @@ jobs:
       - uses: r-lib/actions/setup-r@v1
         with:
           r-version: ${{ matrix.R }}
-      - run: sudo R -e 'install.packages("ape", repos="http://cran.r-project.org")'
+      - run: R -e 'install.packages("ape", repos="http://cran.r-project.org")'
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-processcoverage@v1
