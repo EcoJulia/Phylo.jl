@@ -1,4 +1,4 @@
-function common_ancestor(tree, target)
+function mrca(tree, target)
     ancestors = getancestors(tree, first(target))
     ranks = Dict(j => i for (i,j) in enumerate(ancestors))
     checked = Set(ancestors)

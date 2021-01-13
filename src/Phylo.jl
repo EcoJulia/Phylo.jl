@@ -183,7 +183,7 @@ include("plot.jl")
 
 # Metrics from the tree
 include("metrics.jl")
-export common_ancestor
+export mrca
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
