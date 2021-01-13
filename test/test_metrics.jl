@@ -8,3 +8,5 @@ using Test
     mrca = common_ancestor(tree, species)
     @test getnodename(tree, mrca) == "Node 65"
 end
+
+end
