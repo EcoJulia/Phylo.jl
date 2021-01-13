@@ -181,6 +181,10 @@ export droptips!, keeptips!
 # Plot recipes
 include("plot.jl")
 
+# Metrics from the tree
+include("metrics.jl")
+export common_ancestor
+
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
