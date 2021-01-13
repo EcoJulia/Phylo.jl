@@ -192,8 +192,8 @@ We so far only support calculating a few metrics on trees, but will gradually be
 
 ```julia
 
-julia> species = getleaves(tree)[[2, 5, 8, 12, 22]];  # take 5 tip from the phylogeny - a vector of tip names can als be used
-julia> common_ancestor(tree, species)                 # Identify the MRCA (Most Recent Common Ancestor) for the 5 species
+julia> species = getleaves(tree)[[2, 5, 8, 12, 22]];  # take 5 tips from the phylogeny (or use names)
+julia> common_ancestor(tree, species)                 # Identify the MRCA (Most Recent Common Ancestor)
 LinkNode Node 65, an internal node with 1 inbound and 2 outbound connections (branches 999 and 61, 62)
 ```
 
