@@ -9,7 +9,7 @@ jobs:
   phylo-tests:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      continue-on-error: ${{ matrix.experimental }}
       matrix:
         julia-version: ['1.4', '1.5', 'nightly']
         os: [ubuntu-latest, macOS-latest]
