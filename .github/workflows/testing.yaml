@@ -8,8 +8,8 @@ on:
 jobs:
   phylo-tests:
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
-      continue-on-error: ${{ matrix.experimental }}
       matrix:
         julia-version: ['1.4', '1.5', 'nightly']
         os: [ubuntu-latest, macOS-latest]
