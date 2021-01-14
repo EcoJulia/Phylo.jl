@@ -1,4 +1,4 @@
-name: Phylo testing
+name: build
 
 on:
   push:
@@ -13,6 +13,7 @@ jobs:
       matrix:
         julia-version: ['1.4', '1.5', 'nightly']
         os: [ubuntu-latest, macOS-latest]
+        R-version: [ '3.6.1' ]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -20,6 +21,13 @@ jobs:
       uses: julia-actions/setup-julia@v1
       with:
         version: ${{ matrix.julia-version }}
+    - name: Install R
+      uses: r-lib/actions/setup-r@v1
+      with:
+        r-version: ${{ matrix.R-version }}
+    - name: Install ape
+      run: |
+        R -e 'install.packages("ape", repos="http://cran.r-project.org")'
     - name: Build package
       uses: julia-actions/julia-buildpkg@master
     - name: Running
