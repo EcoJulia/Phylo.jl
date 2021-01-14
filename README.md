@@ -186,6 +186,17 @@ Dict{String,Any} with 1 entry:
   "lnP" => 1.0
 ```
 
+### Calculating metrics
+
+We so far only support calculating a few metrics on trees, but will gradually be added. Open an issue with a request!
+
+```julia
+
+julia> species = getleaves(tree)[[2, 5, 8, 12, 22]];  # take 5 tips from the phylogeny (or use names)
+julia> mrca(tree, species)                 # Identify the MRCA (Most Recent Common Ancestor)
+LinkNode Node 65, an internal node with 1 inbound and 2 outbound connections (branches 999 and 61, 62)
+```
+
 ### R interface
 
 And while we wait for me (or kind [contributors][pr-url]!) to fill out
