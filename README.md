@@ -4,7 +4,7 @@
 
 | **Documentation** | **Build Status of master** |
 |:-----------------:|:--------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
+| [![][docs-stable-img]][docs-stable-url] | [![][actions-img]][actions-url] [![][appveyor-img]][appveyor-url] |
 | [![][docs-latest-img]][docs-latest-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
@@ -336,8 +336,8 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://ecojulia.github.io/Phylo.jl/stable
 
-[travis-img]: https://travis-ci.org/richardreeve/Phylo.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/richardreeve/Phylo.jl?branch=master
+[actions-img]: https://github.com/EcoJulia/Phylo/workflows/Phylo%20testing/badge.svg
+[actions-url]: https://github.com/EcoJulia/Phylo/actions
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/github/richardreeve/Phylo.jl?svg=true&branch=master
 [appveyor-url]: https://ci.appveyor.com/project/richardreeve/phylo-jl/branch/master
