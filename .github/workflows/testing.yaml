@@ -17,14 +17,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Set up julia
-      uses: julia-actions/setup-julia@v1
-      with:
-        version: ${{ matrix.julia-version }}
     - name: Install R
       uses: r-lib/actions/setup-r@master
       with:
         r-version: ${{ matrix.R-version }}
+    - name: Set up julia
+      uses: julia-actions/setup-julia@v1
+      with:
+        version: ${{ matrix.julia-version }}
     - name: Install ape
       run: |
         R -e 'install.packages("ape", repos="http://cran.r-project.org")'
