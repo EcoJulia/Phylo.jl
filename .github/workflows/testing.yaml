@@ -13,7 +13,7 @@ jobs:
       matrix:
         julia-version: ['1.4', '1.5', 'nightly']
         os: [ubuntu-20.04, macOS-latest]
-        R-version: [ '3.6.1' ]
+        R-version: [ 'release' ]
         arch:
           - x64
         #experimental: [false]
