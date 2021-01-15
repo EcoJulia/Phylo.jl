@@ -8,7 +8,7 @@ on:
 jobs:
   phylo-tests:
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
+    #continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         julia-version: ['1.4', '1.5', 'nightly']
@@ -16,7 +16,7 @@ jobs:
         R-version: [ '3.6.1' ]
         arch:
           - x64
-        experimental: [false]
+        #experimental: [false]
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
