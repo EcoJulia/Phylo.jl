@@ -339,14 +339,14 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [actions-img]: https://github.com/EcoJulia/Phylo.jl/workflows/build/badge.svg
 [actions-url]: https://github.com/EcoJulia/Phylo.jl/actions
 
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/richardreeve/Phylo.jl?svg=true&branch=master
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/EcoJulia/Phylo.jl?svg=true&branch=master
 [appveyor-url]: https://ci.appveyor.com/project/richardreeve/phylo-jl/branch/master
 
-[coveralls-img]: https://img.shields.io/coveralls/richardreeve/Phylo.jl.svg
-[coveralls-url]: https://coveralls.io/r/richardreeve/Phylo.jl?branch=master
+[coveralls-img]: https://img.shields.io/coveralls/EcoJulia/Phylo.jl.svg
+[coveralls-url]: https://coveralls.io/r/EcoJulia/Phylo.jl?branch=master
 
-[codecov-img]: https://codecov.io/gh/richardreeve/Phylo.jl/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/richardreeve/Phylo.jl
+[codecov-img]: https://codecov.io/gh/EcoJulia/Phylo.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/EcoJulia/Phylo.jl
 
 [issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
 [pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
