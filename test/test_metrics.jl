@@ -2,6 +2,7 @@ module TestMetrics
 
 using Phylo
 using Test
+using Compat
 
 @testset "Metrics" begin
     trees = open(parsenexus, Phylo.path("H1N1.trees"))
@@ -31,10 +32,10 @@ using Test
     desendais =
         getdescendants(tree1,
                        mrca(tree1,
-                                       filter(x -> contains(x, "SENDAI"),
+                                       filter(x -> Compat.contains(x, "SENDAI"),
                                        leaves)))
     @test length(desendais) == 8
-    @test length(filter(x -> contains(x, "FUKUOKA"), desendais)) == 1
+    @test length(filter(x -> Compat.contains(x, "FUKUOKA"), desendais)) == 1
 end
 
 end
