@@ -34,6 +34,7 @@ Requires = "^1"
 SimpleTraits = "^0.9"
 Tokenize = "^0.5"
 Unitful = "^1"
+JuliaDB = "0.13.0"
 
 [extras]
 JuliaDB = "a93385a2-3734-596a-9a66-3cfbb77141e6"
@@ -42,6 +43,3 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["JuliaDB", "RCall", "Test"]
-
-[compat]
-JuliaDB = "0.13.0"
