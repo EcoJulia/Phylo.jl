@@ -40,7 +40,6 @@ julia = "^1"
 JuliaDB = "a93385a2-3734-596a-9a66-3cfbb77141e6"
 RCall = "6f49c342-dc21-5d91-9882-a32aef131414"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 
 [targets]
-test = ["JuliaDB", "RCall", "Test", "Compat"]
+test = ["JuliaDB", "RCall", "Test"]
