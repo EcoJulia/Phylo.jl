@@ -37,3 +37,7 @@ jobs:
       uses: julia-actions/julia-buildpkg@master
     - name: Running
       uses: julia-actions/julia-runtest@master
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v1
