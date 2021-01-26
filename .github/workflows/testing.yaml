@@ -39,5 +39,7 @@ jobs:
       uses: julia-actions/julia-runtest@master
     - name: Coveralls
       uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload to Codecov
       uses: codecov/codecov-action@v1
