@@ -25,6 +25,7 @@ jobs:
       with:
         version: ${{ matrix.julia-version }}
     - name: Install R
+      if: matrix.os == macOS-latest
       uses: r-lib/actions/setup-r@master
       with:
         r-version: ${{ matrix.R-version }}
