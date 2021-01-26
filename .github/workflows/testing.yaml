@@ -43,6 +43,6 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        file: ./lcov.info
+        path-to-lcov: ./lcov.info
     - name: Codecov
       uses: codecov/codecov-action@v1
