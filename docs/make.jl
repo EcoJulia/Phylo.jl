@@ -9,6 +9,5 @@ if VERSION ≥ v"1.1.0"
                                "mkdocs",
                                "mkdocs-material",
                                "python-markdown-math"),
-               repo = "github.com/richardreeve/Phylo.jl.git",
-               osname="linux")
+               repo = "github.com/EcoJulia/Phylo.jl.git")
 end
