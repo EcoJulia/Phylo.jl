@@ -3,7 +3,7 @@ name: Documentation
 on:
   push:
     branches:
-      - claireh93/actions
+      - master
     tags: '*'
   pull_request:
 
