@@ -3,10 +3,6 @@ module TestMetrics
 using Phylo
 using Test
 
-if VERSION < v"1.5"
-    contains(x, y) = occursin(y, x)
-end
-
 @testset "Metrics" begin
     trees = open(parsenexus, Phylo.path("H1N1.trees"))
     tree1, tree2 = trees["TREE1"], trees["TREE2"]
