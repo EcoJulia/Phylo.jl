@@ -35,10 +35,10 @@ end
     desendais =
         getdescendants(tree1,
                        mrca(tree1,
-                                       filter(x -> contains(x, "SENDAI"),
+                                       filter(x -> occursin("SENDAI", x),
                                        leaves)))
     @test length(desendais) == 8
-    @test length(filter(x -> contains(x, "FUKUOKA"), desendais)) == 1
+    @test length(filter(x -> occursin("FUKUOKA", x), desendais)) == 1
 end
 
 end
