@@ -4,7 +4,7 @@
 
 | **Documentation** | **Build Status of master** |
 |:-----------------:|:--------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
+| [![][docs-stable-img]][docs-stable-url] | [![][actions-img]][actions-url] [![][appveyor-img]][appveyor-url] |
 | [![][docs-latest-img]][docs-latest-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
@@ -336,17 +336,17 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://ecojulia.github.io/Phylo.jl/stable
 
-[travis-img]: https://travis-ci.org/richardreeve/Phylo.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/richardreeve/Phylo.jl?branch=master
+[actions-img]: https://github.com/EcoJulia/Phylo.jl/workflows/build/badge.svg
+[actions-url]: https://github.com/EcoJulia/Phylo.jl/actions
 
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/richardreeve/Phylo.jl?svg=true&branch=master
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/EcoJulia/Phylo.jl?svg=true&branch=master
 [appveyor-url]: https://ci.appveyor.com/project/richardreeve/phylo-jl/branch/master
 
-[coveralls-img]: https://img.shields.io/coveralls/richardreeve/Phylo.jl.svg
-[coveralls-url]: https://coveralls.io/r/richardreeve/Phylo.jl?branch=master
+[coveralls-img]: https://img.shields.io/coveralls/EcoJulia/Phylo.jl.svg
+[coveralls-url]: https://coveralls.io/r/EcoJulia/Phylo.jl?branch=master
 
-[codecov-img]: https://codecov.io/gh/richardreeve/Phylo.jl/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/richardreeve/Phylo.jl
+[codecov-img]: https://codecov.io/gh/EcoJulia/Phylo.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/EcoJulia/Phylo.jl
 
 [issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
 [pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
