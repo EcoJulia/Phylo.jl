@@ -48,11 +48,11 @@ jobs:
     - name: Running
       uses: julia-actions/julia-runtest@master
     - name: Process coverage
-      if: matrix.os == 'ubuntu-20.04'
+      if: matrix.os == 'macOS-latest'
       if: matrix.julia-version == '1.4'
       uses: julia-actions/julia-processcoverage@v1
     - name: Coveralls
-      if: matrix.os == 'ubuntu-20.04'
+      if: matrix.os == 'macOS-latest'
       if: matrix.julia-version == '1.4'
       uses: coverallsapp/github-action@master
       with:
