@@ -11,22 +11,29 @@ on:
 jobs:
   phylo-tests:
     runs-on: ${{ matrix.os }}
-    #continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         julia-version:
           - '1.4'
-          - '1.5'
-          - 'nightly'
+          - '1'
+          - '~1.6.0-rc1'
         os:
-          - ubuntu-20.04
+          - ubuntu-latest
           - macOS-latest
           - windows-latest
         R-version:
           - 'release'
         arch:
           - x64
-        #experimental: [false]
+        experimental:
+          - false
+        include:
+          - julia-version: 'nightly'
+            os: ubuntu-latest
+            R-version: 'release'
+            arch: x64
+            experimental: true
       fail-fast: false
     steps:
     - name: Checkout code
@@ -35,6 +42,7 @@ jobs:
       uses: julia-actions/setup-julia@v1
       with:
         version: ${{ matrix.julia-version }}
+        arch: ${{ matrix.arch }}
     - name: Install R
       if: matrix.os == 'macOS-latest'
       uses: r-lib/actions/setup-r@master
