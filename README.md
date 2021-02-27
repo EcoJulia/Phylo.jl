@@ -4,7 +4,7 @@
 
 | **Documentation** | **Build Status of master** |
 |:-----------------:|:--------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] |
+| [![][docs-stable-img]][docs-stable-url] | [![][actions-img]][actions-url] [![][appveyor-img]][appveyor-url] |
 | [![][docs-latest-img]][docs-latest-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
@@ -186,6 +186,17 @@ Dict{String,Any} with 1 entry:
   "lnP" => 1.0
 ```
 
+### Calculating metrics
+
+We so far only support calculating a few metrics on trees, but will gradually be added. Open an issue with a request!
+
+```julia
+
+julia> species = getleaves(tree)[[2, 5, 8, 12, 22]];  # take 5 tips from the phylogeny (or use names)
+julia> mrca(tree, species)                 # Identify the MRCA (Most Recent Common Ancestor)
+LinkNode Node 65, an internal node with 1 inbound and 2 outbound connections (branches 999 and 61, 62)
+```
+
 ### R interface
 
 And while we wait for me (or kind [contributors][pr-url]!) to fill out
@@ -325,17 +336,17 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://ecojulia.github.io/Phylo.jl/stable
 
-[travis-img]: https://travis-ci.org/richardreeve/Phylo.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/richardreeve/Phylo.jl?branch=master
+[actions-img]: https://github.com/EcoJulia/Phylo.jl/workflows/build/badge.svg
+[actions-url]: https://github.com/EcoJulia/Phylo.jl/actions
 
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/richardreeve/Phylo.jl?svg=true&branch=master
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/EcoJulia/Phylo.jl?svg=true&branch=master
 [appveyor-url]: https://ci.appveyor.com/project/richardreeve/phylo-jl/branch/master
 
-[coveralls-img]: https://img.shields.io/coveralls/richardreeve/Phylo.jl.svg
-[coveralls-url]: https://coveralls.io/r/richardreeve/Phylo.jl?branch=master
+[coveralls-img]: https://img.shields.io/coveralls/EcoJulia/Phylo.jl.svg
+[coveralls-url]: https://coveralls.io/r/EcoJulia/Phylo.jl?branch=master
 
-[codecov-img]: https://codecov.io/gh/richardreeve/Phylo.jl/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/richardreeve/Phylo.jl
+[codecov-img]: https://codecov.io/gh/EcoJulia/Phylo.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/EcoJulia/Phylo.jl
 
 [issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
 [pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
