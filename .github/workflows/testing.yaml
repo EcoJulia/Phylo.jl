@@ -48,11 +48,17 @@ jobs:
     - name: Running
       uses: julia-actions/julia-runtest@master
     - name: Process coverage
+      if: matrix.os == 'ubuntu-20.04'
+      if: matrix.julia-version == '1.4'
       uses: julia-actions/julia-processcoverage@v1
     - name: Coveralls
+      if: matrix.os == 'ubuntu-20.04'
+      if: matrix.julia-version == '1.4'
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: ./lcov.info
     - name: Codecov
       uses: codecov/codecov-action@v1
+      with:
+        file: ./lcov.info
