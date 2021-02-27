@@ -5,7 +5,7 @@
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
  [Diversity](https://github.com/richardreeve/Diversity.jl) package to calculate phylogenetic
- diversity (currently on master, accessible via `Pkg.checkout()`,
+ diversity (currently on master,
  but not released). Both are currently under development, so please
  [raise an issue](https://github.com/richardreeve/Phylo.jl/issues) if you find any problems. Currently the
  package can be used to make trees manually, and to generate random
@@ -18,16 +18,18 @@ julia> using Phylo
 julia> nu = Nonultrametric(5);
 
 julia> tree = rand(nu)
-Phylogenetic tree with 5 tips, 9 nodes and 8 branches.
-Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
+RootedTree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 3, tip 5, tip 2, tip 4 and tip 1
 
 julia> trees = rand(nu, ["Tree 1", "Tree 2"])
 TreeSet with 2 trees, each with 5 tips.
 Tree names are Tree 2 and Tree 1
 
-Tree 2: Phylogenetic tree with 5 tips,9 nodes and 8 branches.
+Tree 1: RootedTree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 5, tip 3, tip 4, tip 2 and tip 1
 
-Tree 1: Phylogenetic tree with 5 tips,9 nodes and 8 branches.
+Tree 2: RootedTree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 3, tip 5, tip 1, tip 2 and tip 4
 ```
 
 The code also provides iterators, and filtered iterators over the
@@ -35,37 +37,41 @@ branches, nodes, branchnames and nodenames of a tree:
 
 ```julia
 julia> collect(nodeiter(tree))
-9-element Array{BinaryNode{Int64},1}:
- [branch 6]-->[leaf node]
- [branch 1]-->[leaf node]
- [branch 4]-->[leaf node]
- [branch 3]-->[leaf node]
- [branch 2]-->[leaf node]
- [branch 5]-->[internal node]-->[branch 1]
-                             -->[branch 2]
- [branch 7]-->[internal node]-->[branch 3]
-                             -->[branch 4]
- [branch 8]-->[internal node]-->[branch 5]
-                             -->[branch 6]
- [root node]-->[branch 7]
-            -->[branch 8]
+9-element Vector{LinkNode{OneRoot, String, Dict{String, Any}, LinkBranch{OneRoot, String, Dict{String, Any}, Float64}}}:
+ LinkNode tip 1, a tip of the tree with an incoming connection (branch 16).
+
+ LinkNode tip 2, a tip of the tree with an incoming connection (branch 10).
+
+ LinkNode tip 3, a tip of the tree with an incoming connection (branch 11).
+
+ LinkNode tip 4, a tip of the tree with an incoming connection (branch 14).
+
+ LinkNode tip 5, a tip of the tree with an incoming connection (branch 9).
+
+ LinkNode Node 6, an internal node with 1 inbound and 2 outbound connections (branches 12 and 9, 10)
+
+ LinkNode Node 7, an internal node with 1 inbound and 2 outbound connections (branches 13 and 11, 12)
+
+ LinkNode Node 8, an internal node with 1 inbound and 2 outbound connections (branches 15 and 13, 14)
+
+ LinkNode Node 9, a root node with 2 outbound connections (branches 15, 16)
 
 julia> collect(nodenamefilter(isroot, tree))
-1-element Array{String,1}:
- "Node 4"
+1-element Vector{String}:
+ "Node 9"
 ```
 
 TreeSets are iterators themselves
 
 ```julia
 julia> collect(trees)
-2-element Array{BinaryTree{DataFrames.DataFrame,Dict{String,Any}},1}:
- Phylogenetic tree with 5 tips, 9 nodes and 8 branches.
-Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
 
- Phylogenetic tree with 5 tips,9 nodes and 8 branches.
-Leaf names are tip 1, tip 2, tip 3, tip 4 and tip 5
-...
+2-element Vector{RootedTree}:
+ RootedTree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 3, tip 5, tip 1, tip 2 and tip 4
+
+ RootedTree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 3, tip 5, tip 1, tip 2 and tip 4
 ```
 
 The current main purpose of this package is to provide a framework for
@@ -80,44 +86,44 @@ strings or files:
 julia> using Phylo
 
 julia> simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
-BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 3 tips, 5 nodes and 4 branches.
-Leaf names are Node 1, Tip and Node 2
+RootedTree with 3 tips, 5 nodes and 4 branches.
+Leaf names are Tip, Node 1 and Node 4
 
 
 julia> getbranches(simpletree)
-Dict{Int64,Branch{String}} with 4 entries:
-  4 => [node "Root"]-->[NaN length branch]-->[node "Node 2"]…
-  2 => [node "Internal"]-->[NaN length branch]-->[node "Node 1"]…
-  3 => [node "Root"]-->[NaN length branch]-->[node "Internal"]…
-  1 => [node "Internal"]-->[1.0 length branch]-->[node "Tip"]…
+skipmissing(Union{Missing, LinkBranch{OneRoot, String, Dict{String, Any}, Float64}}[LinkBranch 1, from node Internal to node Tip (length 1.0).
+, LinkBranch 2, from node Internal to node Node 1.
+, LinkBranch 3, from node Root to node Internal.
+, LinkBranch 4, from node Root to node Node 4.
+])
 
 julia> tree = open(parsenewick, Phylo.path("H1N1.newick"))
-BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
-Leaf names are 44, 429, 294, 295, 227, ... [501 omitted] ... and 418
+RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are 227, 294, 295, 110, 390, ... [501 omitted] ... and 418
 ```
 And it can read nexus trees from files too:
 
 ```julia
-julia> ts = open(parsenexus, Phylo.path("H1N1.trees"))
-[ Info: Created a tree called 'TREE1'
-[ Info: Created a tree called 'TREE2'
+jjulia> ts = open(parsenexus, Phylo.path("H1N1.trees"))
+[ Info: Created a tree called "TREE1"
+[ Info: Created a tree called "TREE2"
 TreeSet with 2 trees, each with 507 tips.
 Tree names are TREE2 and TREE1
 
-TREE2: BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
-Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
+TREE1: RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_BRAZIL_11_1978, H1N1_A_TAHITI_8_1998, H1N1_A_TAIWAN_1_1986, H1N1_A_BAYERN_7_1995, H1N1_A_ENGLAND_45_1998, ... [501 omitted] ... and H1N1_A_PUERTORICO_8_1934
 
-TREE1: BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
-Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
+TREE2: RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_BRAZIL_11_1978, H1N1_A_TAHITI_8_1998, H1N1_A_TAIWAN_1_1986, H1N1_A_BAYERN_7_1995, H1N1_A_ENGLAND_45_1998, ... [501 omitted] ... and H1N1_A_PUERTORICO_8_1934
 
 julia> ts["TREE1"]
-BinaryTree{DataFrames.DataFrame,Dict{String,Any}} with 507 tips, 1013 nodes and 1012 branches.
-Leaf names are H1N1_A_MIYAGI_3_2000, H1N1_A_PARMA_6_2008, H1N1_A_AKITA_86_2002, H1N1_A_DAKAR_14_1997, H1N1_A_EGYPT_84_2001, ... [501 omitted] ... and H1N1_A_HONGKONG_2070_1999
+RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_BRAZIL_11_1978, H1N1_A_TAHITI_8_1998, H1N1_A_TAIWAN_1_1986, H1N1_A_BAYERN_7_1995, H1N1_A_ENGLAND_45_1998, ... [501 omitted] ... and H1N1_A_PUERTORICO_8_1934
 
-julia> collect(treeinfoiter(ts))
-2-element Array{Pair{String,Dict{String,Any}},1}:
- "TREE2" => Dict("lnP"=>-1.0)
- "TREE1" => Dict("lnP"=>1.0)
+julia> gettreeinfo(ts)
+Dict{String, Dict{String, Any}} with 2 entries:
+  "TREE2" => Dict("lnP"=>-1.0)
+  "TREE1" => Dict("lnP"=>1.0)
 ```
 
 And while we wait for me (or kind [contributors](https://github.com/richardreeve/Phylo.jl/pulls)!) to fill out
@@ -134,7 +140,7 @@ want to use the R interface you need to do it manually, as below:
 ```julia
 julia> using RCall
 
-julia> include(joinpath(Pkg.dir("Phylo"), "src", "rcall.jl"));
+julia> include(Phylo.path("rcall.jl", dir = "src"));
 
 R> library(ape)
 ```
@@ -155,13 +161,13 @@ Tip labels:
 Rooted; includes branch lengths.
 
 julia> jt = rcopy(NamedTree, rt)
-Phylo.BinaryTree{DataFrames.DataFrame,Dict{String,Any}} phylogenetic tree with 19 nodes and 18 branches
-Leaf names:
-String["t2", "t1", "t5", "t9", "t8", "t3", "t4", "t10", "t7", "t6"]
+NamedTree with 10 tips, 19 nodes and 18 branches.
+Leaf names are t8, t3, t7, t9, t6, ... [4 omitted] ... and t1
 
-julia rjt = RObject(jt); # manually translate it back to R
+julia> rjt = RObject(jt); # manually translate it back to R
 
-R> all.equal($rjt, $rt) # check no damage in translations
+# check no damage in translations
+R> all.equal($rjt, $rt)
 [1] TRUE
 
 julia> @rput rt; # Or use macros to pass R object back to R
@@ -177,7 +183,8 @@ Tip labels:
 
 Rooted; includes branch lengths.
 
-R> all.equal(rt, jt) # check no damage in translations
+# check no damage in translations
+R> all.equal(rt, jt)
 [1] TRUE
 ```
 

@@ -1,3 +1,7 @@
+- v0.4.4
+  - Update Documenter and DataFrames versions
+  - Require Julia v1
+  - Calculate MRCA using mrca()
 - v0.4.3
   - Fix missing problem in show for branches
 - v0.4.2
