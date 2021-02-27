@@ -1,7 +1,10 @@
-name: build
+name: CI
 
 on:
   push:
+    branches:
+      - master
+    tags: '*'
   pull_request:
 
 jobs:
@@ -10,9 +13,16 @@ jobs:
     #continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        julia-version: ['1.4', '1.5', 'nightly']
-        os: [ubuntu-20.04, macOS-latest]
-        R-version: [ 'release' ]
+        julia-version:
+          - '1.4'
+          - '1.5'
+          - 'nightly'
+        os:
+          - ubuntu-20.04
+          - macOS-latest
+          - windows-latest
+        R-version:
+          - 'release'
         arch:
           - x64
         #experimental: [false]

@@ -4,7 +4,7 @@
 
 | **Documentation** | **Build Status of master** |
 |:-----------------:|:--------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][actions-img]][actions-url] [![][appveyor-img]][appveyor-url] |
+| [![][docs-stable-img]][docs-stable-url] | [![][actions-img]][actions-url] |
 | [![][docs-latest-img]][docs-latest-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
@@ -338,9 +338,6 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 
 [actions-img]: https://github.com/EcoJulia/Phylo.jl/workflows/build/badge.svg
 [actions-url]: https://github.com/EcoJulia/Phylo.jl/actions
-
-[appveyor-img]: https://ci.appveyor.com/api/projects/status/github/EcoJulia/Phylo.jl?svg=true&branch=master
-[appveyor-url]: https://ci.appveyor.com/project/richardreeve/phylo-jl/branch/master
 
 [coveralls-img]: https://img.shields.io/coveralls/EcoJulia/Phylo.jl.svg
 [coveralls-url]: https://coveralls.io/r/EcoJulia/Phylo.jl?branch=master
