@@ -5,7 +5,7 @@
 | **Documentation** | **Build Status of master** |
 |:-----------------:|:--------------------------:|
 | [![][docs-stable-img]][docs-stable-url] | [![][actions-img]][actions-url] [![JuliaNightly][nightly-img]][nightly-url] |
-| [![][docs-latest-img]][docs-latest-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| [![][docs-dev-img]][docs-dev-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
 
 ## Installation
 
@@ -337,8 +337,8 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 
 ![Discrete trait fan plot](docs/img/discretefan.png)
 
-[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
-[docs-latest-url]: https://ecojulia.github.io/Phylo.jl/latest
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://ecojulia.github.io/Phylo.jl/dev
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://ecojulia.github.io/Phylo.jl/stable
