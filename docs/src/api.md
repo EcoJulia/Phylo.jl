@@ -1,3 +1,5 @@
+# Phylo.API
+
 The **Phylo.API** submodule provides the API that must be extended
 for new `AbstractTree`, `AbstractNode` and `AbstractBranch` subtypes.
 
