@@ -1,3 +1,5 @@
+- v0.4.5
+  - Update compat issues
 - v0.4.4
   - Update Documenter and DataFrames versions
   - Require Julia v1

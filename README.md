@@ -18,7 +18,7 @@ installed with `add`. For example:
     Updating git-repo `https://github.com/JuliaRegistries/General.git`
    Resolving package versions...
     Updating `~/.julia/environments/v1.6/Project.toml`
-  [aea672f4] + Phylo v0.4.4
+  [aea672f4] + Phylo v0.4.5
     Updating `~/.julia/environments/v1.6/Manifest.toml`
 
 (@v1.6) pkg>
