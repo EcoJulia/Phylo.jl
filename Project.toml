@@ -23,7 +23,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 [compat]
 AxisArrays = "^0.4"
 DataFrames = "^0.21, 0.22"
-DataStructures = "^0.17"
+DataStructures = "^0.17, 0.18"
 Distributions = "^0.24"
 IterableTables = "^1"
 LightGraphs = "^1"
