@@ -166,9 +166,8 @@ Leaf names are t8, t3, t7, t9, t6, ... [4 omitted] ... and t1
 
 julia> rjt = RObject(jt); # manually translate it back to R
 
-# check no damage in translations
-R> all.equal($rjt, $rt)
-[1] TRUE
+R> if (all.equal($rjt, $rt)) "no damage in translation"
+[1] "no damage in translation"
 
 julia> @rput rt; # Or use macros to pass R object back to R
 
@@ -183,9 +182,8 @@ Tip labels:
 
 Rooted; includes branch lengths.
 
-# check no damage in translations
-R> all.equal(rt, jt)
-[1] TRUE
+R> if (all.equal(rt, jt)) "no damage in translation"
+[1] "no damage in translation"
 ```
 
 ```@contents
