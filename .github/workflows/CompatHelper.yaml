@@ -1,6 +1,9 @@
 name: CompatHelper
 
 on:
+  push:
+    branches:
+      - master
   schedule:
     - cron: '0 4 * * 0'  # Weekly at 4 AM GMT Sunday
 
