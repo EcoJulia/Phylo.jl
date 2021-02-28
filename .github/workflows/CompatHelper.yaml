@@ -2,7 +2,7 @@ name: CompatHelper
 
 on:
   schedule:
-    - cron: '0 3 * * 7'
+    - cron: '0 3 * * 0'  # Weekly at 3 AM UTC Sunday
 
 jobs:
   CompatHelper:
