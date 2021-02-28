@@ -2,10 +2,10 @@
 
 *Package for creating and manipulating phylogenies*
 
-| **Documentation** | **Build Status of master** |
-|:-----------------:|:--------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][actions-img]][actions-url] [![JuliaNightly][nightly-img]][nightly-url] |
-| [![][docs-dev-img]][docs-dev-url] | [![][codecov-img]][codecov-url] [![][coveralls-img]][coveralls-url] |
+| **Documentation** | **Build Status** | **DOI** |
+|:-----------------:|:--------------------------:|:--------------------------:|
+| [![stable docs][docs-stable-img]][docs-stable-url] | [![build tests][actions-img]][actions-url] [![JuliaNightly][nightly-img]][nightly-url] | [![Zenodo][zenodo-badge]][zenodo-url] |
+| [![dev docs][docs-dev-img]][docs-dev-url] | [![codecov][codecov-img]][codecov-url] [![coveralls][coveralls-img]][coveralls-url] | |
 
 ## Installation
 
@@ -354,6 +354,9 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 
 [codecov-img]: https://codecov.io/gh/EcoJulia/Phylo.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/EcoJulia/Phylo.jl
+
+[zenodo-badge]: https://zenodo.org/badge/93447241.svg
+[zenodo-url]: https://zenodo.org/badge/latestdoi/93447241
 
 [issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
 [pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
