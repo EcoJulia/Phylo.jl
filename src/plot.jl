@@ -172,13 +172,13 @@ function _extend(tmp, x)
 end
 
 """
-    sort!(::AbstractTree)
+    sort!(::AbstractTree; rev = false)
 
 Sorts the branches descending from each node by total number of
 descendants. This creates a clearer tree for plotting. The
 process is also called "ladderizing" the tree
 """
-function Base.sort!(tree::AbstractTree)
+function Base.sort!(tree::AbstractTree; rev = false)
     function loc!(clade::String)
         if isleaf(tree, clade)
             return 1
@@ -186,7 +186,7 @@ function Base.sort!(tree::AbstractTree)
 
         sizes = map(loc!, getchildren(tree, clade))
         node = getnode(tree, clade)
-        node.other .= node.other[sortperm(sizes)]
+        node.other .= node.other[sortperm(sizes, rev = rev)]
         sum(sizes) + 1
     end
 
