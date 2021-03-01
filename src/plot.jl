@@ -193,7 +193,7 @@ function Base.sort!(tree::AbstractTree; rev = false)
     loc!(first(nodenamefilter(isroot, tree)))
     tree
 end
-
+Base.sort(tree::AbstractTree; rev = false) = sort!(copy(tree))
 
 
 function _findxy(tree::Phylo.AbstractTree)
