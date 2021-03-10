@@ -5,8 +5,7 @@
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
  [Diversity](https://github.com/richardreeve/Diversity.jl) package to calculate phylogenetic
- diversity (currently on master,
- but not released). Both are currently under development, so please
+ diversity. Both are currently under development, so please
  [raise an issue](https://github.com/richardreeve/Phylo.jl/issues) if you find any problems. Currently the
  package can be used to make trees manually, and to generate random
  trees using the framework from `Distributions`. For instance, to construct a sampler for 5 tip non-ultrametric
