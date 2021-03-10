@@ -59,7 +59,7 @@ can be time based, and traits that relate directly to physical units
 
 For instance, to construct a sampler for 5 tip non-ultrametric trees,
 and then generate one or two random tree of that type (the examples
-below are from the master branch, but work similarly on the current
+below are from the dev branch, but work similarly on the current
 release):
 
 ```julia
@@ -350,9 +350,9 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [nightly-url]: https://github.com/EcoJulia/Phylo.jl/actions/workflows/nightly.yaml
 
 [coveralls-img]: https://img.shields.io/coveralls/EcoJulia/Phylo.jl.svg
-[coveralls-url]: https://coveralls.io/r/EcoJulia/Phylo.jl?branch=master
+[coveralls-url]: https://coveralls.io/r/EcoJulia/Phylo.jl?branch=dev
 
-[codecov-img]: https://codecov.io/gh/EcoJulia/Phylo.jl/branch/master/graph/badge.svg
+[codecov-img]: https://codecov.io/gh/EcoJulia/Phylo.jl/branch/dev/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/EcoJulia/Phylo.jl
 
 [zenodo-badge]: https://zenodo.org/badge/93447241.svg
