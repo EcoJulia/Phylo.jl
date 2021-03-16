@@ -18,7 +18,7 @@ installed with `add`. For example:
     Updating git-repo `https://github.com/JuliaRegistries/General.git`
    Resolving package versions...
     Updating `~/.julia/environments/v1.6/Project.toml`
-  [aea672f4] + Phylo v0.4.5
+  [aea672f4] + Phylo v0.4.7
     Updating `~/.julia/environments/v1.6/Manifest.toml`
 
 (@v1.6) pkg>
@@ -338,10 +338,10 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 ![Discrete trait fan plot](docs/img/discretefan.png)
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
-[docs-dev-url]: https://ecojulia.github.io/Phylo.jl/dev
+[docs-dev-url]: http://docs.ecojulia.org/Phylo.jl/dev
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-stable-url]: https://ecojulia.github.io/Phylo.jl/stable
+[docs-stable-url]: http://docs.ecojulia.org/Phylo.jl/stable
 
 [actions-img]: https://github.com/EcoJulia/Phylo.jl/workflows/build/badge.svg
 [actions-url]: https://github.com/EcoJulia/Phylo.jl/actions

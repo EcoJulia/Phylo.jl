@@ -1,6 +1,6 @@
 # Phylo
 
-*Package for creating and manipulating phylogenies*
+*A package for creating and manipulating phylogenies*
 
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
