@@ -1,7 +1,7 @@
 - v0.4.7
   - docs
 - v0.4.6
-  - typos
+  - add sort function, sort! can be reversed
 - v0.4.5
   - Update compat issues
 - v0.4.4

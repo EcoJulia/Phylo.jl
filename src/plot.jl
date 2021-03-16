@@ -176,7 +176,8 @@ end
 
 Sorts the branches descending from each node by total number of
 descendants. This creates a clearer tree for plotting. The
-process is also called "ladderizing" the tree
+process is also called "ladderizing" the tree. Use `rev=true` to
+reverse the sorting order.
 """
 function Base.sort!(tree::AbstractTree; rev = false)
     function loc!(clade::String)
@@ -193,8 +194,13 @@ function Base.sort!(tree::AbstractTree; rev = false)
     loc!(first(nodenamefilter(isroot, tree)))
     tree
 end
-Base.sort(tree::AbstractTree; rev = false) = sort!(copy(tree))
 
+"""
+    sort(::AbstractTree; rev = false)
+
+Copies a tree and sorts its branches. See `sort!` for further details.
+"""
+Base.sort(tree::AbstractTree; rev = false) = sort!(copy(tree))
 
 function _findxy(tree::Phylo.AbstractTree)
 
