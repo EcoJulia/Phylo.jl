@@ -1,3 +1,5 @@
+- v0.4.8
+  - fix automation
 - v0.4.7
   - docs
 - v0.4.6
