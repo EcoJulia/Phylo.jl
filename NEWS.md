@@ -1,3 +1,5 @@
+- v0.4.9
+  - fix automation again
 - v0.4.8
   - fix automation
 - v0.4.7
