@@ -1,8 +1,13 @@
 name: JuliaNightly
 # Nightly Scheduled Julia Nightly Run
 on:
+  push:
+    branches:
+      - dev
+    tags: '*'
   schedule:
     - cron: '0 2 * * 0'  # Weekly at 2 AM UTC Sunday
+
 jobs:
   test:
     name: Julia Nightly - Ubuntu - x64

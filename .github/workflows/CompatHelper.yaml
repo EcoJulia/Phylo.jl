@@ -3,9 +3,9 @@ name: CompatHelper
 on:
   push:
     branches:
-      - master
+      - dev
   schedule:
-    - cron: '0 4 * * 0'  # Weekly at 4 AM GMT Sunday
+    - cron: '0 4 * * *'  # Daily at 4 AM
 
 jobs:
   CompatHelper:

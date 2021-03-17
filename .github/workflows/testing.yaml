@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - dev
-    tags:
-      - 'v*'
+    tags: '*'
   pull_request:
 
 jobs:
@@ -28,12 +27,6 @@ jobs:
           - x64
         experimental:
           - false
-        include:
-          - julia-version: 'nightly'
-            os: ubuntu-latest
-            R-version: 'release'
-            arch: x64
-            experimental: true
       fail-fast: false
     steps:
     - name: Checkout code
