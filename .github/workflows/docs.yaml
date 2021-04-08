@@ -1,8 +1,6 @@
 name: Documentation
 
 on:
-    types:
-      - published
   push:
     branches:
       - dev
