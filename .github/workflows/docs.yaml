@@ -1,10 +1,13 @@
 name: Documentation
 
 on:
-  release:
+    types:
+      - published
   push:
     branches:
       - dev
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -30,4 +33,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-          GITHUB_EVENT_NAME: push
