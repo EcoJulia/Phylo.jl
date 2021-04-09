@@ -3,11 +3,11 @@
 The **Phylo.API** submodule provides the API that must be extended
 for new `AbstractTree`, `AbstractNode` and `AbstractBranch` subtypes.
 
-#### Usage
+## Usage
 
 Providing additional code to extend the functionality of the system is simple:
 
-```
+```julia
 using Phylo
 importall Phylo.API
 
