@@ -1,6 +1,6 @@
 # NEWS
 
-- v0.4.8 to v0.4.16
+- v0.4.8 to v0.4.17
   - fixing automation on new releases
 - v0.4.7
   - docs
