@@ -344,7 +344,7 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [docs-dev-url]: http://docs.ecojulia.org/Phylo.jl/dev
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-stable-url]: http://docs.ecojulia.org/Phylo.jl/stable
+[docs-stable-url]: https://docs.ecojulia.org/Phylo.jl/stable
 
 [actions-img]: https://github.com/EcoJulia/Phylo.jl/workflows/build/badge.svg
 [actions-url]: https://github.com/EcoJulia/Phylo.jl/actions
@@ -363,4 +363,4 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 
 [issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
 [pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
-[diversity-url]: https://github.com/richardreeves/Diversity.jl/
+[diversity-url]: https://github.com/richardreeve/Diversity.jl/
