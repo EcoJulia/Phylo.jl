@@ -1,12 +1,11 @@
 name: JuliaNightly
 # Nightly Scheduled Julia Nightly Run
 on:
-  release:
-    types:
-      - published
   push:
     branches:
       - dev
+    tags:
+      - 'v*'
   schedule:
     - cron: '0 2 * * 0'  # Weekly at 2 AM UTC Sunday
 

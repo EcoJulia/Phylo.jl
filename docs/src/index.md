@@ -1,6 +1,6 @@
 # Phylo
 
-*A package for creating and manipulating phylogenies*
+## A package for creating and manipulating phylogenies
 
 **Phylo** is a [Julia](http://www.julialang.org) package that provides
  functionality for generating phylogenetic trees to feed into our
@@ -100,6 +100,7 @@ julia> tree = open(parsenewick, Phylo.path("H1N1.newick"))
 RootedTree with 507 tips, 1013 nodes and 1012 branches.
 Leaf names are 227, 294, 295, 110, 390, ... [501 omitted] ... and 418
 ```
+
 And it can read nexus trees from files too:
 
 ```julia
@@ -155,7 +156,7 @@ RCall.RObject{RCall.VecSxp}
 Phylogenetic tree with 10 tips and 9 internal nodes.
 
 Tip labels:
-	t10, t8, t1, t2, t6, t5, ...
+  t10, t8, t1, t2, t6, t5, ...
 
 Rooted; includes branch lengths.
 
@@ -177,7 +178,7 @@ R> jt
 Phylogenetic tree with 10 tips and 9 internal nodes.
 
 Tip labels:
-	t10, t8, t1, t2, t6, t5, ...
+  t10, t8, t1, t2, t6, t5, ...
 
 Rooted; includes branch lengths.
 

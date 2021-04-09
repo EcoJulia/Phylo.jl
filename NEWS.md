@@ -1,9 +1,8 @@
 # NEWS
 
-- v0.4.8 to v0.4.17
-  - fixing automation on new releases
-- v0.4.7
-  - docs
+- v0.4.7 to v0.4.18
+  - fixed automation on new releases
+  - documentation updates
 - v0.4.6
   - add sort function, sort! can be reversed
 - v0.4.5

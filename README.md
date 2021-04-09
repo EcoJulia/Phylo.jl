@@ -1,6 +1,6 @@
 # Phylo
 
-*Package for creating and manipulating phylogenies*
+## A package for creating and manipulating phylogenies
 
 | **Documentation** | **Build Status** | **DOI** |
 |:-----------------:|:--------------------------:|:--------------------------:|
@@ -18,7 +18,7 @@ installed with `add`. For example:
     Updating git-repo `https://github.com/JuliaRegistries/General.git`
    Resolving package versions...
     Updating `~/.julia/environments/v1.6/Project.toml`
-  [aea672f4] + Phylo v0.4.7
+  [aea672f4] + Phylo v0.4.18
     Updating `~/.julia/environments/v1.6/Manifest.toml`
 
 (@v1.6) pkg>
@@ -26,9 +26,9 @@ installed with `add`. For example:
 
 ## Project Status
 
-The package is confirmed to work against the current LTS Julia v1.4 release
-and the latest release on Linux, macOS, and Windows. It is also tested
-against nightly.
+The package is confirmed to work against Julia v1.6, the current LTS Julia
+v1.4 release and the latest release on Linux, macOS, and Windows. It is also
+tested against nightly.
 
 ## Contributing and Questions
 
@@ -159,6 +159,7 @@ julia> tree = open(parsenewick, Phylo.path("H1N1.newick"))
 RootedTree with 507 tips, 1013 nodes and 1012 branches.
 Leaf names are 227, 294, 295, 110, 390, ... [501 omitted] ... and 418
 ```
+
 And it can read nexus trees from files too:
 
 ```julia
@@ -237,7 +238,7 @@ RCall.RObject{RCall.VecSxp}
 Phylogenetic tree with 10 tips and 9 internal nodes.
 
 Tip labels:
-	t10, t8, t1, t2, t6, t5, ...
+  t10, t8, t1, t2, t6, t5, ...
 
 Rooted; includes branch lengths.
 
@@ -259,7 +260,7 @@ R> jt
 Phylogenetic tree with 10 tips and 9 internal nodes.
 
 Tip labels:
-	t10, t8, t1, t2, t6, t5, ...
+  t10, t8, t1, t2, t6, t5, ...
 
 Rooted; includes branch lengths.
 
@@ -306,9 +307,11 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 │ 198 │ tip 71   │ -0.868774  │
 │ 199 │ tip 89   │ -0.30126   │
 ```
+
 ![Continuous trait tree plot](docs/img/browniantree.png)
 
 Then a discrete trait:
+
 ```julia
 julia> @enum TemperatureTrait lowTempPref midTempPref highTempPref
 
