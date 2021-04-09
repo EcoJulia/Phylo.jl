@@ -1,9 +1,5 @@
-- v0.4.10
-  - and fix automation again
-- v0.4.9
-  - fix automation again
-- v0.4.8
-  - fix automation
+- v0.4.8 to v0.4.15
+  - fixing automation on new releases
 - v0.4.7
   - docs
 - v0.4.6

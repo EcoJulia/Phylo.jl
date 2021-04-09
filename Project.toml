@@ -1,7 +1,7 @@
 name = "Phylo"
 uuid = "aea672f4-3940-5932-aa44-993d1c3ff149"
 author = ["Richard Reeve <Richard.Reeve@glasgow.ac.uk>"]
-version = "0.4.14"
+version = "0.4.15"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"

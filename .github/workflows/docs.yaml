@@ -1,11 +1,12 @@
 name: Documentation
 
 on:
+  release:
+    types:
+      - published
   push:
     branches:
       - dev
-    tags:
-      - 'v*'
 
 jobs:
   build:
