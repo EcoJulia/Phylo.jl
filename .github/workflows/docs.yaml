@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
             import Pkg
-            Pkg.develop(PackageSpec(path=pwd()))
+            Pkg.develop(Pkg.PackageSpec(path=pwd()))
             Pkg.instantiate()
             Pkg.add("Documenter")
         shell: julia --project=docs/ --color=yes {0}
