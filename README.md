@@ -346,8 +346,8 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://docs.ecojulia.org/Phylo.jl/stable
 
-[actions-img]: https://github.com/EcoJulia/Phylo.jl/workflows/build/badge.svg
-[actions-url]: https://github.com/EcoJulia/Phylo.jl/actions
+[actions-img]: https://github.com/EcoJulia/Phylo.jl/actions/workflows/testing.yaml/badge.svg
+[actions-url]: https://github.com/EcoJulia/Phylo.jl/actions/workflows/testing.yaml
 
 [nightly-img]: https://github.com/EcoJulia/Phylo.jl/actions/workflows/nightly.yaml/badge.svg
 [nightly-url]: https://github.com/EcoJulia/Phylo.jl/actions/workflows/nightly.yaml
