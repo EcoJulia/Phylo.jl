@@ -45,7 +45,7 @@ jobs:
       if: matrix.os == 'macOS-latest'
       run: |
         install.packages("ape", repos="http://cran.r-project.org")
-      shell: R --vanilla {0}
+      shell: R --no-save {0}
     - name: Build package
       uses: julia-actions/julia-buildpkg@master
     - name: Running
