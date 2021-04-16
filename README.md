@@ -363,4 +363,4 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 
 [issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
 [pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
-[diversity-url]: https://github.com/richardreeve/Diversity.jl/
+[diversity-url]: https://github.com/EcoJulia/Diversity.jl/
