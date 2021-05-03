@@ -1,5 +1,7 @@
 # NEWS
 
+- v0.4.19
+  - compatibility update
 - v0.4.7 to v0.4.18
   - fixed automation on new releases
   - documentation updates
