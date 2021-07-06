@@ -1,4 +1,5 @@
 using RecipesBase
+using Plots: text # pending issue https://github.com/JuliaPlots/RecipesBase.jl/issues/72
 
 @recipe function f(tree::Phylo.AbstractTree; treetype = :dendrogram, marker_group = nothing, line_group = nothing, showtips = true, tipfont = (7,))
 
@@ -85,7 +86,14 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_
             end
         end
     end
-    dend.showtips && (annotations := map(x -> (x[1], x[2], (x[3], :left, dend.tipfont...)), dend.tipannotations))
+    if dend.showtips
+        @series begin
+            seriestype := :scatter
+            markersize := 0
+            series_annotations := map(x -> text(x[3], :left, dend.tipfont...), dend.tipannotations)
+            getindex.(dend.tipannotations, 1), getindex.(dend.tipannotations, 2)
+        end
+    end
     primary = false
     label = ""
     nothing
@@ -135,10 +143,17 @@ end
     aspect_ratio := 1
     mx = maximum(filter(isfinite, fan.x))
     if fan.showtips
-        xlim --> (1.5 .* (-mx, mx))
-        ylim --> (1.5 .* (-mx, mx))
-        annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., (x[3], :left,
-            rad2deg(adjust(x[2])), fan.tipfont...)), fan.tipannotations)
+        xlims --> (1.5 .* (-mx, mx))
+        ylims --> (1.5 .* (-mx, mx))
+        if fan.showtips
+            @series begin
+                seriestype := :scatter
+                markersize := 0
+                series_annotations := map(x -> text(x[3], :left, rad2deg(adjust(x[2])), fan.tipfont...), fan.tipannotations)
+                xys = map(x-> (_tocirc.(x[1], adjust.(x[2]))), fan.tipannotations)
+                first.(xys), last.(xys)
+            end
+        end
     end
     nothing
 end
