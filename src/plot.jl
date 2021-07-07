@@ -88,8 +88,8 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_
             end
         end
     end
-    primary = false
-    label = ""
+    primary := false
+    label := ""
     nothing
 end
 
@@ -145,6 +145,8 @@ end
             end
         end
     end
+    primary := false
+    label := ""
     nothing
 end
 
