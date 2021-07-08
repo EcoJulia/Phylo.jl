@@ -46,6 +46,9 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_
     ex = extrema(filter(isfinite, dend.x))
     xlims --> (ex[1] - 0.05 * ex[2], ex[2] * 1.15)
 
+    # tip annotations
+    dend.showtips && (annotations := map(x -> (x[1], x[2], (x[3], :left, dend.tipfont...)), dend.tipannotations))
+
     sa = get(plotattributes, :series_annotations, nothing)
     @series begin
         seriestype := :path
@@ -85,14 +88,24 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_
             end
         end
     end
-    dend.showtips && (annotations := map(x -> (x[1], x[2], (x[3], :left, dend.tipfont...)), dend.tipannotations))
-    primary = false
-    label = ""
+    primary := false
+    label := ""
     nothing
 end
 
 @recipe function f(fan::Fan)
     adjust(y) = 2pi*y / (length(fan.tipannotations) + 1)
+
+    aspect_ratio := 1
+
+    # tip annotations
+    mx = maximum(filter(isfinite, fan.x))
+    if fan.showtips
+        xlims --> (1.5 .* (-mx, mx))
+        ylims --> (1.5 .* (-mx, mx))
+        annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., (x[3], :left,
+            rad2deg(adjust(x[2])), fan.tipfont...)), fan.tipannotations)
+    end
 
     sa = get(plotattributes, :series_annotations, nothing)
     @series begin
@@ -132,14 +145,8 @@ end
             end
         end
     end
-    aspect_ratio := 1
-    mx = maximum(filter(isfinite, fan.x))
-    if fan.showtips
-        xlim --> (1.5 .* (-mx, mx))
-        ylim --> (1.5 .* (-mx, mx))
-        annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., (x[3], :left,
-            rad2deg(adjust(x[2])), fan.tipfont...)), fan.tipannotations)
-    end
+    primary := false
+    label := ""
     nothing
 end
 
