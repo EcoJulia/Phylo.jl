@@ -290,8 +290,21 @@ function _circle_transform_segments(xs, ys)
     retx, rety
 end
 
+"""
+    map_depthfirst(FUN, start, tree, eltype = nothing)
 
-# a function to update a value successively from the root to the tips
+Apply `FUN` to each node in `tree` in depth-first order, and return the result. 
+`FUN` must take two arguments, `val` and `node`,  where `val` is the result of 
+applying `FUN` to the previous node, and `node` is the current node. `start` 
+specifies the initial value of `val`, and `eltype` specifies the type of the 
+return value of `FUN`.
+
+### Examples
+≡≡≡≡≡≡≡≡≡≡≡
+Define a function to evolve a trait on the tree according to Brownian motion
+
+julia> evolve(tree) = map_depthfirst((val, node) -> val + randn(), 0., tree, Float64)
+"""
 function map_depthfirst(FUN, start, tree, eltype = nothing)
     root = first(nodenamefilter(isroot, tree))
     eltype === nothing && (eltype = typeof(FUN(start, root)))
