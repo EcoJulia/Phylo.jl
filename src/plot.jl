@@ -152,6 +152,17 @@ end
 
 _handlez(x, tree, names) = x
 _handlez(x::Union{String, Symbol}, tree, names) = [getnodedata(tree, name, x) for name in names]
+function _handlez(x::Dict{String, T}, tree, names) where T
+    ret = fill(NaN, length(names))
+    for (i, n) in enumerate(names)
+        if haskey(x, n)
+            ret[i] = x[n]
+        end
+    end
+    ret
+end
+
+
 _mylength(x) = 1
 _mylength(x::AbstractVector) = length(x)
 function _handlemarkers(plotattributes, marker_group, tree, d, h, names)
