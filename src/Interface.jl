@@ -237,6 +237,14 @@ nnodes(trees::AbstractTree{ManyTrees}) =
          for name in _gettreenames(trees))
 
 """
+    ninternal(::AbstractTree)
+
+Returns the number of internal nodes of a single tree, or a Dict of numbers of nodes
+for multiple trees.
+"""
+ninternal(tree::AbstractTree) = nnodes(tree) - nleaves(tree)
+
+"""
     nbranches(::AbstractTree)
 
 Returns the number of branches of a single tree, or a Dict of numbers of
