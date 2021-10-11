@@ -12,3 +12,25 @@ function mrca(tree, target)
     end
     ancestors[oldest]
 end
+
+function nodedepths(tree::Phylo.AbstractTree)
+    function finddepths!(clade::String, parentdepth::Float64 = 0.0)
+        mydepth = parentdepth
+        push!(names, clade)
+        if hasinbound(tree, clade)
+             mydepth += getlength(tree, getinbound(tree, clade))
+        end
+        depth[clade] = mydepth
+        for ch in getchildren(tree, clade)
+            finddepths!(ch, mydepth)
+        end
+    end
+
+    depth = Dict{String, Float64}()
+    names = String[]
+    sizehint!(depth, nnodes(tree))
+    sizehint!(names, nnodes(tree))
+    root = getnodename(tree, getroot(tree))
+    finddepths!(root)
+    depth, names
+end

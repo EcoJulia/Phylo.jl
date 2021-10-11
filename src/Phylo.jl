@@ -183,7 +183,7 @@ include("plot.jl")
 
 # Metrics from the tree
 include("metrics.jl")
-export mrca
+export mrca, nodedepths
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)

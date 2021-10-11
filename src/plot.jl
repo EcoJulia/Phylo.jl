@@ -207,9 +207,7 @@ Copies a tree and sorts its branches. See `sort!` for further details.
 """
 Base.sort(tree::AbstractTree; rev = false) = sort!(copy(tree))
 
-function _findxy(tree::Phylo.AbstractTree)
-
-    # two convenience recursive functions using captured variables
+function _nodeheights(tree::Phylo.AbstractTree)
     function findheights!(clade::String)
         if !in(clade, keys(height))
             for subclade in getchildren(tree, clade)
@@ -222,29 +220,16 @@ function _findxy(tree::Phylo.AbstractTree)
         end
     end
 
-    function finddepths!(clade::String, parentdepth::Float64 = 0.0)
-        mydepth = parentdepth
-        push!(names, clade)
-        if hasinbound(tree, clade)
-             mydepth += getlength(tree, getinbound(tree, clade))
-        end
-        depth[clade] = mydepth
-        for ch in getchildren(tree, clade)
-            finddepths!(ch, mydepth)
-        end
-    end
-
-    root = getnodename(tree, getroot(tree))
     height = Dict(tip => float(i) for (i, tip) in enumerate(getnodename(tree, x) for x in traversal(tree, preorder) if isleaf(tree, x)))
     sizehint!(height, nnodes(tree))
+    root = getnodename(tree, getroot(tree))
     findheights!(root)
+    height
+end
 
-    depth = Dict{String, Float64}()
-    names = String[]
-    sizehint!(depth, nnodes(tree))
-    sizehint!(names, nnodes(tree))
-    finddepths!(root)
-
+function _findxy(tree::Phylo.AbstractTree)
+    depth, names = nodedepths(tree)
+    height = _nodeheights(tree)
     depth, height, names
 end
 
