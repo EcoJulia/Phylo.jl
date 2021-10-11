@@ -20,7 +20,7 @@ default is `:dendrogram`
 ```@example plotting
 using Phylo, Plots
 ENV["GKSwstype"]="nul" # hide
-default(linecolor = :black) # looks nicer with black lines
+default(linecolor = :black, size = (600, 600)) # looks nicer with black lines
 hummers = open(parsenewick, "../../../test/hummingbirds.tree")
 plot(hummers, size = (400, 600), showtips = false)
 ```
@@ -66,7 +66,7 @@ The inbuilt facilities for sampling traits on trees on Phylo returns a
 brownsampler = BrownianTrait(hummers, "Trait")
 plot(hummers, 
      showtips = false, marker_z = rand(brownsampler), 
-     linewidth = 2, markercolor = :RdYlBu)
+     linewidth = 2, markercolor = :RdYlBu, size = (400, 600))
 ```
 
 
@@ -75,7 +75,7 @@ descending from, e.g., Node 248. Here, the recursive function creates a vector
 of colors which will all be orange after encountering Node 248 but black before
 ```@example plotting
 clade_color = map_depthfirst((val, node) -> node == "Node 248" ? :orange : val, :black, hummers)
-plot(hummers, linecolor = clade_color, showtips = false, linewidth = 2)
+plot(hummers, linecolor = clade_color, showtips = false, linewidth = 2, size = (400, 600))
 ```
 
 The Plots attributes related to markers (`markersize`, `markershape` etc.) will
@@ -91,20 +91,26 @@ plot(hummers,
 )
 ```
 
-The `markergroup` and `linegroup` keywords allow plotting discrete values onto
+The `marker_group` and `line_group` keywords allow plotting discrete values onto
 nodes or branches within the phylogeny
-```@example plotting
-groups = "Group" .* rand(3, ninternal(hummers))
-plot(hummers, treetype = :fan, markergroup = groups)
-```
+
+Let's randomly evolve a discrete trait for temperature preference on the tree,
+using `rand!` to add the modelled values to the tree's list of node data.
+In addition to taking a Vector or a Dict, `marker_group` also accepts the name 
+of internal node data.
+
 
 ``` @example plotting
-# @enum TemperatureTrait lowTempPref midTempPref highTempPref # hide
-# tempsampler = SymmetricDiscreteTrait(hummers, TemperatureTrait, 0.4) # hide
-# plot(hummers, showtips = false,   # hide
-#    marker_group = rand(tempsampler),  # hide
-#    legend = :topleft, msc = :white, treetype = :fan,  # hide
-#    c = [:red :blue :green]) # hide
+# evolve the trait and add it to the tree
+@enum TemperatureTrait lowTempPref midTempPref highTempPref
+tempsampler = SymmetricDiscreteTrait(hummers, TemperatureTrait, 0.4)
+rand!(tempsampler, hummers)
+
+# and plot it
+plot(hummers, showtips = false,   
+   marker_group = "TemperatureTrait",  
+    legend = :topleft, msc = :white, treetype = :fan, 
+    c = [:red :blue :green], size = (600, 600)) 
 
 ```@docs
 map_depthfirst
