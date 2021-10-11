@@ -152,11 +152,12 @@ end
 
 _handlez(x, tree, names) = x
 _handlez(x::Union{String, Symbol}, tree, names) = [getnodedata(tree, name, x) for name in names]
-function _handlez(x::Dict{String, T}, tree, names) where T
+function _handlez(x::Dict, tree, names) where T
     ret = fill(NaN, length(names))
     for (i, n) in enumerate(names)
-        if haskey(x, n)
-            ret[i] = x[n]
+        name = getnodename(tree, n)
+        if haskey(x, name)
+            ret[i] = x[name]
         end
     end
     ret
