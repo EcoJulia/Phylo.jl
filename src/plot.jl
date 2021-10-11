@@ -28,7 +28,7 @@ using RecipesBase
         end
     end
 
-    marker_x, marker_y = _handlemarkers(plotattributes, mg, tree, d, h)
+    marker_x, marker_y = _handlemarkers(plotattributes, mg, tree, d, h, n)
 
     if treetype == :dendrogram
         Dendrogram(x, y, tipannotations, marker_x, marker_y, showtips, tipfont, mg, lg)
@@ -154,16 +154,15 @@ _handlez(x, tree) = x
 _handlez(x::Union{String, Symbol}, tree) = getnodedata.(tree, traversal(tree, preorder), x)
 _mylength(x) = 1
 _mylength(x::AbstractVector) = length(x)
-function _handlemarkers(plotattributes, marker_group, tree, d, h)
-    marker_x, marker_y = Float64[], Float64[]
+function _handlemarkers(plotattributes, marker_group, tree, d, h, names)
     isnothing(marker_group) || (plotattributes[:marker_group] = marker_group)
     markerfields = filter(x->occursin(r"marker", String(x)), keys(plotattributes))
-    isempty(markerfields) && return(marker_x, marker_y)
+    isempty(markerfields) && return (Float64[], Float64[])
     maxlength =  maximum([_mylength(plotattributes[k]) for k in markerfields])
-    f = maxlength ∈ (1, count(x->!isleaf(tree, x), traversal(tree))) ? nodenamefilter(!isleaf, tree) : nodenameiter(tree)
-    append!(marker_x, getindex.(Ref(d), f))
-    append!(marker_y, getindex.(Ref(h), f))
-    marker_x, marker_y
+    if maxlength ∈ (1, ninternal(tree))
+        names = filter(node -> !isleaf(tree, node), names)
+    end
+    [d[node] for node in names], [h[node] for node in names]
 end
 
 function _extend(tmp, x)
