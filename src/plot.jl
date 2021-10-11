@@ -9,16 +9,16 @@ using RecipesBase
     colorbar --> true
     size --> (1000, 1000)
 
-    lz = get(plotattributes, :line_z, nothing)
-    mz = get(plotattributes, :marker_z, nothing)
-    isnothing(lz) || (line_z := _handlez(lz, tree))
-    isnothing(mz) || (marker_z := _handlez(mz, tree))
-    mg = _handlez(marker_group, tree)
-    lg = _handlez(line_group, tree)
-
     d, h, n = _findxy(tree)
     adj = 0.03maximum(values(d))
     tipannotations = map(x->(d[x] + adj, h[x], x), getleafnames(tree))
+
+    lz = get(plotattributes, :line_z, nothing)
+    mz = get(plotattributes, :marker_z, nothing)
+    isnothing(lz) || (line_z := _handlez(lz, tree, n))
+    isnothing(mz) || (marker_z := _handlez(mz, tree, n))
+    mg = _handlez(marker_group, tree, n)
+    lg = _handlez(line_group, tree, n)
 
     x, y = Float64[], Float64[]
     for node ∈ n
@@ -150,8 +150,8 @@ end
     nothing
 end
 
-_handlez(x, tree) = x
-_handlez(x::Union{String, Symbol}, tree) = getnodedata.(tree, traversal(tree, preorder), x)
+_handlez(x, tree, names) = x
+_handlez(x::Union{String, Symbol}, tree, names) = [getnodedata(tree, name, x) for name in names]
 _mylength(x) = 1
 _mylength(x::AbstractVector) = length(x)
 function _handlemarkers(plotattributes, marker_group, tree, d, h, names)
