@@ -37,7 +37,7 @@ Many phylogenies look more aesthetically pleasing if the descendants from each
 node are sorted in order of their size. This is called `ladderize` in some other
 packages.
 ```@example plotting
-sort!(hummmers, rev = true)
+sort!(hummers, rev = true)
 plot(hummers, treetype = :fan)
 ```
 
@@ -103,6 +103,7 @@ of internal node data.
 
 ``` @example plotting
 # evolve the trait and add it to the tree
+using Random
 @enum TemperatureTrait lowTempPref midTempPref highTempPref
 tempsampler = SymmetricDiscreteTrait(hummers, TemperatureTrait, 0.4)
 rand!(tempsampler, hummers)

@@ -5,13 +5,14 @@ makedocs(modules = [Phylo, Phylo.API],
          sitename = "Phylo.jl", 
          pages = [
              "Home" => "index.md",
-             "Tutorial / Quick start" => "tutorial.md"
+             "Tutorial / Quick start" => "tutorial.md",
              "Manual" => Any[
+                 "Phylogeny data types" => "man/treetypes.md",
                  "Creating phylogenies" => "man/input.md",
                  "Manipulating and building phylogenies" => "man/manipulating.md",
                  "Traversal and iterators" => "man/traversal.md",
                  "Getting phylogeny attributes" => "man/attributes.md",
-                 "Evolving traits" => "man/evolving.md",
+                 "Modelling traits" => "man/modelling.md",
                  "Plotting" => "man/plotting.md"
              ],
              "API" => "api.md"
