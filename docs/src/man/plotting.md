@@ -5,7 +5,7 @@ Phylo defines recipes for all `AbstractTree`s, allowing them to be plotted with
 
 ### Keywords
 
-It adds these keywords to the ones initiallysupported by Plots.jl:
+It adds these keywords to the ones initially supported by Plots.jl:
 - treetype: choosing `:fan` or `:dendrogram` determines the shape of the tree
 - marker_group: applies the `group` keyword to node markers
 - line_group: applies the `group` keyword to branch lines
