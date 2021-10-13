@@ -57,7 +57,7 @@ function distances(tree::AbstractTree)
 end
 
 """
-    height(tree::AbstractTree, node)
+    heighttoroot(tree::AbstractTree, node)
 
 Height of a node of the tree above the root
 """
@@ -67,7 +67,7 @@ function heighttoroot(tree::AbstractTree{OneTree, <:Rooted}, node)
 end
 
 """
-    heights(tree::AbstractTree)
+    heightstoroot(tree::AbstractTree)
 
 Height of all of the leaves of the tree above the root
 """
