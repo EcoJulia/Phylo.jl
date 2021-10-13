@@ -51,7 +51,7 @@ branches / internal nodes, where the values follow a depthfirst order
 - a `Dict` of `node => value`, with the value to be plotted for each node 
 (skipping nodes not in the Dict).
 
-To demonstrate, let' start by defining a custom function for evolving a trait
+To demonstrate, let's start by defining a custom function for evolving a trait
 on the phylogeny accoding to Brownian motion, using the utility funciton 
 `map_depthfirst`
 ```@example plotting
