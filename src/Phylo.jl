@@ -182,7 +182,7 @@ include("plot.jl")
 
 # Metrics from the tree
 include("metrics.jl")
-export mrca
+export mrca, nodeheights
 export distance, distances, heighttoroot, heightstoroot
 
 # Path into package
