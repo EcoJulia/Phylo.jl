@@ -52,7 +52,7 @@ branches / internal nodes, where the values follow a depthfirst order
 (skipping nodes not in the Dict).
 
 To demonstrate, let's start by defining a custom function for evolving a trait
-on the phylogeny accoding to Brownian motion, using the utility funciton 
+on the phylogeny according to Brownian motion, using the utility function 
 `map_depthfirst`
 ```@example plotting
 evolve(tree) = map_depthfirst((val, node) -> val + randn(), 0., tree, Float64)
