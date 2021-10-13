@@ -92,7 +92,7 @@ plot(hummers,
 ```
 
 The `marker_group` and `line_group` keywords allow plotting discrete values onto
-nodes or branches within the phylogeny
+nodes or branches within the phylogeny.
 
 Let's randomly evolve a discrete trait for temperature preference on the tree,
 using `rand!` to add the modelled values to the tree's list of node data.
