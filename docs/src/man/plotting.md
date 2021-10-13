@@ -21,7 +21,7 @@ default is `:dendrogram`
 using Phylo, Plots
 ENV["GKSwstype"]="nul" # hide
 default(linecolor = :black, size = (600, 600)) # looks nicer with black lines
-hummers = open(parsenewick, "../../../test/hummingbirds.tree")
+hummers = open(parsenewick, Phylo.path("hummingbirds.tree")
 plot(hummers, size = (400, 600), showtips = false)
 ```
 
