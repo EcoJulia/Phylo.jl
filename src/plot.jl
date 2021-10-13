@@ -292,7 +292,7 @@ end
 
 
 # a function to update a value successively from the root to the tips
-function map_heightfirst(FUN, start, tree, eltype = nothing)
+function map_depthfirst(FUN, start, tree, eltype = nothing)
     root = first(nodenamefilter(isroot, tree))
     eltype === nothing && (eltype = typeof(FUN(start, root)))
     ret = Vector{eltype}()
