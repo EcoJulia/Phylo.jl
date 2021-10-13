@@ -13,24 +13,64 @@ function mrca(tree, target)
     ancestors[oldest]
 end
 
-function nodedepths(tree::Phylo.AbstractTree)
-    function finddepths!(clade::String, parentdepth::Float64 = 0.0)
-        mydepth = parentdepth
-        push!(names, clade)
+function nodeheights(tree::Phylo.AbstractTree; onlyleaves = false, noleaves = false)
+    function findheights!(clade::String, parentheight::Float64 = 0.0)
+        myheight = parentheight
         if hasinbound(tree, clade)
-             mydepth += getlength(tree, getinbound(tree, clade))
+             myheight += getlength(tree, getinbound(tree, clade))
         end
-        depth[clade] = mydepth
+        height[clade] = myheight
         for ch in getchildren(tree, clade)
-            finddepths!(ch, mydepth)
+            findheights!(ch, myheight)
         end
     end
-
-    depth = Dict{String, Float64}()
-    names = String[]
-    sizehint!(depth, nnodes(tree))
-    sizehint!(names, nnodes(tree))
+    names = getnodename.((tree, ), traversal(tree, preorder))
+    height = AxisArray(Vector{Float64}(undef, nnodes(tree)), names = names)
     root = getnodename(tree, getroot(tree))
-    finddepths!(root)
-    depth, names
+    findheights!(root)
+    onlyleaves && return height[filter(t->isleaf(tree, t), names)]
+    noleaves && return height[filter(t->!isleaf(tree, t), names)]
+    height
+end
+
+
+"""
+    distance(tree::AbstractTree, node1, node2)
+
+Distance between two nodes on a tree
+"""
+function distance(tree::AbstractTree, node1, node2)
+    branches = branchroute(tree, getnode(tree, node1), getnode(tree, node2))
+    return mapreduce(branch -> getlength(tree, branch), +, branches; init = 0.0)
+end
+
+"""
+    distances(tree::AbstractTree)
+
+Pairwise distances between all leaf nodes on a tree
+"""
+function distances(tree::AbstractTree)
+    leaves = getleaves(tree)
+    names = getnodename.(tree, leaves)
+    return AxisArray([distance(tree, li, lj) for li in leaves, lj in leaves],
+                     Axis{:x}(names), Axis{:y}(names))
+end
+
+"""
+    height(tree::AbstractTree, node)
+
+Height of a node of the tree above the root
+"""
+function heighttoroot(tree::AbstractTree{OneTree, <:Rooted}, node)
+    return mapreduce(branch -> getlength(tree, branch), +,
+                     branchhistory(tree, node); init = 0.0)
+end
+
+"""
+    heights(tree::AbstractTree)
+
+Height of all of the leaves of the tree above the root
+"""
+function heightstoroot(tree::AbstractTree)
+    return nodeheights(tree, onlyleaves = true)
 end

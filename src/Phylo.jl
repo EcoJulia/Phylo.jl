@@ -149,7 +149,6 @@ export RootedTree, ManyRootTree, UnrootedTree
 include("routes.jl")
 export branchhistory, branchfuture, branchroute
 export nodehistory, nodefuture, noderoute
-export distance, distances, heighttoroot, heightstoroot
 
 # Iterator methods expanded
 include("Iterators.jl")
@@ -183,7 +182,8 @@ include("plot.jl")
 
 # Metrics from the tree
 include("metrics.jl")
-export mrca, nodedepths
+export mrca
+export distance, distances, heighttoroot, heightstoroot
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)

@@ -219,38 +219,38 @@ Copies a tree and sorts its branches. See `sort!` for further details.
 """
 Base.sort(tree::AbstractTree; rev = false) = sort!(copy(tree))
 
-function _nodeheights(tree::Phylo.AbstractTree)
-    function findheights!(clade::String)
-        if !in(clade, keys(height))
+function _nodedepths(tree::Phylo.AbstractTree)
+    function finddepths!(clade::String)
+        if !in(clade, keys(depth))
             for subclade in getchildren(tree, clade)
-                findheights!(subclade)
+                finddepths!(subclade)
             end
         end
         if !isleaf(tree, clade)
-            ch_heights = [height[child] for child in getchildren(tree, clade)]
-            height[clade] = (maximum(ch_heights) + minimum(ch_heights)) / 2.
+            ch_depths = [depth[child] for child in getchildren(tree, clade)]
+            depth[clade] = (maximum(ch_depths) + minimum(ch_depths)) / 2.
         end
     end
 
-    height = Dict(tip => float(i) for (i, tip) in enumerate(getnodename(tree, x) for x in traversal(tree, preorder) if isleaf(tree, x)))
-    sizehint!(height, nnodes(tree))
+    depth = Dict(tip => float(i) for (i, tip) in enumerate(getnodename(tree, x) for x in traversal(tree, preorder) if isleaf(tree, x)))
+    sizehint!(depth, nnodes(tree))
     root = getnodename(tree, getroot(tree))
-    findheights!(root)
-    height
+    finddepths!(root)
+    depth
 end
 
 function _findxy(tree::Phylo.AbstractTree)
-    depth, names = nodedepths(tree)
-    height = _nodeheights(tree)
-    depth, height, names
+    height, names = nodeheights(tree)
+    depth = _nodedepths(tree)
+    height, depth, names
 end
 
-function _find_tips(depth, height, tree)
+function _find_tips(height, depth, tree)
     x, y, l = Float64[], Float64[], String[]
-    for k in keys(depth)
+    for k in keys(height)
         if isleaf(tree, k)
-            push!(x, depth[k])
-            push!(y, height[k])
+            push!(x, height[k])
+            push!(y, depth[k])
             push!(l, k)
         end
     end
@@ -292,7 +292,7 @@ end
 
 
 # a function to update a value successively from the root to the tips
-function map_depthfirst(FUN, start, tree, eltype = nothing)
+function map_heightfirst(FUN, start, tree, eltype = nothing)
     root = first(nodenamefilter(isroot, tree))
     eltype === nothing && (eltype = typeof(FUN(start, root)))
     ret = Vector{eltype}()
