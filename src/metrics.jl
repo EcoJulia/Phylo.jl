@@ -25,7 +25,7 @@ function nodeheights(tree::Phylo.AbstractTree; onlyleaves = false, noleaves = fa
         end
     end
     names = getnodename.((tree, ), traversal(tree, preorder))
-    height = AxisArray(Vector{Float64}(undef, nnodes(tree)), names = names)
+    height = AxisArray(Vector{Float64}(undef, nnodes(tree)), x = names)
     root = getnodename(tree, getroot(tree))
     findheights!(root)
     onlyleaves && return height[filter(t->isleaf(tree, t), names)]
