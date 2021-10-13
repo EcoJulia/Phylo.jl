@@ -10,7 +10,7 @@ It adds these keywords to the ones initially supported by Plots.jl:
 - marker_group: applies the `group` keyword to node markers
 - line_group: applies the `group` keyword to branch lines
 - showtips: `true` (the default) shows the leaf names
-- tipfont: a tuple defining the font to use for leaf names (default is `(7,))
+- tipfont: a tuple defining the font to use for leaf names (default is `(7,)`)
 
 ### Example plots
 For this example, we will use the phylogeny of all extant hummingbird species.
