@@ -100,7 +100,6 @@ Let's randomly evolve a discrete trait for temperature preference on the tree,
 using `rand!` to add the modelled values to the tree's list of node data.
 In addition to taking a Vector or a Dict, `marker_group` also accepts the name 
 of internal node data.
-
 ``` @example plotting
 # evolve the trait and add it to the tree
 using Random
