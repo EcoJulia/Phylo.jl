@@ -242,7 +242,7 @@ end
 function _findxy(tree::Phylo.AbstractTree)
     height = nodeheights(tree)
     depth = _nodedepths(tree)
-    height, depth, AxisArrays.axes(height, 1)
+    height, depth, AxisArrays.axes(height, 1).val
 end
 
 function _find_tips(height, depth, tree)

@@ -13,12 +13,16 @@ getonetree
 ### Methods on Trees
 ```@docs
 mrca
-nodedepths
+nodeheights
 getleafnames
 getleaves
 nleaves
 nnodes
 nbranches
+distance
+distances
+heighttoroot
+heightstoroot
 ```
 
 ### Methods on Nodes
