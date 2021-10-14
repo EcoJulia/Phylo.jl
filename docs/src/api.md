@@ -29,9 +29,6 @@ extends `Phylo.API._addnode!()` (and therefore the directly accessible
 to be extended for any new subtype, and which have default
 implementations.
 
-```@contents
-```
-
 ```@autodocs
 Modules = [Phylo.API]
 Private = false

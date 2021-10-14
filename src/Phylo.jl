@@ -89,16 +89,16 @@ end
 include("Interface.jl")
 # AbstractTree methods
 export ntrees, gettrees, nroots, getroots, getroot
-export treenametype, gettreenames, getonetree, gettreename
+export treenametype, gettreenames, gettreename #, getonetree #unimplemented
 export roottype, nodetype, nodedatatype, nodenametype
 export branchtype, branchdatatype, branchnametype
-export createbranch!, deletebranch!, branch!
+export createbranch!, deletebranch!
 export createnode!, createnodes!, deletenode!
 export getnodenames, getnodename, hasnode, getnode, getnodes
 export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
 export hasrootheight, getrootheight, setrootheight!
-export hasparent, getparent, getancestors
-export haschildren, getchildren, getdescendants
+export getparent, getancestors #, hasparent # unimplemented
+export getchildren, getdescendants #, haschildren # unimplemented
 export validate!, traversal, branchdims
 
 @deprecate addnode! createnode!
@@ -121,9 +121,9 @@ export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
 export src, dst, getlength
-export hasrootheight, getrootheight, setrootheight!, clearrootheight!
+export hasrootheight, getrootheight, setrootheight! #, clearrootheight! #unimplemented
 export getbranchdata, setbranchdata!
-export getrootdistance
+# export getrootdistance # unimplemented
 
 @deprecate getnoderecord getnodedata
 @deprecate setnoderecord! setnodedata!

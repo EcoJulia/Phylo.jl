@@ -1,4 +1,32 @@
-function mrca(tree, target)
+"""
+    mrca(tree::AbstractTree, target)
+
+Returns the node within `tree` that is the Most Recent Common Ancestor of the 
+leaves (or internal nodes) defined by `target`. `target` can be an iterator
+over nodes or an AbstractArray of nodes. The return value has the same node
+type as the elements of `target`.
+
+### Examples
+≡≡≡≡≡≡≡≡≡≡≡
+
+julia> tree = open(parsenewick, Phylo.path("H1N1.newick"))
+RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are 227, 294, 295, 110, 390, ... [501 omitted] ... and 418
+
+
+julia> tips = rand(collect(nodefilter(isleaf, tree)), 3)
+3-element Vector{LinkNode{OneRoot, String, Dict{String, Any}, LinkBranch{OneRoot, String, Dict{String, Any}, Float64}}}:
+ LinkNode 153, a tip of the tree with an incoming connection (branch 888).
+
+ LinkNode 120, a tip of the tree with an incoming connection (branch 195).
+
+ LinkNode 504, a tip of the tree with an incoming connection (branch 44).
+
+
+julia> mrca(tree, tips)
+LinkNode Node 1003, an internal node with 1 inbound and 2 outbound connections (branches 1001 and 999, 1000)
+"""
+function mrca(tree::AbstractTree, target)
     ancestors = getancestors(tree, first(target))
     ranks = Dict(j => i for (i,j) in enumerate(ancestors))
     checked = Set(ancestors)
@@ -13,6 +41,13 @@ function mrca(tree, target)
     ancestors[oldest]
 end
 
+"""
+    nodeheights(tree::Phylo.AbstractTree; onlyleaves = false, noleaves = false)
+
+Returns an AxisArray of the height of all nodes in `tree` over the root node.
+`onlyleaves` and `noleaves` filter the nodes for leaves and internal nodes,
+respectively
+"""
 function nodeheights(tree::Phylo.AbstractTree; onlyleaves = false, noleaves = false)
     function findheights!(clade::String, parentheight::Float64 = 0.0)
         myheight = parentheight
