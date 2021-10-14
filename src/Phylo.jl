@@ -179,6 +179,7 @@ export droptips!, keeptips!
 
 # Plot recipes
 include("plot.jl")
+export map_depthfirst
 
 # Metrics from the tree
 include("metrics.jl")
