@@ -5,7 +5,6 @@ TODO: examples here are needed
 ```@docs
 createbranch!
 deletebranch!
-branch!
 createnode!
 createnodes!
 deletenode!

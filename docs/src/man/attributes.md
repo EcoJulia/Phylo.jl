@@ -7,7 +7,6 @@ gettrees
 nroots
 getroots
 gettreenames
-getonetree
 ```
 
 ### Methods on Trees
@@ -46,10 +45,8 @@ setnodedata!
 hasheight
 getheight
 setheight!
-hasparent
 getparent
 getancestors
-haschildren
 getchildren
 getdescendants
 ```
@@ -62,10 +59,8 @@ getlength
 hasrootheight
 getrootheight
 setrootheight!
-clearrootheight!
 getbranchdata
 setbranchdata!
-getrootdistance
 ```
 
 
@@ -92,9 +87,6 @@ getbranchname
 hasbranch
 getbranch
 getbranches
-hasrootheight
-getrootheight
-setrootheight!
 validate!
 branchdims
 ```

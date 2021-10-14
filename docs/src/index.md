@@ -15,6 +15,3 @@ are very welcome!
 
 ```@contents
 ```
-
-```@index
-```

@@ -15,6 +15,7 @@ makedocs(modules = [Phylo, Phylo.API],
                  "Modelling traits" => "man/modelling.md",
                  "Plotting" => "man/plotting.md"
              ],
+             "List of functions" => "functionlist.md",
              "API" => "api.md"
          ])
 
