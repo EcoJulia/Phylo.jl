@@ -7,8 +7,4 @@ branchroute
 nodehistory
 nodefuture
 noderoute
-distance
-distances
-heighttoroot
-heightstoroot
 ```
