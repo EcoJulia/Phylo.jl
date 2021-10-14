@@ -9,16 +9,16 @@ using RecipesBase
     colorbar --> true
     size --> (1000, 1000)
 
-    lz = get(plotattributes, :line_z, nothing)
-    mz = get(plotattributes, :marker_z, nothing)
-    isnothing(lz) || (line_z := _handlez(lz, tree))
-    isnothing(mz) || (marker_z := _handlez(mz, tree))
-    mg = _handlez(marker_group, tree)
-    lg = _handlez(line_group, tree)
-
     d, h, n = _findxy(tree)
     adj = 0.03maximum(values(d))
     tipannotations = map(x->(d[x] + adj, h[x], x), getleafnames(tree))
+
+    lz = get(plotattributes, :line_z, nothing)
+    mz = get(plotattributes, :marker_z, nothing)
+    isnothing(lz) || (line_z := _handlez(lz, tree, n))
+    isnothing(mz) || (marker_z := _handlez(mz, tree, n))
+    mg = _handlez(marker_group, tree, n)
+    lg = _handlez(line_group, tree, n)
 
     x, y = Float64[], Float64[]
     for node ∈ n
@@ -28,7 +28,7 @@ using RecipesBase
         end
     end
 
-    marker_x, marker_y = _handlemarkers(plotattributes, mg, tree, d, h)
+    marker_x, marker_y = _handlemarkers(plotattributes, mg, tree, d, h, n)
 
     if treetype == :dendrogram
         Dendrogram(x, y, tipannotations, marker_x, marker_y, showtips, tipfont, mg, lg)
@@ -150,21 +150,31 @@ end
     nothing
 end
 
-_handlez(x, tree) = x
-_handlez(x::Union{String, Symbol}, tree) = getnodedata.(tree, traversal(tree, preorder), x)
+_handlez(x, tree, names) = x
+_handlez(x::Union{String, Symbol}, tree, names) = [getnodedata(tree, name, x) for name in names]
+function _handlez(x::Dict, tree, names) where T
+    ret = fill(NaN, length(names))
+    for (i, n) in enumerate(names)
+        name = getnodename(tree, n)
+        if haskey(x, name)
+            ret[i] = x[name]
+        end
+    end
+    ret
+end
+
+
 _mylength(x) = 1
 _mylength(x::AbstractVector) = length(x)
-function _handlemarkers(plotattributes, marker_group, tree, d, h)
-    marker_x, marker_y = Float64[], Float64[]
+function _handlemarkers(plotattributes, marker_group, tree, d, h, names)
+    isnothing(marker_group) || (plotattributes[:marker_group] = marker_group)
     markerfields = filter(x->occursin(r"marker", String(x)), keys(plotattributes))
-    isempty(markerfields) && isnothing(marker_group) && return(marker_x, marker_y)
-    maxlengthfields = isempty(markerfields) ? 1 : maximum([_mylength(plotattributes[k]) for k in markerfields])
-    maxlengthgroup = isnothing(marker_group) ? 1 : length(marker_group)
-    maxlength = max(maxlengthfields, maxlengthgroup)
-    f = maxlength ∈ (1, count(x->!isleaf(tree, x), traversal(tree))) ? nodenamefilter(!isleaf, tree) : nodenameiter(tree)
-    append!(marker_x, getindex.(Ref(d), f))
-    append!(marker_y, getindex.(Ref(h), f))
-    marker_x, marker_y
+    isempty(markerfields) && return (Float64[], Float64[])
+    maxlength =  maximum([_mylength(plotattributes[k]) for k in markerfields])
+    if maxlength ∈ (1, ninternal(tree))
+        names = filter(node -> !isleaf(tree, node), names)
+    end
+    [d[node] for node in names], [h[node] for node in names]
 end
 
 function _extend(tmp, x)
@@ -209,53 +219,38 @@ Copies a tree and sorts its branches. See `sort!` for further details.
 """
 Base.sort(tree::AbstractTree; rev = false) = sort!(copy(tree))
 
-function _findxy(tree::Phylo.AbstractTree)
-
-    # two convenience recursive functions using captured variables
-    function findheights!(clade::String)
-        if !in(clade, keys(height))
+function _nodedepths(tree::Phylo.AbstractTree)
+    function finddepths!(clade::String)
+        if !in(clade, keys(depth))
             for subclade in getchildren(tree, clade)
-                findheights!(subclade)
+                finddepths!(subclade)
             end
         end
         if !isleaf(tree, clade)
-            ch_heights = [height[child] for child in getchildren(tree, clade)]
-            height[clade] = (maximum(ch_heights) + minimum(ch_heights)) / 2.
+            ch_depths = [depth[child] for child in getchildren(tree, clade)]
+            depth[clade] = (maximum(ch_depths) + minimum(ch_depths)) / 2.
         end
     end
 
-    function finddepths!(clade::String, parentdepth::Float64 = 0.0)
-        mydepth = parentdepth
-        push!(names, clade)
-        if hasinbound(tree, clade)
-             mydepth += getlength(tree, getinbound(tree, clade))
-        end
-        depth[clade] = mydepth
-        for ch in getchildren(tree, clade)
-            finddepths!(ch, mydepth)
-        end
-    end
-
-    root = getnodename(tree, getroot(tree))
-    height = Dict(tip => float(i) for (i, tip) in enumerate(getnodename(tree, x) for x in traversal(tree, preorder) if isleaf(tree, x)))
-    sizehint!(height, nnodes(tree))
-    findheights!(root)
-
-    depth = Dict{String, Float64}()
-    names = String[]
+    depth = Dict(tip => float(i) for (i, tip) in enumerate(getnodename(tree, x) for x in traversal(tree, preorder) if isleaf(tree, x)))
     sizehint!(depth, nnodes(tree))
-    sizehint!(names, nnodes(tree))
+    root = getnodename(tree, getroot(tree))
     finddepths!(root)
-
-    depth, height, names
+    depth
 end
 
-function _find_tips(depth, height, tree)
+function _findxy(tree::Phylo.AbstractTree)
+    height = nodeheights(tree)
+    depth = _nodedepths(tree)
+    height, depth, AxisArrays.axes(height, 1)
+end
+
+function _find_tips(height, depth, tree)
     x, y, l = Float64[], Float64[], String[]
-    for k in keys(depth)
+    for k in keys(height)
         if isleaf(tree, k)
-            push!(x, depth[k])
-            push!(y, height[k])
+            push!(x, height[k])
+            push!(y, depth[k])
             push!(l, k)
         end
     end
