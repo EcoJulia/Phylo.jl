@@ -22,7 +22,7 @@ default is `:dendrogram`
 ```@example plotting
 using Phylo, Plots
 ENV["GKSwstype"]="nul" # hide
-default(linecolor = :black, size = (600, 600)) # looks nicer with black lines
+default(linecolor = :black, size = (400, 400)) # looks nicer with black lines
 hummers = open(parsenewick, Phylo.path("hummingbirds.tree"))
 plot(hummers, size = (400, 600), showtips = false)
 ```
@@ -89,7 +89,8 @@ plot(hummers,
     size = (400, 800), 
     linecolor = :orange, linewidth = 5, 
     markersize = 10, markercolor = :steelblue, markerstrokecolor = :white,
-    series_annotations = text.(1:nnodes(hummers), 6, :center, :center, :white)
+    series_annotations = text.(1:nnodes(hummers), 5, :center, :center, :white,
+    tipfont = (4,))
 )
 ```
 
@@ -111,7 +112,7 @@ rand!(tempsampler, hummers)
 plot(hummers, showtips = false,   
    marker_group = "TemperatureTrait",  
     legend = :topleft, msc = :white, treetype = :fan, 
-    c = [:red :blue :green], size = (600, 600)) 
+    c = [:red :blue :green]) 
 ```
 ```@docs
 map_depthfirst
