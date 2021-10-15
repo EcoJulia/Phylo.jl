@@ -68,7 +68,8 @@ The inbuilt facilities for sampling traits on trees on Phylo returns a
 brownsampler = BrownianTrait(hummers, "Trait")
 plot(hummers, 
      showtips = false, marker_z = rand(brownsampler), 
-     linewidth = 2, markercolor = :RdYlBu, size = (400, 600))
+     markercolor = :RdYlBu, size = (400, 600), 
+     markerstrokecolor = :white, markersize = 4)
 ```
 
 
