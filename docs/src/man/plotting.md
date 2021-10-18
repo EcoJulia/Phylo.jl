@@ -105,18 +105,17 @@ of internal node data.
 # evolve the trait and add it to the tree
 using Random
 @enum TemperatureTrait lowTempPref midTempPref highTempPref
-tempsampler = SymmetricDiscreteTrait(hummers, TemperatureTrait, 0.4)
+tempsampler = SymmetricDiscreteTrait(hummers, TemperatureTrait, 0.4, "Temperature")
 rand!(tempsampler, hummers)
 
 # and plot it
-plot(hummers, showtips = false,   
-   marker_group = "TemperatureTrait",  
-    legend = :topleft, msc = :white, treetype = :fan, 
-    c = [:red :blue :green]) 
+plot(hummers, showtips = false,
+   marker_group = "Temperature",
+    legend = :topleft, msc = :white, treetype = :fan,
+    c = [:red :blue :green])
 ```
 ```@docs
 map_depthfirst
 sort
 sort!
 ```
-
