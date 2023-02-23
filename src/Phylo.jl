@@ -186,6 +186,10 @@ include("metrics.jl")
 export mrca, nodeheights
 export distance, distances, heighttoroot, heightstoroot
 
+# Inference on tree
+include("inference.jl")
+export estimaterates
+
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
