@@ -12,7 +12,7 @@ using DataFrames
     library('phylolm')"
 
     jtree = open(parsenewick, Phylo.path("hummingbirds.tree"))
-    R"rtree = ape::read.tree(file = 'test/hummingbirds.tree')" #I dont think this is the way I should load in the tree to R. Tried like in other files but I couldnt get it to load into phylolm.
+    R"rtree = ape::read.tree(file = 'hummingbirds.tree')" #I dont think this is the way I should load in the tree to R. Tried like in other files but I couldnt get it to load into phylolm.
 
     #Create dataframe with leafnames and random trait values
     species = getleafnames(jtree)
