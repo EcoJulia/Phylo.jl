@@ -5,6 +5,9 @@ using Phylo
 using RCall
 using DataFrames
 
+global skipR = !rcopy(R"require(ape)")
+global skipR = !rcopy(R"require(phylolm)")
+
 @testset "Compare estimaterates output to phylolm" begin
     
     R"
