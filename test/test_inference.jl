@@ -1,34 +1,24 @@
 module TestInference
 
-using Test
-using Phylo
-using RCall
-using DataFrames
+# Environment variable to avoid boring R package builds
+mustCrossvalidate = haskey(ENV, "JULIA_MUST_CROSSVALIDATE") &&
+    ENV["JULIA_MUST_CROSSVALIDATE"] == "1"
 
-@testset "Compare estimaterates output to phylolm" begin
-    
-    R"
-    library('ape')
-    library('phylolm')"
-
-    jtree = open(parsenewick, Phylo.path("hummingbirds.tree"))
-    R"rtree = ape::read.tree(file = 'hummingbirds.tree')" #I dont think this is the way I should load in the tree to R. Tried like in other files but I couldnt get it to load into phylolm.
-
-    #Create dataframe with leafnames and random trait values
-    species = getleafnames(jtree)
-    data = 1000 .* rand(length(species))
-    dat = DataFrame(species = species, data = data)
-    @rput dat
-
-    #species need to be the row names in R
-    R"row.names(dat) <- dat$species"
-
-    rfit = rcopy(R"phylolm(data~1,data=dat,phy=rtree)")
-    jfit = estimaterates(jtree, dat)
-
-    @test rfit[:coefficients] ≈ jfit[1]
-    @test rfit[:sigma2] ≈ jfit[2]
-    @test rfit[:logLik] ≈ -jfit[3]
+# Only run R on unix or when R is installed because JULIA_MUST_CROSSVALIDATE is set to 1
+global skipR = !(mustCrossvalidate || Sys.isunix())
+try
+    skipR && error("Not on unix...")
+    using RCall
+    global skipR = false
+catch
+    global skipR = true
+    if mustCrossvalidate
+        error("R not installed, JULIA_MUST_CROSSVALIDATE set")
+    else
+        @warn "R not installed, skipping R cross-validation."
+    end
 end
+
+!skipR && include("run_inference.jl")
 
 end
