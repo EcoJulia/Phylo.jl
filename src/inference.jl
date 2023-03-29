@@ -1,7 +1,149 @@
 using DataFrames
 using LinearAlgebra
 
-function threepoint(tree::AbstractTree, df::DataFrame, traits::DataFrame, N::Int64)
+function threepoint(tree::AbstractTree, trait::String, N::Int64, nodes)
+    #prefrom algortihm in Ho & Ane 2014
+    #function estimaterates gets inputs into right form
+    #nodes - vector of nodes in the traversal order
+
+    for i in 1:N
+        #need to see if node is a tip (leaf)
+        if isleaf(tree, nodes[i])
+    
+            #calculations
+            nodet = getnodedata(tree, nodes[i])["t"]
+            nodetrait = getnodedata(tree, nodes[i])[trait]
+            
+            #update nodes
+            setnodedata!(tree, nodes[i], "logV", log(nodet))
+            setnodedata!(tree, nodes[i], "p", 1/nodet)
+            setnodedata!(tree, nodes[i], "yl", nodetrait)
+            setnodedata!(tree, nodes[i], "xl", 1)
+            setnodedata!(tree, nodes[i], "Q", nodetrait / nodet)
+            setnodedata!(tree, nodes[i], "xx", 1/nodet)
+            setnodedata!(tree, nodes[i], "yy", nodetrait * nodetrait / nodet)
+    
+        else
+    
+            #need to find direct desendents 
+            children = getchildren(tree, nodes[i])
+    
+            #child data
+            childdata = getnodedata.(tree, children)
+    
+            #get needs the name of the vector of dicts, what we're looking for in each dict, and what to say if it cant find anything
+            childp = get.(childdata, "p", missing) 
+            childlogV = get.(childdata, "logV", missing)
+            childxl = get.(childdata, "xl", missing)
+            childyl = get.(childdata, "yl", missing)
+            childQ = get.(childdata, "Q", missing)
+            childxx = get.(childdata, "xx", missing)
+            childyy = get.(childdata, "yy", missing)
+    
+            #nodedata
+            nodet = getnodedata(tree, nodes[i])["t"]
+     
+            #calculations
+            pA = sum(childp)
+            ws = childp / pA
+           
+            newlogV = sum(childlogV) + log(1.0 + nodet * pA)
+            newp = pA / (1.0 + nodet * pA)
+            newxl = ws ⋅ childxl
+            newyl = ws ⋅ childyl
+            newQ = sum(childQ) - ((nodet * pA^2) / (1.0 + nodet * pA)) * newxl * newyl
+            newxx = sum(childxx) - ((nodet * pA^2) / (1.0 + nodet * pA)) * newxl * newxl
+            newyy = sum(childyy) - ((nodet * pA^2) / (1.0 + nodet * pA)) * newyl * newyl 
+    
+            #update nodes
+            setnodedata!(tree, nodes[i], "logV", newlogV)
+            setnodedata!(tree, nodes[i], "p", newp)
+            setnodedata!(tree, nodes[i], "yl", newyl)
+            setnodedata!(tree, nodes[i], "xl", newxl)
+            setnodedata!(tree, nodes[i], "Q", newQ)
+            setnodedata!(tree, nodes[i], "xx", newxx)
+            setnodedata!(tree, nodes[i], "yy", newyy)
+    
+        end
+    end
+
+    return tree
+end
+
+function estimaterates!(tree::AbstractTree, trait::String)
+
+    #get information from tree in order to preform threepoint
+    nodes = getnodes(tree, postorder)
+    N = length(nodes)
+    n = length(getleaves(tree))
+
+    tree = threepoint(tree, trait, N, nodes)
+
+    #information from last node
+    nodeN = getnodedata(tree, nodes[N])
+
+    betahat = inv(nodeN["xx"]) * nodeN["Q"]
+    sigmahat = (nodeN["yy"] - 2 * betahat * nodeN["Q"] + betahat * nodeN["xx"] * betahat) / n
+
+
+    if sigmahat < 0 
+        leaves = getleaves(tree)
+        leafdata = getnodedata.(tree, leaves)
+        leavestraits = get.(leafdata, "trait", missing)
+
+        newtraits = ones(n)*betahat - leavestraits
+        setnodedata!.(tree, leaves, "trait", newtraits)
+        tree2 = threepoint2(tree, trait, N, nodes)
+        sigmahat = getnodedata(tree2, nodes[N])["yy"] / n
+    end
+
+
+    
+    negloglik = (1/2) * (n * log(2π) + nodeN["logV"] + n + n * log(sigmahat))
+
+    return betahat, sigmahat, negloglik, tree
+end
+
+function estimaterates(tree::AbstractTree, trait::String)
+    #Returns evolution rate, starting value and negative log loglikelihood for traits on tip of tree
+    #INPUTS
+    #tree = tree with lengths, leaves all same length, trait data on leaves
+    #trait = string with name of trait as found on leaves
+    #OUTPUTS
+    #sigmahat - evolution rate
+    #betahat - estimated root trait value
+    #negloglik - negative loglikelihood
+    #tree - tree w/ intermediate calculations on nodes
+
+    #need to add meaningful error when cant find traits on tree leaves
+
+    nodes = getnodes(tree, postorder)
+    N = length(nodes)
+
+    setnodedata!.(tree, nodes, "t", undef) #could do this as I create it I guess
+    setnodedata!.(tree, nodes, "logV", undef)
+    setnodedata!.(tree, nodes, "p", undef)
+    setnodedata!.(tree, nodes, "Q", undef)
+    setnodedata!.(tree, nodes, "xl", undef)
+    setnodedata!.(tree, nodes, "xx", undef)
+    setnodedata!.(tree, nodes, "yl", undef)
+    setnodedata!.(tree, nodes, "yy", undef)
+
+    for i in 1:(N-1)
+        par = getinbound(tree, nodes[i])
+        length = getlength(tree, par)
+        setnodedata!(tree, nodes[i], "t", length)
+    end
+
+    setnodedata!(tree, nodes[N], "t", 0)
+
+    return estimaterates!(tree, trait)
+
+end
+
+#####################################################################################################################
+#=
+function threepoint(tree::AbstractTree, df::DataFrame, traits::DataFrame)
     #prefrom algortihm in Ho & Ane 2014
     #function estimaterates gets inputs into right form
     for row in eachrow(df)
@@ -56,7 +198,7 @@ function estimaterates!(tree::AbstractTree, traits::DataFrame, df::DataFrame)
     #number of leaves
     n = nrow(traits)
 
-    df = threepoint(tree, df, traits, N)    
+    df = threepoint(tree, df, traits)    
 
     betahat = inv(df.xx[N]) * df.Q[N]
     sigmahat = (df.yy[N] - 2 * betahat * df.Q[N] + betahat * df.xx[N] * betahat) / n
@@ -97,8 +239,6 @@ function estimaterates(tree::AbstractTree, traits::DataFrame)
 
     df.t[N] = 0
 
-    for _ in 1:99
-        estimaterates!(tree, traits, df)
-    end
     return estimaterates!(tree, traits, df)
 end
+=#

@@ -513,12 +513,12 @@ Return an iterable object containing nodes in given order - preorder, inorder,
 postorder or breadthfirst
 """
 function _traversal end
-_traversal(tree::AbstractTree{OneTree, <: Rooted}, order::TraversalOrder) =
+_traversal(tree::T, order::TraversalOrder) where {T <: AbstractTree{OneTree, <: Rooted}} =
     (order == anyorder ? _getnodes(tree) :
-     _traversal(tree, order, collect(_getroots(tree))))
+     _traversal(tree, order, collect(nodetype(T), _getroots(tree))))
 function _traversal(tree::AbstractTree{OneTree, <: Rooted},
-                    order::TraversalOrder, todo,
-                    sofar = eltype(todo)[])
+                    order::TraversalOrder, todo::Vector{<: AbstractNode},
+                    sofar::Vector{<: AbstractNode} = eltype(todo)[])
     while !isempty(todo)
         if order == Phylo.breadthfirst
             append!(sofar, todo)
@@ -730,8 +730,8 @@ Return the child node(s) for this node. May be implemented for any rooted
 AbstractNode subtype.
 """
 function _getchildren end
-_getchildren(tree::AbstractTree{OneTree, <: Rooted}, node) =
-    [_dst(tree, branch) for branch in _getoutbounds(tree, node)]
+_getchildren(tree::T, node::N) where {RT <: Rooted, NL, N <: AbstractNode, B, T <: AbstractTree{OneTree, RT, NL, N, B}} =
+    N[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
 
 """
     _getconnections(tree::AbstractTree, node::AbstractNode)
@@ -819,7 +819,7 @@ AbstractBranch subtype.
 function _src end
 
 """
-    _dst(branch::AbstractBranch)
+    _dst(tree::AbstractTree, branch::AbstractBranch)
 
 Return destination node for a branch. Must be implemented for any rooted
 AbstractBranch subtype.
