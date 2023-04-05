@@ -1,5 +1,6 @@
 using DataFrames
 using LinearAlgebra
+using Optim
 
 function threepoint(tree::AbstractTree, trait::String, N::Int64, nodes)
     #prefrom algortihm in Ho & Ane 2014
@@ -93,7 +94,7 @@ function estimaterates!(tree::AbstractTree, trait::String)
 
         newtraits = ones(n)*betahat - leavestraits
         setnodedata!.(tree, leaves, "trait", newtraits)
-        tree2 = threepoint2(tree, trait, N, nodes)
+        tree2 = threepoint(tree, trait, N, nodes)
         sigmahat = getnodedata(tree2, nodes[N])["yy"] / n
     end
 
@@ -139,6 +140,152 @@ function estimaterates(tree::AbstractTree, trait::String)
 
     return estimaterates!(tree, trait)
 
+end
+
+######################################################################################################
+#3 Point Signal
+
+function estimaterates(tree::AbstractTree, trait::String, lambda::Float64)
+    #Returns evolution rate, starting value and negative log loglikelihood for traits on tip of tree
+    #INPUTS
+    #tree = tree with lengths, leaves all same length, trait data on leaves
+    #trait = string with name of trait as found on leaves
+    #OUTPUTS
+    #sigmahat - evolution rate
+    #betahat - estimated root trait value
+    #negloglik - negative loglikelihoods
+    #tree - tree w/ intermediate calculations on nodes
+
+    #need to add meaningful error when cant find traits on tree leaves
+
+    nodes = getnodes(tree, postorder)
+    N = length(nodes)
+
+    setnodedata!.(tree, nodes, "t", undef) #could do this as I create it I guess
+    setnodedata!.(tree, nodes, "logV", undef)
+    setnodedata!.(tree, nodes, "p", undef)
+    setnodedata!.(tree, nodes, "Q", undef)
+    setnodedata!.(tree, nodes, "xl", undef)
+    setnodedata!.(tree, nodes, "xx", undef)
+    setnodedata!.(tree, nodes, "yl", undef)
+    setnodedata!.(tree, nodes, "yy", undef)
+
+
+    for i in 1:(N-1)
+        par = getinbound(tree, nodes[i])
+        length = getlength(tree, par)
+        setnodedata!(tree, nodes[i], "t", length)
+    end
+
+    setnodedata!(tree, nodes[N], "t", 0)
+
+    t = getnodedata.(tree, nodes, "t")
+
+    #=
+    #for non leaves mult by lambda - could do this w/o a loop if get list of internal nodes
+    for i in 1:N
+        if !isleaf(tree, nodes[i])
+            t = lambda * getnodedata(tree, nodes[i], "t")
+            setnodedata!(tree, nodes[i], "t", t)
+        end
+    end
+    =#
+
+    return estimaterates!(tree, trait, lambda, t)
+
+end
+
+function tooptimise(lambda, tree, nodes, t, trait, N, n)
+    #lambda - value for Signal   
+    #tree - tree
+    #nodes - nodes of the tree in traversal order
+    #t - vector of og branch lengths
+    #trait - string of what trait is called on the tree
+    #N - total number of nodes
+    #n - number of leaves
+
+    #for non leaves mult by lambda - could do this w/o a loop if get list of internal nodes
+    for i in 1:N
+        if !isleaf(tree, nodes[i])
+            tupdate = lambda[1] * t[i]
+            setnodedata!(tree, nodes[i], "t", tupdate) #tupdate is being put through as a vector
+        end
+    end
+
+    tree = threepoint(tree, trait, N, nodes)
+
+    #information from last node
+    nodeN = getnodedata(tree, nodes[N])
+
+    betahat = inv(nodeN["xx"]) * nodeN["Q"]
+    sigmahat = (nodeN["yy"] - 2 * betahat * nodeN["Q"] + betahat * nodeN["xx"] * betahat) / n
+    
+    
+    if sigmahat < 0 
+        leaves = getleaves(tree)
+        leafdata = getnodedata.(tree, leaves)
+        leavestraits = get.(leafdata, "trait", missing)
+    
+        newtraits = ones(n)*betahat - leavestraits
+        setnodedata!.(tree, leaves, "trait", newtraits)
+        tree2 = threepoint(tree, trait, N, nodes)
+        sigmahat = getnodedata(tree2, nodes[N])["yy"] / n
+    end
+    
+    
+        
+    negloglik = (1/2) * (n * log(2π) + nodeN["logV"] + n + n * log(sigmahat))
+
+    return negloglik
+end
+
+function estimaterates!(tree::AbstractTree, trait::String, lambda::Float64, t)
+
+    nodes = getnodes(tree, postorder)
+    N = length(nodes)
+    n = length(getleaves(tree))
+
+    #info for optimiser
+    lower = [0.0]
+    upper = [1.0]
+    start = [lambda]
+
+    #optimise to find lambda
+    opts = optimize(x -> tooptimise(x, tree, nodes, t, trait, N, n), lower, upper, start, Fminbox(LBFGS())) 
+    lambda = Optim.minimizer(opts)
+
+    #update internal branches
+    for i in 1:N
+        if !isleaf(tree, nodes[i])
+            tupdate = lambda[1] * t[i]
+            setnodedata!(tree, nodes[i], "t", tupdate) #tupdate is being put through as a vector
+        end
+    end
+
+    #preform threepoint on lambda transformed tree
+    tree = threepoint(tree, trait, N, nodes)
+
+    #information from last node
+    nodeN = getnodedata(tree, nodes[N])
+
+    betahat = inv(nodeN["xx"]) * nodeN["Q"]
+    sigmahat = (nodeN["yy"] - 2 * betahat * nodeN["Q"] + betahat * nodeN["xx"] * betahat) / n
+
+
+    if sigmahat < 0 
+        leaves = getleaves(tree)
+        leafdata = getnodedata.(tree, leaves)
+        leavestraits = get.(leafdata, "trait", missing)
+
+        newtraits = ones(n)*betahat - leavestraits
+        setnodedata!.(tree, leaves, "trait", newtraits)
+        tree2 = threepoint(tree, trait, N, nodes)
+        sigmahat = getnodedata(tree2, nodes[N])["yy"] / n
+    end
+
+    negloglik = (1/2) * (n * log(2π) + nodeN["logV"] + n + n * log(sigmahat))
+
+    return lambda[1], betahat, sigmahat, negloglik, tree
 end
 
 #####################################################################################################################

@@ -6,6 +6,10 @@ using ProfileView
 using RCall
 using Profile
 
+#needed for phylonetworks comapre
+using PhyloNetworks
+using StatsModels
+
 Random.seed!(1234)
 
 jtree = open(parsenewick, "test/hummingbirds.tree")
@@ -34,14 +38,37 @@ R"row.names(rdat) <- rdat$species"
 @btime rfit = rcopy(R"phylolm(data~1,data=rdat,phy=rtree)") #2.290 ms
 @benchmark rfit = rcopy(R"phylolm(data~1,data=rdat,phy=rtree)")
 
+
+@btime rfit = rcopy(R"phylolm(data~1,data=rdat,phy=rtree, model = c('lambda'))") #13ms
+@benchmark rfit = rcopy(R"phylolm(data~1,data=rdat,phy=rtree, model = c('lambda'))") 
+
+
 #@btime jfit = estimaterates(jtree, dat) #3.151 ms
 
-@btime jfit = estimaterates(jtree, "trait") #3.481 ms
+@btime jfit = estimaterates(jtree, "trait") #2 ms
 @benchmark jfit = estimaterates(jtree, "trait")
+
+@btime estimaterates(jtree, "trait", 0.1) #150 ms
+@benchmark estimaterates(jtree, "trait", 0.1)
+
 #Profile.clear_malloc_data()
 
 #ProfileView.@profview for i in 1:100
 #    estimaterates2(jtree, "trait")
 #end
 
+#############################################################
+#Compare to phylo networks results 
+
+#load the tree using phylonetworks
+tree2 = readTopology("test/hummingbirds.tree");
+
+#get tip names
+tipnames = tipLabels(tree2)
+
+#dataframe needs column called tipNames
+dat = DataFrame(tipNames = tipnames, data = data)
+
+@btime plm = phylolm(@formula(data ~ 1), dat, tree2) #1 ms also provides different values
+@benchmark plm = phylolm(@formula(data ~ 1), dat, tree2)
 
