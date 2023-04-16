@@ -2,7 +2,6 @@ module TestTrees
 
 using Phylo
 using DataFrames
-using JuliaDB
 
 using Test
 using IterableTables: getiterator
@@ -11,7 +10,7 @@ species = ["Dog", "Cat", "Human"]
 ntips = 10
 df = DataFrame(species = species, count = [10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
-jdb = table((species = observations, count = 1:4))
+jdb = DataFrame(species = observations, count = 1:4)
 
 @testset "NamedBinaryTree()" begin
     ntn = NamedBinaryTree(ntips)
@@ -130,7 +129,7 @@ end
     @test leafinfotype(typeof(tdf)) ≡ DataFrame
     @test branchdatatype(typeof(tj)) ≡ Nothing
     @test nodedatatype(typeof(tj)) ≡ Dict{String, Any}
-    @test leafinfotype(typeof(tj)) <: IndexedTable
+    @test leafinfotype(typeof(tj)) ≡ typeof(jdb)
 end
 
 end

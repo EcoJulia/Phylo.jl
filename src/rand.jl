@@ -278,7 +278,7 @@ function BrownianTrait(tree::T, trait::String, start::N = 0.0;
                        σ² = missing, σ = missing, f::Function = identity) where
     {T <: AbstractTree, N <: Number}
     iscontinuous(N) ||
-        throw(TypeError("Type $N must be continuous for a Gaussian Trait"))
+        throw(TypeError(:BrownianTrait, "Type $N must be continuous for a Gaussian Trait", AbstractFloat, N))
     if ismissing(σ)
         σ = sqrt(σ²)
     end
@@ -415,7 +415,7 @@ function enum_rand(rng::AbstractRNG, current::TRAIT,
     while i < tot
         @inbounds pi = p[i]
         if pi < rp
-            if rand(rng) < pi / rp
+            if rand(rng, Float64) < pi / rp
                 return traits[i]
             end
             rp -= pi
@@ -486,7 +486,7 @@ end
 
 function enum_rand(rng::AbstractRNG, current::TRAIT,
                    p_stay::Float64) where TRAIT <: Enum
-    if rand(rng) < p_stay
+    if rand(rng, Float64) < p_stay
         return current
     end
     
@@ -499,7 +499,7 @@ function enum_rand(rng::AbstractRNG, current::TRAIT,
     while i < num
         passed |= (from == i)
         if remain > 1
-            if rand(rng) < inv(remain)
+            if rand(rng, Float64) < inv(remain)
                 return traits[i+passed]
             end
             i += 1

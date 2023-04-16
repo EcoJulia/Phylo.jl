@@ -70,7 +70,7 @@ export HoldsNodeData, MatchTreeNameType
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
-export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _degree
+export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _hasspace, _degree
 export _hasinbound, _getinbound, _addinbound!, _removeinbound!
 export _getoutbounds, _addoutbound!, _removeoutbound!
 export _getconnections, _addconnection!, _removeconnection!
