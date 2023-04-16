@@ -354,7 +354,7 @@ _hasnode(tree::AbstractTree{OneTree, RT, NL, N},
          node::N) where {RT, NL, N} = node ∈ _getnodes(tree)
 
 """
-    _createnode!(tree::AbstractTree, nodename)
+    _createnode!(tree::AbstractTree, nodename[, data])
 
 Must be implemented for any AbstractTree subtype.
 """
@@ -455,8 +455,8 @@ _hasbranch(tree::AbstractTree{OneTree},
                                           branch ∈ _getbranches(tree)
 
 """
-    _createbranch!(tree::AbstractTree, source, destination,
-                   length, data)
+    _createbranch!(tree::AbstractTree, source, destination[,
+                   length][, data])
 
 Create a new branch and add it to a tree. Must be implemented for any
 AbstractTree subtype.
