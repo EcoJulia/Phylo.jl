@@ -63,7 +63,7 @@ _matchnodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
                ::Type{NL}) where {TT, RT, NL, N, B} = !_prefernodeobjects(N)
 _matchnodetypes(::Type{<:AbstractTree}, ::Type{<:Any}, ::Type{<:Any}) = false
 _matchnodetypes(::Type{T}, ::Type{N}, ::Type{N}) where {T, N} =
-    _prefernodeobjects(T, N)
+    _matchnodetype(T, N)
 
     """
     _matchbranchtype(::Type{<:AbstractTree}, ::Type{<:AbstractBranch})
@@ -213,6 +213,7 @@ Returns a vector of nodes for a OneTree tree. Either _getnodes() must be
 implemented for any OneTree tree type.
 """
 function _getnodes end
+_getnodes(::T) where T <: AbstractTree = error("No _getnodes() method for tree type $T")
 _getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder) =
     _traversal(tree, order)
 
@@ -223,11 +224,12 @@ Returns a vector of node names for a OneTree tree. Can
 be implemented for any OneTree tree type, especially PreferNodeObjects trees.
 """
 function _getnodenames end
+_getnodenames(::T) where T <: AbstractTree = error("No _getnodes() method for tree type $T")
 @traitfn _getnodenames(tree::T, order::TraversalOrder) where
-{T <: AbstractTree{OneTree}; !PreferNodeObjects{T}} = _getnodes(tree)
+{T <: AbstractTree{OneTree}; !PreferNodeObjects{T}} = _getnodes(tree, order)
 @traitfn _getnodenames(tree::T, order::TraversalOrder) where
 {T <: AbstractTree{OneTree}; PreferNodeObjects{T}} =
-    _getnodename.(tree, _getnodes(tree))
+    _getnodename.(tree, _getnodes(tree, order))
 
 """
     _nnodes(::AbstractTree)
@@ -412,6 +414,7 @@ Returns a vector of branches for a OneTree tree. Either _getbranches() or
 _getbranchnames() must be implemented for any OneTree tree type.
 """
 function _getbranches end
+_getbranches(::T) where T = error("No _getbranches() method for tree type $T")
 
 """
     _nbranches(::AbstractTree)
@@ -513,12 +516,16 @@ Return an iterable object containing nodes in given order - preorder, inorder,
 postorder or breadthfirst
 """
 function _traversal end
-_traversal(tree::AbstractTree{OneTree, <: Rooted}, order::TraversalOrder) =
-    (order == anyorder ? _getnodes(tree) :
-     _traversal(tree, order, collect(_getroots(tree))))
+function _traversal(tree::T, order::TraversalOrder) where {T <: AbstractTree{OneTree, <: Rooted}}
+    if order == anyorder
+        return _getnodes(tree)
+    else
+        return _traversal(tree, order, collect(_getroots(tree)))
+    end
+end
 function _traversal(tree::AbstractTree{OneTree, <: Rooted},
-                    order::TraversalOrder, todo,
-                    sofar = eltype(todo)[])
+                    order::TraversalOrder, todo::Vector,
+                    sofar::Vector = eltype(todo)[])
     while !isempty(todo)
         if order == Phylo.breadthfirst
             append!(sofar, todo)
@@ -665,6 +672,7 @@ _degree(tree::AbstractTree{OneTree, <: Rooted}, node) =
 Must be implemented for any AbstractNode subtype.
 """
 function _hasinbound end
+_hasinbound(::T, ::N) where {T, N} = error("No _hasinbound() function for types $T, $N")
 
 """
     _getinbound(tree::AbstractTree, node::AbstractNode)
@@ -672,6 +680,7 @@ function _hasinbound end
 Get the inbound connection. Must be implemented for any rooted AbstractNode subtype.
 """
 function _getinbound end
+_getinbound(::T, ::B) where {T, B} = error("No _getinbound() function for $T, $B")
 
 """
     _getparent(tree::AbstractTree, node)
@@ -705,6 +714,7 @@ Returns the outbound connections of a rooted node. Must be implemented for any
 rooted AbstractNode subtype.
 """
 function _getoutbounds end
+_getoutbounds(::T, ::N) where {T, N} = error("No _getoutbounds() function for $T, $N")
 
 """
     _addoutbound!(tree::AbstractTree, node::AbstractNode, branch)
@@ -730,8 +740,10 @@ Return the child node(s) for this node. May be implemented for any rooted
 AbstractNode subtype.
 """
 function _getchildren end
-_getchildren(tree::AbstractTree{OneTree, <: Rooted}, node) =
-    [_dst(tree, branch) for branch in _getoutbounds(tree, node)]
+_getchildren(tree::T, node::N) where {RT <: Rooted, NL, N <: AbstractNode, B, T <: AbstractTree{OneTree, RT, NL, N, B}} =
+    N[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
+_getchildren(tree::T, node::NL) where {RT <: Rooted, NL, N <: AbstractNode, B, T <: AbstractTree{OneTree, RT, NL, N, B}} =
+    NL[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
 
 """
     _getconnections(tree::AbstractTree, node::AbstractNode)
@@ -817,6 +829,7 @@ Return source node for a branch. Must be implemented for any rooted
 AbstractBranch subtype.
 """
 function _src end
+_src(::T, ::B) where {T, B} = error("No _src() function for $T, $B")
 
 """
     _dst(branch::AbstractBranch)
@@ -825,6 +838,7 @@ Return destination node for a branch. Must be implemented for any rooted
 AbstractBranch subtype.
 """
 function _dst end
+_dst(::T, ::B) where {T, B} = error("No _dst() function for $T, $B")
 
 """
     _conns(tree::AbstractTree, branch::AbstractBranch)
@@ -893,6 +907,7 @@ function _branchdatatype end
 _branchdatatype(::Type{<:AbstractTree}) = Nothing
 
 function _getnodedata end
+_getnodedata(::T, ::N) where {T, N} = error("No _getnodedata() function for $T, $N")
 _getnodedata(tree::AbstractTree{OneTree}, node, label) =
     _getnodedata(tree, node)[label]
 function _setnodedata! end
@@ -900,6 +915,7 @@ _setnodedata!(tree::AbstractTree{OneTree}, node, label, value) =
     (_getnodedata(tree, node)[label] = value)
 
 function _getbranchdata end
+_getbranchdata(::T, ::B) where {T, B} = error("No _getbranchdata() function for $T, $B")
 _getbranchdata(tree::AbstractTree, branch, label) =
     _getbranchdata(tree, branch)[label]
 function _setbranchdata! end
