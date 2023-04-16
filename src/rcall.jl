@@ -4,11 +4,11 @@ using .RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
 import .RCall: rcopy
 
 function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
-    if !isObject(rt) || isS4(rt) || rcopy(rcall_p(:class, rt)) != "phylo"
+    if !isObject(rt) || isS4(rt) || rcopy(String, rcall_p(:class, rt)) != "phylo"
         error("Object is not of S3 phylo class, aborting")
     end
 
-    if !rcopy(rcall_p(Symbol("is.rooted"), rt))
+    if !rcopy(Bool, rcall_p(Symbol("is.rooted"), rt))
         error("Cannot currently translate unrooted trees")
     end
 
@@ -21,7 +21,7 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     nontips = nnode
     append!(nodes, getnodename.(tree, createnodes!(tree, nontips)))
 
-    for edge in 1:size(edges, 1)
+    for edge in Base.axes(edges, 1)
         createbranch!(tree,
                       nodes[edges[edge, 1]], nodes[edges[edge, 2]],
                       lengths[edge])
