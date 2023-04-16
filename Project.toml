@@ -1,7 +1,7 @@
 name = "Phylo"
 uuid = "aea672f4-3940-5932-aa44-993d1c3ff149"
 author = ["Richard Reeve <Richard.Reeve@glasgow.ac.uk>"]
-version = "0.4.21"
+version = "0.4.22"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
@@ -22,13 +22,13 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 AxisArrays = "0.4"
-DataFrames = "0.21, 0.22, 1.0"
+DataFrames = "^1"
 DataStructures = "0.17, 0.18"
 Distributions = "0.24, 0.25"
 IterableTables = "^1"
 LightGraphs = "^1"
-Missings = "0.4, 1.0"
-RecipesBase = "0.7, 0.8, ^1"
+Missings = "^1"
+RecipesBase = "^1"
 Requires = "^1"
 SimpleTraits = "0.9"
 Tokenize = "0.5"
