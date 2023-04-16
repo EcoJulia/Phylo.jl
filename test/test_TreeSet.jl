@@ -2,7 +2,6 @@ module TestTreeSet
 
 using Phylo
 using DataFrames
-using JuliaDB
 
 using Test
 
@@ -10,7 +9,7 @@ species = ["Dog", "Cat", "Human"]
 ntips = 10
 df = DataFrame(species = species, count=[10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
-jdb = table((species = observations, count = [1, 2, 3, 4]))
+jdb = DataFrame(species = observations, count = [1, 2, 3, 4])
 
 @testset "TreeSet" begin
     @test length(rand(Ultrametric(ntips), 10)) ==

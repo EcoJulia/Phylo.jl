@@ -2,7 +2,6 @@ module TestLinkTree
 
 using Phylo
 using DataFrames
-using JuliaDB
 
 using Test
 using IterableTables: getiterator
@@ -11,7 +10,7 @@ species = ["Dog", "Cat", "Human"]
 ntips = 10
 df = DataFrame(species = species, count = [10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
-jdb = table((species = observations, count = 1:4))
+jdb = DataFrame(species = observations, count = 1:4)
 
 @testset "LinkTree()" begin
     lts = RootedTree(species)
