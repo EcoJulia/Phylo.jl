@@ -1,5 +1,5 @@
 using Phylo.API
-import LightGraphs: src, dst, indegree, outdegree, degree
+import Graphs: src, dst, indegree, outdegree, degree
 using SimpleTraits
 
 # AbstractTree/Node/Branch type methods
