@@ -916,9 +916,9 @@ function hasheight end
 @traitfn hasheight(tree::T, node::NL) where
 {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
     hasheight(tree,  getnode(tree, node))
-@traitfn function hasheight(tree::AbstractTree{OneTree, <: Rooted},
-                            node::N) where
-    {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
+@traitfn function hasheight(tree::T, node::N) where
+    {RT <: Rooted, NL, N <: AbstractNode{RT, NL},
+     T <: AbstractTree{OneTree, RT, NL, N}; MatchNodeType{T, N}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _hasheight(tree, node) ||
         (_hasrootheight(tree) &&
@@ -1036,12 +1036,12 @@ Return the length of this branch.
 """
 function getlength end
 @traitfn function getlength(tree::T, branch::B) where
-    {T <: AbstractTree{OneTree}, B, N; !MatchBranchType{T, B}}
+    {T <: AbstractTree{OneTree}, B; !MatchBranchType{T, B}}
     hasbranch(tree, branch) || error("Branch $branch does not exist")
     return _getlength(tree, _getbranch(tree, branch))
 end
 @traitfn function getlength(tree::T, branch::B) where
-    {T <: AbstractTree{OneTree}, B, N; MatchBranchType{T, B}}
+    {T <: AbstractTree{OneTree}, B; MatchBranchType{T, B}}
     _hasbranch(tree, branch) || error("Branch $branch does not exist")
     return _getlength(tree, branch)
 end

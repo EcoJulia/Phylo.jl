@@ -740,9 +740,13 @@ Return the child node(s) for this node. May be implemented for any rooted
 AbstractNode subtype.
 """
 function _getchildren end
-_getchildren(tree::T, node::N) where {RT <: Rooted, NL, N <: AbstractNode, B, T <: AbstractTree{OneTree, RT, NL, N, B}} =
+_getchildren(tree::T, node::N) where
+    {RT <: Rooted, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+     T <: AbstractTree{OneTree, RT, NL, N, B}} =
     N[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
-_getchildren(tree::T, node::NL) where {RT <: Rooted, NL, N <: AbstractNode, B, T <: AbstractTree{OneTree, RT, NL, N, B}} =
+_getchildren(tree::T, node::NL) where
+{RT <: Rooted, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+ T <: AbstractTree{OneTree, RT, NL, N, B}} =
     NL[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
 
 """
