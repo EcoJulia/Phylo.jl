@@ -2,110 +2,112 @@ using DataFrames
 using LinearAlgebra
 using Optim
 
-function threepoint(tree::AbstractTree, trait::String, N::Int64, nodes)
+mutable struct TraitData
+    name::String
+    value::Float64
+    t::Float64
+    logV::Float64
+    p::Float64
+    yl::Float64
+    xl::Float64
+    Q::Float64
+    xx::Float64
+    yy::Float64
+end
+
+traitdata(name::String, value::Float64, t::Float64 = 0.0) =
+    TraitData(name, value, t, NaN, NaN, NaN, NaN, NaN, NaN, NaN)
+
+TraitData() = traitdata("", NaN)
+
+const TLB{RT, LenUnits} = LinkBranch{RT, String, Nothing, LenUnits}
+const TLN{RT, LenUnits} = LinkNode{RT, String, TraitData, TLB{RT, LenUnits}}
+const TLT{RT, TD, LenUnits} = LinkTree{RT, String, TLN{RT, LenUnits}, TLB{RT, LenUnits}, TD}
+const TLTD{RT, LenUnits} = TLT{RT, Dict{String, Any}, LenUnits}
+const TraitTree = TLTD{OneRoot, Float64}
+
+function threepoint!(tree::T, _::String, nodes::Vector{N}) where 
+    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+     T <: AbstractTree{TT, RT, NL, N, B}}
     #prefrom algortihm in Ho & Ane 2014
     #function estimaterates gets inputs into right form
     #nodes - vector of nodes in the traversal order
 
-    for i in 1:N
+    for node in nodes
+        nd = getnodedata(tree, node)
+        nodet = nd.t
+
         #need to see if node is a tip (leaf)
-        if isleaf(tree, nodes[i])
-    
-            #calculations
-            nodet = getnodedata(tree, nodes[i])["t"]
-            nodetrait = getnodedata(tree, nodes[i])[trait]
+        if isleaf(tree, node)
+            nodetrait = nd.value
             
-            #update nodes
-            setnodedata!(tree, nodes[i], "logV", log(nodet))
-            setnodedata!(tree, nodes[i], "p", 1/nodet)
-            setnodedata!(tree, nodes[i], "yl", nodetrait)
-            setnodedata!(tree, nodes[i], "xl", 1)
-            setnodedata!(tree, nodes[i], "Q", nodetrait / nodet)
-            setnodedata!(tree, nodes[i], "xx", 1/nodet)
-            setnodedata!(tree, nodes[i], "yy", nodetrait * nodetrait / nodet)
-    
+            # update node data
+            nd.logV = log(nodet)
+            nd.p = inv(nodet)
+            nd.yl = nodetrait
+            nd.xl = 1.0
+            nd.Q = nodetrait / nodet
+            nd.xx = inv(nodet)
+            nd.yy = nodetrait * nodetrait / nodet
         else
-    
-            #need to find direct desendents 
-            children = getchildren(tree, nodes[i])
-    
-            #child data
+            # need to find direct desendents 
+            children = getchildren(tree, node)
+
+            # child data
             childdata = getnodedata.(tree, children)
     
-            #get needs the name of the vector of dicts, what we're looking for in each dict, and what to say if it cant find anything
-            childp = get.(childdata, "p", missing) 
-            childlogV = get.(childdata, "logV", missing)
-            childxl = get.(childdata, "xl", missing)
-            childyl = get.(childdata, "yl", missing)
-            childQ = get.(childdata, "Q", missing)
-            childxx = get.(childdata, "xx", missing)
-            childyy = get.(childdata, "yy", missing)
-    
-            #nodedata
-            nodet = getnodedata(tree, nodes[i])["t"]
-     
-            #calculations
+            # calculations
+            childp = [s.p for s in childdata]
             pA = sum(childp)
             ws = childp / pA
            
-            newlogV = sum(childlogV) + log(1.0 + nodet * pA)
-            newp = pA / (1.0 + nodet * pA)
-            newxl = ws ⋅ childxl
-            newyl = ws ⋅ childyl
-            newQ = sum(childQ) - ((nodet * pA^2) / (1.0 + nodet * pA)) * newxl * newyl
-            newxx = sum(childxx) - ((nodet * pA^2) / (1.0 + nodet * pA)) * newxl * newxl
-            newyy = sum(childyy) - ((nodet * pA^2) / (1.0 + nodet * pA)) * newyl * newyl 
-    
-            #update nodes
-            setnodedata!(tree, nodes[i], "logV", newlogV)
-            setnodedata!(tree, nodes[i], "p", newp)
-            setnodedata!(tree, nodes[i], "yl", newyl)
-            setnodedata!(tree, nodes[i], "xl", newxl)
-            setnodedata!(tree, nodes[i], "Q", newQ)
-            setnodedata!(tree, nodes[i], "xx", newxx)
-            setnodedata!(tree, nodes[i], "yy", newyy)
-    
-        end
-    end
+            calc = 1.0 + nodet * pA
+            nd.logV = sum(s.logV for s in childdata) + log(calc)
+            nd.p = pA / calc
+            nd.xl = ws ⋅ [s.xl for s in childdata]
+            nd.yl = ws ⋅ [s.yl for s in childdata]
 
-    return tree
+            c2 = nodet * pA^2 / calc
+            nd.Q = sum(s.Q for s in childdata) - c2 * nd.xl * nd.yl
+            nd.xx = sum(s.xx for s in childdata) - c2 * nd.xl * nd.xl
+            nd.yy = sum(s.yy for s in childdata) - c2 * nd.yl * nd.yl
+        end
+        # @assert getnodedata(tree, node) === nd
+    end
 end
 
-function estimaterates!(tree::AbstractTree, trait::String)
+function estimaterates!(tree::T, trait::String) where T <: AbstractTree
 
     #get information from tree in order to preform threepoint
     nodes = getnodes(tree, postorder)
-    N = length(nodes)
-    n = length(getleaves(tree))
+    n = nleaves(tree)
 
-    tree = threepoint(tree, trait, N, nodes)
+    threepoint!(tree, trait, nodes)
 
     #information from last node
-    nodeN = getnodedata(tree, nodes[N])
+    nN = last(nodes)
+    nd = getnodedata(tree, nN)
 
-    betahat = inv(nodeN["xx"]) * nodeN["Q"]
-    sigmahat = (nodeN["yy"] - 2 * betahat * nodeN["Q"] + betahat * nodeN["xx"] * betahat) / n
-
+    betahat = inv(nd.xx) * nd.Q
+    sigmahat = (nd.yy - 2 * betahat * nd.Q + betahat * nd.xx * betahat) / n
 
     if sigmahat < 0 
         leaves = getleaves(tree)
-        leafdata = getnodedata.(tree, leaves)
-        leavestraits = get.(leafdata, "trait", missing)
+        for leaf in leaves
+            ld = getnodedata(tree, leaf)
+            ld.value = betahat - ld.value
+        end
 
-        newtraits = ones(n)*betahat - leavestraits
-        setnodedata!.(tree, leaves, "trait", newtraits)
-        tree2 = threepoint(tree, trait, N, nodes)
-        sigmahat = getnodedata(tree2, nodes[N])["yy"] / n
+        threepoint!(tree, trait, nodes)
+        sigmahat = nd.yy / n
     end
-
-
     
-    negloglik = (1/2) * (n * log(2π) + nodeN["logV"] + n + n * log(sigmahat))
+    negloglik = (1.0 / 2.0) * (n * log(2π) + nd.logV + n + n * log(sigmahat))
 
-    return betahat, sigmahat, negloglik, tree
+    return betahat, sigmahat, negloglik
 end
 
-function estimaterates(tree::AbstractTree, trait::String)
+function estimaterates(tree::T, trait::String) where T <: AbstractTree
     #Returns evolution rate, starting value and negative log loglikelihood for traits on tip of tree
     #INPUTS
     #tree = tree with lengths, leaves all same length, trait data on leaves
@@ -114,38 +116,30 @@ function estimaterates(tree::AbstractTree, trait::String)
     #sigmahat - evolution rate
     #betahat - estimated root trait value
     #negloglik - negative loglikelihood
-    #tree - tree w/ intermediate calculations on nodes
 
     #need to add meaningful error when cant find traits on tree leaves
 
-    nodes = getnodes(tree, postorder)
-    N = length(nodes)
+    nodes = getnodes(tree, anyorder)
 
-    setnodedata!.(tree, nodes, "t", undef) #could do this as I create it I guess
-    setnodedata!.(tree, nodes, "logV", undef)
-    setnodedata!.(tree, nodes, "p", undef)
-    setnodedata!.(tree, nodes, "Q", undef)
-    setnodedata!.(tree, nodes, "xl", undef)
-    setnodedata!.(tree, nodes, "xx", undef)
-    setnodedata!.(tree, nodes, "yl", undef)
-    setnodedata!.(tree, nodes, "yy", undef)
-
-    for i in 1:(N-1)
-        par = getinbound(tree, nodes[i])
-        length = getlength(tree, par)
-        setnodedata!(tree, nodes[i], "t", length)
+    for node in nodes
+        val = getnodedata(tree, node).value
+        if hasinbound(tree, node)
+            len = _getlength(tree, _getinbound(tree, node))
+            td = traitdata(trait, val, len)
+            setnodedata!(tree, node, td)
+        else
+            td = traitdata(trait, val)
+            setnodedata!(tree, node, td)
+        end
     end
 
-    setnodedata!(tree, nodes[N], "t", 0)
-
     return estimaterates!(tree, trait)
-
 end
 
 ######################################################################################################
 #3 Point Signal
 
-function estimaterates(tree::AbstractTree, trait::String, lambda::Float64)
+function estimaterates(tree::T, trait::String, lambda::Float64) where T <: AbstractTree
     #Returns evolution rate, starting value and negative log loglikelihood for traits on tip of tree
     #INPUTS
     #tree = tree with lengths, leaves all same length, trait data on leaves
@@ -154,32 +148,23 @@ function estimaterates(tree::AbstractTree, trait::String, lambda::Float64)
     #sigmahat - evolution rate
     #betahat - estimated root trait value
     #negloglik - negative loglikelihoods
-    #tree - tree w/ intermediate calculations on nodes
 
     #need to add meaningful error when cant find traits on tree leaves
 
     nodes = getnodes(tree, postorder)
-    N = length(nodes)
 
-    setnodedata!.(tree, nodes, "t", undef) #could do this as I create it I guess
-    setnodedata!.(tree, nodes, "logV", undef)
-    setnodedata!.(tree, nodes, "p", undef)
-    setnodedata!.(tree, nodes, "Q", undef)
-    setnodedata!.(tree, nodes, "xl", undef)
-    setnodedata!.(tree, nodes, "xx", undef)
-    setnodedata!.(tree, nodes, "yl", undef)
-    setnodedata!.(tree, nodes, "yy", undef)
-
-
-    for i in 1:(N-1)
-        par = getinbound(tree, nodes[i])
-        length = getlength(tree, par)
-        setnodedata!(tree, nodes[i], "t", length)
+    for node in nodes
+        val = getnodedata(tree, node).value
+        if hasinbound(tree, node)
+            len = _getlength(tree, _getinbound(tree, node))
+            setnodedata!(tree, node, traitdata(trait, val, len))
+        else
+            setnodedata!(tree, node,
+                         traitdata(trait, getnodedata(tree, node).value))
+        end
     end
 
-    setnodedata!(tree, nodes[N], "t", 0)
-
-    t = getnodedata.(tree, nodes, "t")
+    t = [getnodedata(tree, node).t for node in nodes]
 
     #=
     #for non leaves mult by lambda - could do this w/o a loop if get list of internal nodes
@@ -195,7 +180,10 @@ function estimaterates(tree::AbstractTree, trait::String, lambda::Float64)
 
 end
 
-function tooptimise(lambda, tree, nodes, t, trait, N, n)
+function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N},
+                    t::Vector{Float64}, trait::String, n::Int) where 
+    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+     T <: AbstractTree{TT, RT, NL, N, B}}
     #lambda - value for Signal   
     #tree - tree
     #nodes - nodes of the tree in traversal order
@@ -205,45 +193,43 @@ function tooptimise(lambda, tree, nodes, t, trait, N, n)
     #n - number of leaves
 
     #for non leaves mult by lambda - could do this w/o a loop if get list of internal nodes
-    for i in 1:N
-        if !isleaf(tree, nodes[i])
-            tupdate = lambda[1] * t[i]
-            setnodedata!(tree, nodes[i], "t", tupdate) #tupdate is being put through as a vector
+    for (i, node) in enumerate(nodes)
+        if !isleaf(tree, node)
+            nd = getnodedata(tree, node)
+            nd.t = lambda[1] * t[i]
         end
     end
 
-    tree = threepoint(tree, trait, N, nodes)
+    threepoint!(tree, trait, nodes)
 
     #information from last node
-    nodeN = getnodedata(tree, nodes[N])
+    nd = getnodedata(tree, last(nodes))
 
-    betahat = inv(nodeN["xx"]) * nodeN["Q"]
-    sigmahat = (nodeN["yy"] - 2 * betahat * nodeN["Q"] + betahat * nodeN["xx"] * betahat) / n
+    betahat = inv(nd.xx) * nd.Q
+    sigmahat = (nd.yy - 2.0 * betahat * nd.Q + betahat * nd.xx * betahat) / n  
     
-    
-    if sigmahat < 0 
+    if sigmahat < 0.0 
         leaves = getleaves(tree)
-        leafdata = getnodedata.(tree, leaves)
-        leavestraits = get.(leafdata, "trait", missing)
-    
-        newtraits = ones(n)*betahat - leavestraits
-        setnodedata!.(tree, leaves, "trait", newtraits)
-        tree2 = threepoint(tree, trait, N, nodes)
-        sigmahat = getnodedata(tree2, nodes[N])["yy"] / n
+        for leaf in leaves
+            nd = getnodedata(tree, leaf)
+            nd.value = betahat - nd.value
+        end
+
+        threepoint!(tree, trait, nodes)
+        sigmahat = nd.yy / n
     end
-    
-    
-        
-    negloglik = (1/2) * (n * log(2π) + nodeN["logV"] + n + n * log(sigmahat))
+
+    negloglik = (1/2) * (n * log(2π) + nd.logV + n + n * log(sigmahat))
 
     return negloglik
 end
 
-function estimaterates!(tree::AbstractTree, trait::String, lambda::Float64, t)
+function estimaterates!(tree::T, trait::String, lambda::Float64, t::Vector{Float64}) where T <: AbstractTree
 
     nodes = getnodes(tree, postorder)
     N = length(nodes)
     n = length(getleaves(tree))
+    root = nodes[N]
 
     #info for optimiser
     lower = [0.0]
@@ -251,141 +237,39 @@ function estimaterates!(tree::AbstractTree, trait::String, lambda::Float64, t)
     start = [lambda]
 
     #optimise to find lambda
-    opts = optimize(x -> tooptimise(x, tree, nodes, t, trait, N, n), lower, upper, start, Fminbox(LBFGS())) 
+    opts = optimize(x -> tooptimise(x, tree, nodes, t, trait, n),
+                    lower, upper, start, Fminbox(LBFGS()))
     lambda = Optim.minimizer(opts)
 
     #update internal branches
-    for i in 1:N
-        if !isleaf(tree, nodes[i])
+    for (i, node) in enumerate(nodes)
+        if !isleaf(tree, node)
             tupdate = lambda[1] * t[i]
-            setnodedata!(tree, nodes[i], "t", tupdate) #tupdate is being put through as a vector
+            getnodedata(tree, node).t = tupdate # tupdate is being put through as a vector
         end
     end
 
     #preform threepoint on lambda transformed tree
-    tree = threepoint(tree, trait, N, nodes)
+    threepoint!(tree, trait, nodes)
 
     #information from last node
-    nodeN = getnodedata(tree, nodes[N])
+    nd = getnodedata(tree, root)
 
-    betahat = inv(nodeN["xx"]) * nodeN["Q"]
-    sigmahat = (nodeN["yy"] - 2 * betahat * nodeN["Q"] + betahat * nodeN["xx"] * betahat) / n
-
+    betahat = inv(nd.xx) * nd.Q
+    sigmahat = (nd.yy - 2 * betahat * nd.Q + betahat * nd.xx * betahat) / n
 
     if sigmahat < 0 
         leaves = getleaves(tree)
         leafdata = getnodedata.(tree, leaves)
         leavestraits = get.(leafdata, "trait", missing)
 
-        newtraits = ones(n)*betahat - leavestraits
-        setnodedata!.(tree, leaves, "trait", newtraits)
-        tree2 = threepoint(tree, trait, N, nodes)
-        sigmahat = getnodedata(tree2, nodes[N])["yy"] / n
+        newtraits = betahat .- leavestraits
+        getnodedata.(tree, leaves, "trait", newtraits)
+        threepoint!(tree, trait, nodes)
+        sigmahat = getnodedata(tree, root).yy / n
     end
 
-    negloglik = (1/2) * (n * log(2π) + nodeN["logV"] + n + n * log(sigmahat))
+    negloglik = (1.0 / 2.0) * (n * log(2π) + nd.logV + n + n * log(sigmahat))
 
-    return lambda[1], betahat, sigmahat, negloglik, tree
+    return lambda[1], betahat, sigmahat, negloglik
 end
-
-#####################################################################################################################
-#=
-function threepoint(tree::AbstractTree, df::DataFrame, traits::DataFrame)
-    #prefrom algortihm in Ho & Ane 2014
-    #function estimaterates gets inputs into right form
-    for row in eachrow(df)
-        #need to see if node is a tip (leaf)
-        if isleaf(tree, row.Node)
-
-            #where this leaf is in traits df and save trait
-            data = filter(:species => x -> x == row.Node, traits)[1,2]::Float64 #red in profile plot
-    
-            row.logV = log(row.t)
-            row.p = 1.0 / row.t
-            row.yl = data
-            row.xl = 1.0
-            row.Q = data / row.t
-            row.xx = 1.0 / row.t
-            row.yy =  (data * data) / row.t
-        else
-            #need to find direct desendents 
-            children = getchildren(tree, row.Node)
-            cdf = filter(:Node => x -> x ∈ children, df)
-    
-            pA = sum(cdf.p)
-            ws = cdf.p / pA
-    
-            row.logV = sum(cdf.logV) + log(1.0 + row.t*pA) 
-            row.p = pA/(1.0 + row.t * pA)
-            row.xl = ws ⋅ cdf.xl #red in profile plot
-            row.yl = ws ⋅ cdf.yl
-            row.Q = sum(cdf.Q) - ((row.t * pA^2) / (1.0 + row.t * pA)) * row.xl * row.yl #red in profile plot
-            row.xx = sum(cdf.xx) - ((row.t * pA^2) / (1.0 + row.t * pA)) * row.xl * row.xl
-            row.yy = sum(cdf.yy) - ((row.t * pA^2) / (1.0 + row.t * pA)) * row.yl * row.yl
-        end
-    end
-    return df
-end
-
-function estimaterates!(tree::AbstractTree, traits::DataFrame, df::DataFrame)
-    #Returns evolution rate, starting value and negative log loglikelihood for traits on tip of tree
-    #INPUTS
-    #tree = tree with lengths, leaves all same length
-    #traits = dataframe with leaf names and trait values, leafnames called 'species' and trait information called 'data'
-    #df = dataframe to store threepoint values in
-    #OUTPUTS
-    #sigmahat - evolution rate
-    #betahat - estimated root trait value
-    #negloglik - negative loglikelihood
-    #df - dataframe of results - will add what all mean later
-
-
-    #total number of nodes
-    N = nrow(df)
-    #number of leaves
-    n = nrow(traits)
-
-    df = threepoint(tree, df, traits)    
-
-    betahat = inv(df.xx[N]) * df.Q[N]
-    sigmahat = (df.yy[N] - 2 * betahat * df.Q[N] + betahat * df.xx[N] * betahat) / n
-
-    if sigmahat < 0 #if used prints df2 at the end?
-        resdl = ones(n)*betahat - traits.data #replaces y which is traits
-        traits2 = DataFrame(species = traits.species, data = resdl)
-        df2 = threepoint(tree, df, traits2, N)
-        sigmahat = df2.yy[N] / n
-    end
-    
-    negloglik = (1/2) * (n * log(2π) + df.logV[N] + n + n * log(sigmahat))
-
-    return betahat, sigmahat, negloglik, df #red in profile plot
-end
-
-
-function estimaterates(tree::AbstractTree, traits::DataFrame)
-    nodes = getnodes(tree, postorder)
-    #total number of nodes
-    N = length(nodes)
-
-    #dataframe to save information in
-    df = DataFrame(Node = nodes, #empty dataframe outside the function
-            t = Vector{Float64}(undef, N),
-            logV = Vector{Float64}(undef, N),
-            p = Vector{Float64}(undef, N),
-            Q = Vector{Float64}(undef, N),
-            xl = Vector{Float64}(undef, N),
-            xx = Vector{Float64}(undef, N),
-            yl = Vector{Float64}(undef, N),
-            yy = Vector{Float64}(undef, N))
-
-    for i in 1:(N-1)
-        par = getinbound(tree, df.Node[i])
-        df.t[i] = getlength(tree, par)
-    end
-
-    df.t[N] = 0
-
-    return estimaterates!(tree, traits, df)
-end
-=#

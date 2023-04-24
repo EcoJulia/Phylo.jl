@@ -9,7 +9,7 @@ global skipR = !(rcopy(R"require(ape)") && rcopy(R"require(phylolm)"))
 
 @testset "Compare estimaterates output to phylolm" begin
     jtree = nothing
-    @test_nowarn jtree = open(parsenewick, Phylo.path("hummingbirds.tree"))
+    @test_nowarn jtree = open(f -> parsenewick(f, TraitTree), Phylo.path("hummingbirds.tree"))
 
     # Create dataframe with leafnames and random trait values
     species = getleafnames(jtree)
@@ -17,13 +17,10 @@ global skipR = !(rcopy(R"require(ape)") && rcopy(R"require(phylolm)"))
     dat = DataFrame(species = species, data = data)
 
     # Save data on leaves so can test on estimaterates 2
-    setnodedata!.(jtree, species, "trait", data)
+    setnodedata!.(jtree, dat.species, Phylo.traitdata.("trait", dat.data));
 
     jfit = nothing
     @test_nowarn jfit = estimaterates(jtree, "trait")
-
-    species = getleaves(jtree)
-    data = 1000 .* rand(length(species))
 
     if !skipR
         rtree = rcall(Symbol("read.tree"), Phylo.path("hummingbirds.tree"))
