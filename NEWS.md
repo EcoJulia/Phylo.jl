@@ -1,5 +1,11 @@
 # NEWS
 
+- v0.4.22
+  - Bug fixes
+  - update to use Graphs.jl
+  - update workflows
+- v0.4.21
+  - Fixes to plotting and updated docs
 - v0.4.20
   - Fixes to plotting
 - v0.4.19
