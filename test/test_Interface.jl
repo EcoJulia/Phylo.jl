@@ -28,12 +28,14 @@ using Test
         push!(othernodes, also)
         @test Set(othernodes) ⊆ Set(getnodenames(tree))
         innodes = append!(copy(species), othernodes)
-        allnodes = reverse(innodes)
+        allnodes = copy(innodes)
         pop!(innodes)
         @test_throws Exception getroot(tree)
         branches = map(innodes) do node
             itr = Iterators.filter(name -> hasoutboundspace(tree, name) &&
-                                   name != node, allnodes)
+                                   name != node &&
+                                   name ∉ getdescendants(tree, node) &&
+                                   name ∉ species, allnodes)
             getbranch(tree, createbranch!(tree, first(itr), node))
         end
         @test_nowarn getroot(tree)

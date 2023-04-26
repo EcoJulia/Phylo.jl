@@ -339,7 +339,7 @@ function _createbranch!(tree::LinkTree{Unrooted, NL, N, B},
     {NL, N, Data, LenUnits,
      B <: LinkBranch{Unrooted, NL, Data, LenUnits}}
     id = ismissing(name) ? length(tree.branches) + 1 : name
-    branch = LinkBranch(id, tree, from, to, len, data)
+    branch = LinkBranch(id, from, to, len, data)
     push!(tree.branches, branch)
     _addconnection!(tree, from, branch)
     _addconnection!(tree, to, branch)

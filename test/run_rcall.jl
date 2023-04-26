@@ -1,4 +1,4 @@
-module ValidateRCall_ape
+module ValidateRCall_wrapped
 using Test
 using Phylo
 using RCall
