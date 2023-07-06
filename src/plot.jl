@@ -152,7 +152,7 @@ end
 
 _handlez(x, tree, names) = x
 _handlez(x::Union{String, Symbol}, tree, names) = [getnodedata(tree, name, x) for name in names]
-function _handlez(x::Dict, tree, names) where T
+function _handlez(x::Dict, tree, names)
     ret = fill(NaN, length(names))
     for (i, n) in enumerate(names)
         name = getnodename(tree, n)
@@ -293,10 +293,10 @@ end
 """
     map_depthfirst(FUN, start, tree, eltype = nothing)
 
-Apply `FUN` to each node in `tree` in depth-first order, and return the result. 
-`FUN` must take two arguments, `val` and `node`,  where `val` is the result of 
-applying `FUN` to the previous node, and `node` is the current node. `start` 
-specifies the initial value of `val`, and `eltype` specifies the type of the 
+Apply `FUN` to each node in `tree` in depth-first order, and return the result.
+`FUN` must take two arguments, `val` and `node`,  where `val` is the result of
+applying `FUN` to the previous node, and `node` is the current node. `start`
+specifies the initial value of `val`, and `eltype` specifies the type of the
 return value of `FUN`.
 
 ### Examples
