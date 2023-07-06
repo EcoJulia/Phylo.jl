@@ -7,7 +7,7 @@ abstract type AbstractBranchTree{RT, N, B, LI, ND} <:
 end
 
 import Phylo.API: _hasinbound
-function _hasinbound(tree::AbstractBranchTree{<: Rooted}, name::String) 
+function _hasinbound(tree::AbstractBranchTree{<: Rooted}, name::String)
     return tree.nodes[name].inbound !== nothing
 end
 
@@ -429,7 +429,7 @@ end
 
 import Phylo.API: _addoutbound!
 function _addoutbound!(tree::BinaryTree{RT}, name::String, branch::B) where
-    {RT <: Rooted, N, B <: Branch{RT, String}}
+    {RT <: Rooted, B <: Branch{RT, String}}
     node = tree.nodes[name]
     node.outbounds[1] ≡ nothing ?
         node.outbounds = (branch, node.outbounds[2]) :

@@ -328,7 +328,7 @@ function createbranch! end
         error("Tree does not have an available destination node called " *
               _getnodename(tree, dn))
     sn ≢ dn || error("Branch must connect different nodes")
-    
+
     return ismissing(data) ?
         _createbranch!(tree, sn, dn, len, name) :
         _createbranch!(tree, sn, dn, len, name, data)
@@ -348,7 +348,7 @@ end
         error("Tree does not have an available destination node called " *
               _getnodename(tree, dst))
     src ≢ dst || error("Branch must connect different nodes")
-    
+
     return ismissing(data) ?
         _createbranch!(tree, src, dst, len, name) :
         _createbranch!(tree, src, dst, len, name, data)
@@ -371,7 +371,7 @@ end
         error("Tree does not have an available destination node called " *
               _getnodename(tree, dn))
     sn ≢ dn || error("Branch must connect different nodes")
-    
+
     return ismissing(data) ?
         _createbranch!(tree, sn, dn, len, name) :
         _createbranch!(tree, sn, dn, len, name, data)
@@ -392,7 +392,7 @@ end
         error("Tree does not have an available destination node called " *
               _getnodename(tree, dst))
     src ≢ dst || error("Branch must connect different nodes")
-    
+
     return ismissing(data) ?
         _createbranch!(tree, src, dst, len, name) :
         _createbranch!(tree, src, dst, len, name, data)
@@ -644,7 +644,7 @@ function isleaf end
 end
 @traitfn function isleaf(tree::T, node::N) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
-    _hasnode(tree, node) || error("Node $node does not exist")    
+    _hasnode(tree, node) || error("Node $node does not exist")
     return _isleaf(tree, node)
 end
 
@@ -1036,12 +1036,12 @@ Return the length of this branch.
 """
 function getlength end
 @traitfn function getlength(tree::T, branch::B) where
-    {T <: AbstractTree{OneTree}, B, N; !MatchBranchType{T, B}}
+    {T <: AbstractTree{OneTree}, B; !MatchBranchType{T, B}}
     hasbranch(tree, branch) || error("Branch $branch does not exist")
     return _getlength(tree, _getbranch(tree, branch))
 end
 @traitfn function getlength(tree::T, branch::B) where
-    {T <: AbstractTree{OneTree}, B, N; MatchBranchType{T, B}}
+    {T <: AbstractTree{OneTree}, B; MatchBranchType{T, B}}
     _hasbranch(tree, branch) || error("Branch $branch does not exist")
     return _getlength(tree, branch)
 end

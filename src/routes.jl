@@ -160,7 +160,7 @@ function noderoute end
     return [getnodename(tree, n) for n in route]
 end
 @traitfn function noderoute(tree::T, node1::N, node2::N) where
-    {RT, N, T <: AbstractTree{OneTree}; MatchNodeType{T, N}}
+    {N, T <: AbstractTree{OneTree}; MatchNodeType{T, N}}
     branches1, nodes1 = _treehistory(tree, node1)
     branches2, nodes2 = _treehistory(tree, node2)
     nodes1[end] == nodes2[end] || error("No route between nodes in tree")
