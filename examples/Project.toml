@@ -1,5 +1,6 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Phylo = "aea672f4-3940-5932-aa44-993d1c3ff149"
 PhyloNetworks = "33ad39ac-ed31-50eb-9b15-43d0656eaa72"

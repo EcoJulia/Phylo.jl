@@ -188,7 +188,7 @@ export distance, distances, heighttoroot, heightstoroot
 
 # Inference on tree
 include("inference.jl")
-export estimaterates, TraitTree
+export estimaterates, TraitTree 
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
