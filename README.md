@@ -4,7 +4,8 @@
 
 | **Documentation** | **Build Status** | **DOI** |
 |:-----------------:|:--------------------------:|:--------------------------:|
-| [![stable docs][docs-stable-img]][docs-stable-url] | [![build tests][actions-img]][actions-url] [![JuliaNightly][nightly-img]][nightly-url] | [![Zenodo][zenodo-badge]][zenodo-url] |
+| [![stable docs][docs-stable-img]][docs-stable-url] [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEcoJulia%2FPhylo.jl.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FEcoJulia%2FPhylo.jl?ref=badge_shield)
+| [![build tests][actions-img]][actions-url] [![JuliaNightly][nightly-img]][nightly-url] | [![Zenodo][zenodo-badge]][zenodo-url] |
 | [![dev docs][docs-dev-img]][docs-dev-url] | [![codecov][codecov-img]][codecov-url] [![coveralls][coveralls-img]][coveralls-url] | |
 
 ## Installation
@@ -364,3 +365,7 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
 [pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
 [diversity-url]: https://github.com/EcoJulia/Diversity.jl/
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FEcoJulia%2FPhylo.jl.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FEcoJulia%2FPhylo.jl?ref=badge_large)
