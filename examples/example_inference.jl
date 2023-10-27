@@ -3,6 +3,9 @@ using Phylo
 using DataFrames
 using Random
 using CSV
+using Profile
+using ProfileView
+using Statistics
 
 #needed for phylolm comaparison
 using RCall
@@ -33,6 +36,12 @@ end
 #run inference
 estimaterates(jtree, ["trait"])
 
+Profile.clear_malloc_data()
+
+ProfileView.@profview for i in 1:1000 
+    estimaterates(jtree, ["trait"])
+end
+
 #check inference run time
 @benchmark estimaterates(jtree, ["trait"])
 
@@ -41,6 +50,12 @@ estimaterates(jtree, ["trait"], lambda = 0.1)
 
 #check inference run time
 @benchmark estimaterates(jtree, ["trait"], lambda = 0.1)
+
+Profile.clear_malloc_data()
+
+ProfileView.@profview for i in 1:10 
+    estimaterates(jtree, ["trait"], lambda = 0.1)
+end
 
 #Compare against phylolm in R
 #load R packages and read tree into R
@@ -175,6 +190,9 @@ phylolm(@formula(data ~ 1), dat, tree2, model="lambda")
 
 
 
+
+
+
 #Using the Myrtaceae tree, compare packages using real world data
 #load the data
 df = DataFrame(CSV.File("Data/Myrtaceae.csv"))
@@ -269,6 +287,10 @@ phylolm(@formula(tmin ~ 1), dat, tree, model="lambda")
 
 #check run time
 @benchmark phylolm(@formula(tmin ~ 1), dat, tree, model="lambda")
+
+
+
+
 
 
 #Preform inference on multiple traits, both generated uniformly
