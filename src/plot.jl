@@ -293,10 +293,10 @@ end
 """
     map_depthfirst(FUN, start, tree, eltype = nothing)
 
-Apply `FUN` to each node in `tree` in depth-first order, and return the result. 
-`FUN` must take two arguments, `val` and `node`,  where `val` is the result of 
-applying `FUN` to the previous node, and `node` is the current node. `start` 
-specifies the initial value of `val`, and `eltype` specifies the type of the 
+Apply `FUN` to each node in `tree` in depth-first order, and return the result.
+`FUN` must take two arguments, `val` and `node`,  where `val` is the result of
+applying `FUN` to the previous node, and `node` is the current node. `start`
+specifies the initial value of `val`, and `eltype` specifies the type of the
 return value of `FUN`.
 
 ### Examples

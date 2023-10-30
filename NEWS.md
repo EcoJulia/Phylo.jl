@@ -1,5 +1,7 @@
 # NEWS
 
+- v0.4.23
+  - Fix type warnings
 - v0.4.22
   - Bug fixes
   - update to use Graphs.jl
