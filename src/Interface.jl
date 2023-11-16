@@ -899,7 +899,7 @@ a rooted node.
 """
 function getsiblings end
 @traitfn getsiblings(tree::T, node::NL) where
-{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
     _getsiblings(tree, getnode(tree, node))
 @traitfn function getsiblings(tree::T, node::N) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
@@ -914,7 +914,7 @@ Does the node have a height defined?
 """
 function hasheight end
 @traitfn hasheight(tree::T, node::NL) where
-{NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
     hasheight(tree,  getnode(tree, node))
 @traitfn function hasheight(tree::T, node::N) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
@@ -932,7 +932,7 @@ Return the height of the node.
 """
 function getheight end
 @traitfn getheight(tree::T, node::NL) where
-{NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
     getheight(tree,  getnode(tree, node))
 @traitfn function getheight(tree::T, node::N) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
@@ -951,7 +951,7 @@ Set the height of the node.
 """
 function setheight! end
 @traitfn setheight!(tree::T, node::NL, height::Number) where
-{NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
+    {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
     _setheight!(tree, getnode(tree, node), height)
 @traitfn function setheight!(tree::T, node::N, height::Number) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
@@ -967,7 +967,7 @@ Return the source node for this branch.
 """
 function src end
 @traitfn src(tree::T, branch::B) where
-{T <: AbstractTree{OneTree, <: Rooted}, B; !MatchBranchType{T, B}} =
+    {T <: AbstractTree{OneTree, <: Rooted}, B; !MatchBranchType{T, B}} =
     _src(tree, getbranch(tree, branch))
 @traitfn function src(tree::T, branch::B) where
     {T <: AbstractTree{OneTree, <: Rooted}, B; MatchBranchType{T, B}}
@@ -1075,7 +1075,7 @@ retrieve the leaf info for a leaf of the tree.
 function getleafinfo end
 getleafinfo(tree::AbstractTree) = _getleafinfo(tree)
 @traitfn getleafinfo(tree::T, leaf::NL) where
-{RT, NL, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    {RT, NL, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
     _getleafinfo(tree, getnode(tree, leaf))
 @traitfn function getleafinfo(tree::T, leaf::N) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
@@ -1100,7 +1100,7 @@ retrieve the node data for a node of the tree.
 """
 function getnodedata end
 @traitfn getnodedata(tree::T, node::NL) where
-{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
     _getnodedata(tree, getnode(tree, node))
 @traitfn function getnodedata(tree::T, node::N) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
@@ -1124,7 +1124,7 @@ Set the node data for a node of the tree.
 """
 function setnodedata! end
 @traitfn setnodedata!(tree::T, node::NL, label, value) where
-{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
     _setnodedata!(tree, getnode(tree, node), label, value)
 @traitfn function setnodedata!(tree::T, node::N, label, value) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
@@ -1132,7 +1132,7 @@ function setnodedata! end
     return _setnodedata!(tree, node, label, value)
 end
 @traitfn setnodedata!(tree::T, node::NL, data) where
-{NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
+    {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}} =
     _setnodedata!(tree, getnode(tree, node), data)
 @traitfn function setnodedata!(tree::T, node::N, data) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
@@ -1196,7 +1196,6 @@ function validate!(tree::T) where
     nodes = _getnodes(tree)
     nodenames = _getnodenames(tree)
     branches = _getbranches(tree)
-    branchnames = _getbranchnames(tree)
     if !isempty(nodes) || !isempty(branches)
         # We need to validate the connections
         if Set(_getinbound(tree, node) for node in nodes
