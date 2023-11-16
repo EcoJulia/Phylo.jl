@@ -916,8 +916,7 @@ function hasheight end
 @traitfn hasheight(tree::T, node::NL) where
 {NL, T <: AbstractTree{OneTree, <: Rooted, NL}; !MatchNodeType{T, NL}} =
     hasheight(tree,  getnode(tree, node))
-@traitfn function hasheight(tree::AbstractTree{OneTree, <: Rooted},
-                            node::N) where
+@traitfn function hasheight(tree::T, node::N) where
     {T <: AbstractTree{OneTree, <: Rooted}, N; MatchNodeType{T, N}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _hasheight(tree, node) ||
