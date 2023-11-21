@@ -34,9 +34,12 @@ export OneTree, ManyTrees
 abstract type AbstractNode{RootType <: Rootedness, NodeLabel} end
 abstract type AbstractBranch{RootType <: Rootedness, NodeLabel} end
 
+using Distances
 abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
                            N <: AbstractNode{RT, NL},
-                           B <: AbstractBranch{RT, NL}} end
+                           B <: AbstractBranch{RT, NL}} <: Distances.UnionMetric
+end
+
 export AbstractTree
 
 @enum TraversalOrder anyorder preorder inorder postorder breadthfirst
@@ -88,9 +91,9 @@ end
 
 include("Interface.jl")
 # AbstractTree methods
-export ntrees, gettrees, nroots, getroots, getroot
+export ntrees, gettrees, nroots, getroots, getroot, gettree
 export treenametype, gettreenames, gettreename #, getonetree #unimplemented
-export roottype, nodetype, nodedatatype, nodenametype
+export treetype, roottype, nodetype, nodedatatype, nodenametype
 export branchtype, branchdatatype, branchnametype
 export createbranch!, deletebranch!
 export createnode!, createnodes!, deletenode!
@@ -114,7 +117,7 @@ export validate!, traversal, branchdims
 export isleaf, isroot, isinternal, isunattached
 export indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, getleaves, nleaves, nnodes, nbranches
+export getleafnames, getleaves, nleaves, nnodes, ninternal, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
 export getnodedata, setnodedata!
 export hasheight, getheight, setheight!

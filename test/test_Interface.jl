@@ -10,10 +10,12 @@ using Test
          BinaryTree{ManyRoots, DataFrame, Vector{Float64}},
          RootedTree, ManyRootTree]
 
+        @test treetype(TreeType) == OneTree
         species = ["Dog", "Cat", "Human", "Potato", "Apple"]
         tree = TreeType(species)
         othernodes = ["Some 1", "Some 2"]
         nodes = createnodes!(tree, othernodes)
+        @test !((roottype(TreeType) ≡ ManyRoots) ⊻ validate!(tree))
         @test [getnodename(tree, node) for node in nodes] == othernodes
         extra = [getnodename(tree, node) for node in createnodes!(tree, 1)]
         @test isa(extra[1], String)
@@ -31,13 +33,19 @@ using Test
         allnodes = copy(innodes)
         pop!(innodes)
         @test_throws Exception getroot(tree)
+        matchbranch = true
         branches = map(innodes) do node
             itr = Iterators.filter(name -> hasoutboundspace(tree, name) &&
                                    name != node &&
                                    name ∉ getdescendants(tree, node) &&
                                    name ∉ species, allnodes)
-            getbranch(tree, createbranch!(tree, first(itr), node))
-        end
+            matchbranch = !matchbranch
+            if matchbranch
+                getbranch(tree, createbranch!(tree, getnode(tree, first(itr)), getnode(tree, node)))
+            else
+                getbranch(tree, createbranch!(tree, getnodename(tree, first(itr)), getnodename(tree, node)))
+            end
+            end
         @test_nowarn getroot(tree)
         branchnames = [getbranchname(tree, branch) for branch in branches]
         @test Set(branchnames) == Set(getbranchnames(tree))
@@ -84,6 +92,14 @@ using Test
         @test_nowarn createbranch!(tree, who, species[1])
         @test hasnode(tree, species[1])
         @test validate!(tree)
+        NT = typeof(node1)
+        @test NT ≡ String || nodenametype(NT) ≡ String
+        @test NT ≡ String || branchnametype(NT) ≡ Int
+        @test NT ≡ String || roottype(NT) ≡ roottype(TreeType)
+        BT = typeof(b)
+        @test nodenametype(BT) ≡ String
+        @test branchnametype(BT) ≡ Int
+        @test roottype(BT) ≡ roottype(TreeType)
         @test all(isleaf(tree, node) for node in species)
         @test all((!isroot(tree, node) & !isunattached(tree, node) &
                    !isinternal(tree, node)) for node in species)
@@ -92,7 +108,11 @@ using Test
             Set(getnodename(tree, dst(tree, branch))
                 for branch in getbranches(tree)) == Set(getnodenames(tree))
         createnode!(tree)
-        @test (roottype(TreeType) == OneRoot) ⊻ validate!(tree)
+        @test treenametype(TreeType) ≡ Int ? gettreename(tree) == 1 : gettreename(tree) == "Tree"
+        @test (roottype(TreeType) ≡ OneRoot) ⊻ validate!(tree)
+        @test gettree(tree) ≡ tree
+        @test length(getnodes(tree)) == nnodes(tree)
+        @test ninternal(tree) == nnodes(tree) - nleaves(tree)
     end
 end
 
