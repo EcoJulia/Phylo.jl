@@ -189,12 +189,15 @@ export distance, distances, heighttoroot, heightstoroot
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
-using Requires
+# This symbol is only defined on Julia versions that support extensions
+if !isdefined(Base, :get_extension)
+    using Requires
+end
+
+@static if !isdefined(Base, :get_extension)
 function __init__()
-    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
-        println("Creating Phylo RCall interface...")
-        include("rcall.jl")
-    end
+    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" include("../ext/PhyloRCallExt.jl")
+end
 end
 
 end # module
