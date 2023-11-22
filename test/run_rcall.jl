@@ -60,18 +60,22 @@ global skipR = !rcopy(R"require(ape)")
         end
 
         @testset "Testing reading in newick trees from disk" begin
-            jtree = open(parsenewick, Phylo.path("H1N1.newick"))
-            rtree = rcall(Symbol("read.tree"), Phylo.path("H1N1.newick"))
-            @test rcopy(rcall(Symbol("all.equal"), jtree, rtree))
+            if nodedatatype(TreeType) <: Dict
+                jtree = open(io -> parsenewick(io, TreeType), Phylo.path("H1N1.newick"))
+                rtree = rcall(Symbol("read.tree"), Phylo.path("H1N1.newick"))
+                @test rcopy(rcall(Symbol("all.equal"), jtree, rtree))
+            end
         end
 
         @testset "Testing reading in nexus trees from disk" begin
-            jts = open(parsenexus, Phylo.path("H1N1.trees"))
-            rtree1 = R"read.nexus($(Phylo.path(\"H1N1.trees\")))$TREE1"
-            jtree1 = jts["TREE1"]
-            @test rcopy(rcall(Symbol("all.equal"), jtree1, rtree1))
-            @test "H1N1_A_MIYAGI_3_2000" ∈ nodenameiter(jtree1)
-            @test collect(keys(gettreeinfo(jts)["TREE1"])) == ["lnP"]
+            if nodedatatype(TreeType) <: Dict
+                jts = open(io -> parsenexus(io, TreeType), Phylo.path("H1N1.trees"))
+                rtree1 = R"read.nexus($(Phylo.path(\"H1N1.trees\")))$TREE1"
+                jtree1 = jts["TREE1"]
+                @test rcopy(rcall(Symbol("all.equal"), jtree1, rtree1))
+                @test "H1N1_A_MIYAGI_3_2000" ∈ nodenameiter(jtree1)
+                @test collect(keys(gettreeinfo(jts)["TREE1"])) == ["lnP"]
+            end
         end
     end
 end

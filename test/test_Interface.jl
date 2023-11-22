@@ -5,6 +5,16 @@ using DataFrames
 using Test
 
 matchbranch = true
+
+@testset "Parsing multi-root trees" begin
+    jts = open(parsenexus, Phylo.path("H1N1.trees"))
+    @test ntrees(jts) == 2
+    @test gettreeinfo(jts, "TREE2") ≡ gettreeinfo(jts)["TREE2"]
+    @test all(values(nroots(jts)) .== nroots(jts, "TREE1"))
+    @test getroot(jts)["TREE1"] ≡ getroot(jts, "TREE1")
+    @test getroots(jts)["TREE1"] ≡ getroots(jts, "TREE1")
+end
+
 @testset "Build and tear down trees" begin
     @testset "For $TreeType" for TreeType in
         [NamedTree, NamedBinaryTree,
