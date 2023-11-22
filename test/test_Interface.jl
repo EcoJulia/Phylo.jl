@@ -76,6 +76,7 @@ matchbranch = true
         b3 = getinbound(tree, species[2])
         source = src(tree, b3)
         destination = dst(tree, b3)
+        @test Set(conns(tree, b3)) == Set([source, conn(tree, b3, source)])
         @test deletebranch!(tree, b3)
         branches = [branch for branch in branches if branch != b3]
         createbranch!(tree, who, species[1])

@@ -98,8 +98,7 @@ _src(::AbstractTree, branch::LinkBranch{<:Rooted}) = branch.inout[1]
 import Phylo.API: _dst
 _dst(::AbstractTree, branch::LinkBranch{<:Rooted}) = branch.inout[2]
 import Phylo.API: _conn
-function _conn(::AbstractTree, branch::LinkBranch{RT, NL, D},
-               exclude::AbstractNode{RT, NL}) where {RT, NL, D}
+function _conn(::LinkTree, branch::LinkBranch, exclude::LinkNode)
     return exclude ≡ branch.inout[1] ? branch.inout[2] :
         (exclude ≡ branch.inout[2] ? branch.inout[1] :
          error("Branch $(branch.name) not connected to $(exclude.name)"))

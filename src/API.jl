@@ -23,7 +23,7 @@ using Unitful
 @traitimpl MatchBranchType{T, B} <- _matchbranchtype(T, B)
 
 @traitdef MatchBranchNodeType{T, B, N}
-@traitimpl MatchBranchNodeType{T, B, N} <- _matchbranchnodetype(T, N)
+@traitimpl MatchBranchNodeType{T, B, N} <- _matchbranchnodetype(T, B, N)
 
 @traitdef MatchTreeNameType{T, TN}
 @traitimpl MatchTreeNameType{T, TN} <- _matchtreenametype(T, TN)
@@ -86,9 +86,8 @@ _matchbranchtype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
 Does this tree type prefer the branch and node types provided?
 """
 function _matchbranchnodetype end
-_matchbranchtype(::Type{T}, ::Type{B}, ::Type{N}) where
-    {TT, RT, NL, N, B, T <: AbstractTree{TT, RT, NL, N, B}} =
-                    _matchbranchtype(T, B) && _matchnodetype(T, N)
+_matchbranchnodetype(::Type{T}, ::Type{B}, ::Type{N}) where {T <: AbstractTree, B, N} =
+    _matchbranchtype(T, B) && _matchnodetype(T, N)
 
 """
     _matchtreenametype(::Type{<:AbstractTree}, ::Type{X})

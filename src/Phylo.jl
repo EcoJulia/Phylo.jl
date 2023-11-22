@@ -80,7 +80,7 @@ export _getconnections, _addconnection!, _removeconnection!
 export MatchNodeType, MatchNodeTypes, PreferNodeObjects, _prefernodeobjects
 
 # AbstractBranch methods
-export _src, _dst, _getlength
+export _src, _dst, _getlength, _conn, _conns
 export MatchBranchType, PreferBranchObjects, _preferbranchobjects
 export MatchBranchNodeType
 
