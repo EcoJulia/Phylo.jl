@@ -25,5 +25,7 @@ a = IOBuffer()
     @test_nowarn show(a, ps)
     @test_nowarn show(a, first(nodeiter(ps)))
     @test_nowarn show(a, first(branchiter(ps)))
+    @test_nowarn show(a, (ps, first(getnodes(ps))))
+    @test_nowarn show(a, (ps, first(getbranches(ps))))
 end
 end

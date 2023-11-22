@@ -435,15 +435,15 @@ import Base.show
 function show(io::IO, node::LinkNode{Unrooted})
     print(io, "Unrooted LinkNode '$(node.name)', with $(length(node.other)) connection(s).")
     if length(node.other) == 0
-        println(io, "a node with no connections.")
+        print(io, "a node with no connections.")
     elseif length(node.other) == 1
-        println(io, "a node with 1 connection (branch $(node.other[1].name))")
+        print(io, "a node with 1 connection (branch $(node.other[1].name))")
     else
         print(io, "a node with $(length(node.other)) outbound connections (branches $(node.other[1].name)")
         for i in 2:length(node.other)
             print(io, ", $(node.other[i].name)")
         end
-        println(io, ")")
+        print(io, ")")
     end
 end
 
@@ -451,35 +451,35 @@ function show(io::IO, node::LinkNode)
     print(io, "LinkNode $(node.name), ")
     if ismissing(node.inbound)
         if length(node.other) == 0
-            println(io, "an isolated node with no connections.")
+            print(io, "an isolated node with no connections.")
         elseif length(node.other) == 1
-            println(io, "a root node with 1 outbound connection (branch $(node.other[1].name))")
+            print(io, "a root node with 1 outbound connection (branch $(node.other[1].name))")
         else
             print(io, "a root node with $(length(node.other)) outbound connections (branches $(node.other[1].name)")
             for i in 2:length(node.other)
                 print(io, ", $(node.other[i].name)")
             end
-            println(io, ")")
+            print(io, ")")
         end
     else
         if length(node.other) == 0
-            println(io, "a tip of the tree with an incoming connection (branch $(node.inbound.name)).")
+            print(io, "a tip of the tree with an incoming connection (branch $(node.inbound.name)).")
         elseif length(node.other) == 1
-            println(io, "an internal node with 1 inbound and 1 outbound connection (branches $(node.inbound.name) and $(node.other[1].name))")
+            print(io, "an internal node with 1 inbound and 1 outbound connection (branches $(node.inbound.name) and $(node.other[1].name))")
         else
             print(io, "an internal node with 1 inbound and $(length(node.other)) outbound connections (branches $(node.inbound.name) and $(node.other[1].name)")
             for i in 2:length(node.other)
                 print(io, ", $(node.other[i].name)")
             end
-            println(io, ")")
+            print(io, ")")
         end
     end
 end
 
 function show(io::IO, branch::LinkBranch{Unrooted})
-    println(io, "Unrooted LinkBranch $(branch.name), connecting nodes $(branch.inout[1].name) and $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
+    print(io, "Unrooted LinkBranch $(branch.name), connecting nodes $(branch.inout[1].name) and $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
 end
 
 function show(io::IO, branch::LinkBranch)
-    println(io, "LinkBranch $(branch.name), from node $(branch.inout[1].name) to node $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
+    print(io, "LinkBranch $(branch.name), from node $(branch.inout[1].name) to node $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
 end
