@@ -287,7 +287,7 @@ import Phylo.API: _getnode
                   node::NL) where {RT, NL,
                                    T <: LinkTree{RT, NL};
                                    PreferNodeObjects{T}} =
-                                       tree.nodes[tree.nodedict[node]]
+    tree.nodes[tree.nodedict[node]]
 
 import Phylo.API: _getbranches
 _getbranches(tree::LinkTree) = skipmissing(tree.branches)

@@ -424,7 +424,7 @@ end
     hasbranch(tree, src, dst) ||
         error("Tree does not have a branch between " *
               "$(_getnodename(tree, src)) and $(_getnodename(tree, dst))")
-    return _deletebranch!(tree, getbranch(tree, src, dst))
+    return _deletebranch!(tree, getbranch(tree, getnode(tree, src), getnode(tree, dst)))
 end
 @traitfn function deletebranch!(tree::T, src::N1, dst::N2) where
     {T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}}
@@ -529,17 +529,17 @@ Does `tree` have a branch `branch` or a branch from `source` to `dest`?
 """
 function hasbranch end
 @traitfn hasbranch(tree::T, branch::B) where
-{T <: AbstractTree{OneTree}, B; MatchBranchType{T, B}} =
+    {T <: AbstractTree{OneTree}, B; MatchBranchType{T, B}} =
     _hasbranch(tree, branch)
 @traitfn hasbranch(tree::T, branch::B) where
-{T <: AbstractTree{OneTree}, B; !MatchBranchType{T, B}} =
+    {T <: AbstractTree{OneTree}, B; !MatchBranchType{T, B}} =
     _hasbranch(tree, _getbranch(tree, branch))
 @traitfn hasbranch(tree::T, src::N1, dst::N2) where
-{T <: AbstractTree{OneTree}, N1, N2; !MatchNodeTypes{T, N1, N2}} =
+    {T <: AbstractTree{OneTree}, N1, N2; !MatchNodeTypes{T, N1, N2}} =
     hasnode(tree, src) && hasnode(tree, dst) &&
     _hasbranch(tree, _getnode(tree, src), _getnode(tree, dst))
 @traitfn hasbranch(tree::T, src::N1, dst::N2) where
-{T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}} =
+    {T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}} =
     _hasnode(tree, src) && _hasnode(tree, dst) && _hasbranch(tree, src, dst)
 
 """
@@ -560,10 +560,10 @@ end
     return branch
 end
 @traitfn getbranch(tree::T, src::N1, dst::N2) where
-{T <: AbstractTree{OneTree}, N1, N2; !MatchNodeTypes{T, N1, N2}} =
+    {T <: AbstractTree{OneTree}, N1, N2; !MatchNodeTypes{T, N1, N2}} =
     getbranch(tree, getnode(tree, src), getnode(tree, dst))
 @traitfn getbranch(tree::T, src::N1, dst::N2) where
-{T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}} =
+    {T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}} =
     hasnode(tree, src) && hasnode(tree, dst) && _getbranch(tree, src, dst)
 
 """

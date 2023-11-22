@@ -115,7 +115,7 @@ export validate!, traversal, branchdims
 
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
-export indegree, outdegree, hasinbound, getinbound, getoutbounds
+export degree, indegree, outdegree, hasinbound, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
 export getleafnames, getleaves, nleaves, nnodes, ninternal, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
@@ -123,7 +123,7 @@ export getnodedata, setnodedata!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
-export src, dst, getlength
+export src, dst, getlength, conn, conns
 export hasrootheight, getrootheight, setrootheight! #, clearrootheight! #unimplemented
 export getbranchdata, setbranchdata!
 # export getrootdistance # unimplemented

@@ -62,7 +62,7 @@ _matchnodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
 _matchnodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
                ::Type{NL}) where {TT, RT, NL, N, B} = !_prefernodeobjects(N)
 _matchnodetypes(::Type{<:AbstractTree}, ::Type{<:Any}, ::Type{<:Any}) = false
-_matchnodetypes(::Type{T}, ::Type{N}, ::Type{N}) where {T, N} =
+_matchnodetypes(::Type{T}, ::Type{N}, ::Type{N}) where {T <: AbstractTree, N} =
     _matchnodetype(T, N)
 
     """
@@ -375,25 +375,32 @@ a branch or a pair) from a tree. Must be implemented for any PreferBranchObjects
 tree and branch label type.
 """
 function _getbranch end
-@traitfn _getbranch(tree::T,
+@traitfn _getbranch(::T,
                     branch::B) where {RT, NL, N, B,
                                       T <: AbstractTree{OneTree, RT, NL, N, B};
                                       PreferBranchObjects{T}} = branch
-@traitfn _getbranch(tree::T,
+@traitfn _getbranch(::T,
                     pair::Pair{Int, B}) where {RT, NL, N, B,
                                                T <: AbstractTree{OneTree, RT,
                                                                  NL, N, B};
                                                PreferBranchObjects{T}} = pair[2]
-@traitfn _getbranch(tree::T,
+@traitfn _getbranch(::T,
                     branchname::Int) where {T <: AbstractTree{OneTree};
                                             !PreferBranchObjects{T}} =
                                                 branchname
-@traitfn _getbranch(tree::T,
+@traitfn _getbranch(::T,
                     pair::Pair{Int, B}) where {RT, NL, N, B,
                                                T <: AbstractTree{OneTree,
                                                                  RT, NL, N, B};
                                                !PreferBranchObjects{T}} =
                                                    pair[1]
+@traitfn _getbranch(tree::T, src::N1, dst::N2) where
+    {T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}} =
+    first(b for b in _getbranches(tree) if _src(tree, b) == src && _dst(tree, b) == dst)
+
+@traitfn _getbranch(tree::T, src::N1, dst::N2) where
+    {T <: AbstractTree{OneTree}, N1, N2; !MatchNodeTypes{T, N1, N2}} =
+    _getbranch(tree, _getnode(tree, src), _getnode(tree, dst))
 
 """
     _getbranchname(::AbstractTree, id)
@@ -453,6 +460,11 @@ _hasbranch(tree::AbstractTree{OneTree},
                                       T <: AbstractTree{OneTree, RT, NL, N, B};
                                       PreferBranchObjects{T}} =
                                           branch ∈ _getbranches(tree)
+
+@traitfn function _hasbranch(tree::T, src::N1, dst::N2) where
+    {T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}}
+    return any(_src(tree, b) == src && _dst(tree, b) == dst for b in _getbranches(tree))
+end
 
 """
     _createbranch!(tree::AbstractTree, source, destination[,
