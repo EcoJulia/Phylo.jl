@@ -1,25 +1,5 @@
 # Getting tree attributes
 
-## Phylo module and type docs
-
-```@docs
-Phylo
-BinaryTree
-NamedBinaryTree
-BinaryNode
-Node
-NamedTree
-PolytomousTree
-NamedPolytomousTree
-LinkTree
-LinkBranch
-LinkNode
-RootedTree
-ManyRootTree
-UnrootedTree
-TreeSet
-```
-
 ## Methods on TreeSets
 
 ```@docs
@@ -67,8 +47,10 @@ getbranchname
 hasbranch
 getbranch
 getbranches
+gettreeinfo
 validate!
 branchdims
+treetype
 ```
 
 ## Methods on Nodes
@@ -114,4 +96,13 @@ getrootheight
 setrootheight!
 getbranchdata
 setbranchdata!
+```
+
+## Iterators
+
+```@docs
+nodeiter
+nodenameiter
+branchiter
+branchnameiter
 ```

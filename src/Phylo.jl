@@ -98,8 +98,9 @@ export treetype, roottype, nodetype, nodedatatype, nodenametype
 export branchtype, branchdatatype, branchnametype
 export createbranch!, deletebranch!
 export createnode!, createnodes!, deletenode!
-export getnodenames, getnodename, hasnode, getnode, getnodes
-export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
+export getnodenames, getnodename, hasnode, getnode, getnodes, nnodes
+export getleafnames, getleaves, nleaves, getinternalnodes, ninternal
+export getbranchnames, getbranchname, hasbranch, getbranch, getbranches, nbranches
 export hasrootheight, getrootheight, setrootheight!
 export getparent, getancestors #, hasparent # unimplemented
 export getchildren, getdescendants #, haschildren # unimplemented
@@ -118,7 +119,6 @@ export validate!, traversal, branchdims
 export isleaf, isroot, isinternal, isunattached
 export degree, indegree, outdegree, hasinbound, getconnections, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, getleaves, nleaves, nnodes, ninternal, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
 export getnodedata, setnodedata!
 export hasheight, getheight, setheight!
