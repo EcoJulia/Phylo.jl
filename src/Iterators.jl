@@ -39,6 +39,11 @@ function length(bi::It) where It <: AbstractBranchIterator
         count(val -> bi.filterfn(bi.tree, _getbranch(bi.tree, val)), bi)
 end
 
+"""
+    NodeIterator
+
+The struct representing an iterator for nodes of a phylogenetic tree
+"""
 struct NodeIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
     tree::T
     filterfn::Union{Function, Nothing}
@@ -61,6 +66,11 @@ nodefilter(filterfn::Function, tree::T) where T <: AbstractTree =
 
 eltype(ni::NodeIterator{T}) where T <: AbstractTree = nodetype(T)
 
+"""
+    NodeNameIterator
+
+The struct representing an iterator for nodenames of a phylogenetic tree
+"""
 struct NodeNameIterator{T <: AbstractTree} <: AbstractNodeIterator{T}
     tree::T
     filterfn::Union{Function, Nothing}
@@ -85,6 +95,11 @@ nodenamefilter(filterfn::Function, tree::T) where T <: AbstractTree =
 
 eltype(ni::NodeNameIterator{T}) where T <: AbstractTree = nodenametype(T)
 
+"""
+    BranchIterator
+
+The struct representing an iterator for branches of a phylogenetic tree
+"""
 struct BranchIterator{T <: AbstractTree} <: AbstractBranchIterator{T}
     tree::T
     filterfn::Union{Function, Nothing}
@@ -109,6 +124,11 @@ branchfilter(filterfn::Function, tree::T) where T <: AbstractTree =
 
 eltype(bi::BranchIterator{T}) where T <: AbstractTree = branchtype(T)
 
+"""
+    BranchNameIterator
+
+The struct representing an iterator for branchnames of a phylogenetic tree
+"""
 struct BranchNameIterator{T <: AbstractTree} <: AbstractBranchIterator{T}
     tree::T
     filterfn::Union{Function, Nothing}

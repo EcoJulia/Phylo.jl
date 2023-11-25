@@ -4,6 +4,11 @@ using Unitful
 
 newempty(::Type{Data}) where Data = Data()
 
+"""
+    struct LinkBranch <: AbstractBranch
+
+A branch type that connects LinkNodes in a LinkTree
+"""
 struct LinkBranch{RT, NL, Data, LenUnits} <: AbstractBranch{RT, NL}
     name::Int
     inout::Tuple{AbstractNode{RT, NL}, AbstractNode{RT, NL}}
@@ -11,6 +16,11 @@ struct LinkBranch{RT, NL, Data, LenUnits} <: AbstractBranch{RT, NL}
     data::Data
 end
 
+"""
+    struct LinkNode <: AbstractNode
+
+A node type that is connected by LinkBranches in a LinkTree
+"""
 mutable struct LinkNode{RT, NL, Data,
                         B <: AbstractBranch{RT, NL}} <: AbstractNode{RT, NL}
     name::NL
@@ -25,6 +35,11 @@ end
 import Phylo.API: _prefernodeobjects
 _prefernodeobjects(::Type{<:LinkNode}) = true
 
+"""
+    struct LinkTree <: AbstractTree
+
+A phylogenetic tree type containing LinkNodes and LinkBranches
+"""
 mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
                         B <: LinkBranch{RT, NL}, TD} <:
                             AbstractTree{OneTree, RT, NL, N, B}
@@ -58,6 +73,7 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
         return tree
     end
 end
+
 function LinkTree{RT, NL, N, B, TD}(leafinfos::TD) where {RT, NL, N, B, TD}
     leafnames = unique(info[1] for info in getiterator(leafinfos))
     return LinkTree{RT, NL, N, B, TD}(leafnames; tipdata = leafinfos)
@@ -98,8 +114,7 @@ _src(::AbstractTree, branch::LinkBranch{<:Rooted}) = branch.inout[1]
 import Phylo.API: _dst
 _dst(::AbstractTree, branch::LinkBranch{<:Rooted}) = branch.inout[2]
 import Phylo.API: _conn
-function _conn(::AbstractTree, branch::LinkBranch{RT, NL, D},
-               exclude::AbstractNode{RT, NL}) where {RT, NL, D}
+function _conn(::LinkTree, branch::LinkBranch, exclude::LinkNode)
     return exclude ≡ branch.inout[1] ? branch.inout[2] :
         (exclude ≡ branch.inout[2] ? branch.inout[1] :
          error("Branch $(branch.name) not connected to $(exclude.name)"))
@@ -287,7 +302,7 @@ import Phylo.API: _getnode
                   node::NL) where {RT, NL,
                                    T <: LinkTree{RT, NL};
                                    PreferNodeObjects{T}} =
-                                       tree.nodes[tree.nodedict[node]]
+    tree.nodes[tree.nodedict[node]]
 
 import Phylo.API: _getbranches
 _getbranches(tree::LinkTree) = skipmissing(tree.branches)
@@ -436,15 +451,15 @@ import Base.show
 function show(io::IO, node::LinkNode{Unrooted})
     print(io, "Unrooted LinkNode '$(node.name)', with $(length(node.other)) connection(s).")
     if length(node.other) == 0
-        println(io, "a node with no connections.")
+        print(io, "a node with no connections.")
     elseif length(node.other) == 1
-        println(io, "a node with 1 connection (branch $(node.other[1].name))")
+        print(io, "a node with 1 connection (branch $(node.other[1].name))")
     else
         print(io, "a node with $(length(node.other)) outbound connections (branches $(node.other[1].name)")
         for i in 2:length(node.other)
             print(io, ", $(node.other[i].name)")
         end
-        println(io, ")")
+        print(io, ")")
     end
 end
 
@@ -452,35 +467,35 @@ function show(io::IO, node::LinkNode)
     print(io, "LinkNode $(node.name), ")
     if ismissing(node.inbound)
         if length(node.other) == 0
-            println(io, "an isolated node with no connections.")
+            print(io, "an isolated node with no connections.")
         elseif length(node.other) == 1
-            println(io, "a root node with 1 outbound connection (branch $(node.other[1].name))")
+            print(io, "a root node with 1 outbound connection (branch $(node.other[1].name))")
         else
             print(io, "a root node with $(length(node.other)) outbound connections (branches $(node.other[1].name)")
             for i in 2:length(node.other)
                 print(io, ", $(node.other[i].name)")
             end
-            println(io, ")")
+            print(io, ")")
         end
     else
         if length(node.other) == 0
-            println(io, "a tip of the tree with an incoming connection (branch $(node.inbound.name)).")
+            print(io, "a tip of the tree with an incoming connection (branch $(node.inbound.name)).")
         elseif length(node.other) == 1
-            println(io, "an internal node with 1 inbound and 1 outbound connection (branches $(node.inbound.name) and $(node.other[1].name))")
+            print(io, "an internal node with 1 inbound and 1 outbound connection (branches $(node.inbound.name) and $(node.other[1].name))")
         else
             print(io, "an internal node with 1 inbound and $(length(node.other)) outbound connections (branches $(node.inbound.name) and $(node.other[1].name)")
             for i in 2:length(node.other)
                 print(io, ", $(node.other[i].name)")
             end
-            println(io, ")")
+            print(io, ")")
         end
     end
 end
 
 function show(io::IO, branch::LinkBranch{Unrooted})
-    println(io, "Unrooted LinkBranch $(branch.name), connecting nodes $(branch.inout[1].name) and $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
+    print(io, "Unrooted LinkBranch $(branch.name), connecting nodes $(branch.inout[1].name) and $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
 end
 
 function show(io::IO, branch::LinkBranch)
-    println(io, "LinkBranch $(branch.name), from node $(branch.inout[1].name) to node $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
+    print(io, "LinkBranch $(branch.name), from node $(branch.inout[1].name) to node $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
 end
