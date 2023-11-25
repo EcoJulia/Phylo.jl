@@ -31,7 +31,6 @@ implementations.
 
 ```@autodocs
 Modules = [Phylo.API]
-Private = false
 ```
 
 ```@index

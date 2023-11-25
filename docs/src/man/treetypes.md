@@ -10,6 +10,7 @@ optimised for a specific usage
 ```@docs
 LinkTree
 TreeSet
+NamedBinaryTree
 BinaryTree
 NamedTree
 PolytomousTree

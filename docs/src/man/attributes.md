@@ -67,8 +67,6 @@ hasinbound
 getinbound
 getoutbounds
 getconnections
-conn
-conns
 hasoutboundspace
 hasinboundspace
 getleafinfo
@@ -90,19 +88,13 @@ getdescendants
 ```@docs
 src
 dst
+conn
+conns
+haslength
 getlength
 hasrootheight
 getrootheight
 setrootheight!
 getbranchdata
 setbranchdata!
-```
-
-## Iterators
-
-```@docs
-nodeiter
-nodenameiter
-branchiter
-branchnameiter
 ```
