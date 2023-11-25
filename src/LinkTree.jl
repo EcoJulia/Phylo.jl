@@ -4,6 +4,11 @@ using Unitful
 
 newempty(::Type{Data}) where Data = Data()
 
+"""
+    struct LinkBranch <: AbstractBranch
+
+A branch type that connects LinkNodes in a LinkTree
+"""
 struct LinkBranch{RT, NL, Data, LenUnits} <: AbstractBranch{RT, NL}
     name::Int
     inout::Tuple{AbstractNode{RT, NL}, AbstractNode{RT, NL}}
@@ -11,6 +16,11 @@ struct LinkBranch{RT, NL, Data, LenUnits} <: AbstractBranch{RT, NL}
     data::Data
 end
 
+"""
+    struct LinkNode <: AbstractNode
+
+A node type that is connected by LinkBranches in a LinkTree
+"""
 mutable struct LinkNode{RT, NL, Data,
                         B <: AbstractBranch{RT, NL}} <: AbstractNode{RT, NL}
     name::NL
@@ -25,6 +35,11 @@ end
 import Phylo.API: _prefernodeobjects
 _prefernodeobjects(::Type{<:LinkNode}) = true
 
+"""
+    struct LinkTree <: AbstractTree
+
+A phylogenetic tree type containing LinkNodes and LinkBranches
+"""
 mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
                         B <: LinkBranch{RT, NL}, TD} <:
                             AbstractTree{OneTree, RT, NL, N, B}
@@ -58,6 +73,7 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
         return tree
     end
 end
+
 function LinkTree{RT, NL, N, B, TD}(leafinfos::TD) where {RT, NL, N, B, TD}
     leafnames = unique(info[1] for info in getiterator(leafinfos))
     return LinkTree{RT, NL, N, B, TD}(leafnames; tipdata = leafinfos)

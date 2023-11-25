@@ -1,5 +1,5 @@
 """
-    BinaryNode{B}(AbstractVector{B}, AbstractVector{B}) <: AbstractNode
+    struct BinaryNode <: AbstractNode
 
 A node of strict binary phylogenetic tree
 """
@@ -29,7 +29,7 @@ import Phylo.API: _prefernodeobjects
 _prefernodeobjects(::Type{<:BinaryNode}) = false
 
 """
-    Node{RT, NL, T}(AbstractVector{T}, AbstractVector{T}) <: AbstractNode
+    struct Node <: AbstractNode
 
 A node of potentially polytomous phylogenetic tree
 """
