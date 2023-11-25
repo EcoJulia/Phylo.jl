@@ -21,7 +21,4 @@ makedocs(modules = [Phylo, Phylo.API],
 
 deploydocs(repo = "github.com/EcoJulia/Phylo.jl.git",
            devbranch = "dev",
-           deps = Deps.pip("pygments",
-                           "mkdocs",
-                           "mkdocs-material",
-                           "python-markdown-math"))
+           push_preview = true)
