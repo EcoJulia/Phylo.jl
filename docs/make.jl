@@ -16,7 +16,8 @@ makedocs(modules = [Phylo, Phylo.API],
                   ],
                   "List of functions" => "functionlist.md",
                   "API" => "api.md"];
-         format = Documenter.HTML(size_threshold_ignore = ["man/plotting.md"]))
+         format = Documenter.HTML(size_threshold_ignore = ["man/plotting.md",
+                                                           "man/input.md"]))
 
 deploydocs(repo = "github.com/EcoJulia/Phylo.jl.git",
            devbranch = "dev",

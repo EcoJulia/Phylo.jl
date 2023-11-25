@@ -74,8 +74,8 @@ function show(io::IO, object::NamedTuple{(:tree, :branch), Tuple{T, B}}) where
     destination = NL <: Number ? "node $(getnodename(object.tree, dst(object.tree, object.branch)))" :
         "\"$(getnodename(object.tree, dst(object.tree, object.branch)))\""
     if haslength(object.tree, object.branch)
-        print(io, "[$source] --> [$(getlength(object.tree, object.branch)) " *
-              "length branch $(getbranchname(object.tree, object.branch))] --> [$destination]")
+        print(io, "[$source] --> ($(getlength(object.tree, object.branch)) " *
+              "length branch $(getbranchname(object.tree, object.branch))) --> [$destination]")
     else
         print(io, "[$source] --> (branch $(getbranchname(object.tree, object.branch))) --> [$destination]")
     end
