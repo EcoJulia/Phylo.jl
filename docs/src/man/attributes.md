@@ -1,15 +1,38 @@
 # Getting tree attributes
 
-### Methods on TreeSets
+## Phylo module and type docs
+
+```@docs
+Phylo
+BinaryTree
+NamedBinaryTree
+BinaryNode
+Node
+NamedTree
+PolytomousTree
+NamedPolytomousTree
+LinkTree
+LinkBranch
+LinkNode
+RootedTree
+ManyRootTree
+UnrootedTree
+TreeSet
+```
+
+## Methods on TreeSets
+
 ```@docs
 ntrees
+gettree
 gettrees
 nroots
 getroots
 gettreenames
 ```
 
-### Methods on Trees
+## Methods on Trees
+
 ```@docs
 mrca
 nodeheights
@@ -17,24 +40,53 @@ getleafnames
 getleaves
 nleaves
 nnodes
+ninternal
 nbranches
 distance
 distances
 heighttoroot
 heightstoroot
+getroot
+treenametype
+gettreename
+roottype
+nodetype
+nodedatatype
+nodenametype
+branchtype
+branchdatatype
+branchnametype
+getnodenames
+getnodename
+hasnode
+getnode
+getnodes
+getinternalnodes
+getbranchnames
+getbranchname
+hasbranch
+getbranch
+getbranches
+validate!
+branchdims
 ```
 
-### Methods on Nodes
+## Methods on Nodes
+
 ```@docs
 isleaf
 isroot
 isinternal
 isunattached
+degree
 indegree
 outdegree
 hasinbound
 getinbound
 getoutbounds
+getconnections
+conn
+conns
 hasoutboundspace
 hasinboundspace
 getleafinfo
@@ -51,7 +103,8 @@ getchildren
 getdescendants
 ```
 
-### Methods on Branches
+## Methods on Branches
+
 ```@docs
 src
 dst
@@ -62,33 +115,3 @@ setrootheight!
 getbranchdata
 setbranchdata!
 ```
-
-
-
-```@docs
-getroot
-treenametype
-gettreename
-roottype
-nodetype
-nodedatatype
-nodenametype
-branchtype
-branchdatatype
-branchnametype
-
-getnodenames
-getnodename
-hasnode
-getnode
-getnodes
-getbranchnames
-getbranchname
-hasbranch
-getbranch
-getbranches
-validate!
-branchdims
-```
-
-

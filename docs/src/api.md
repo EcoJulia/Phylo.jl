@@ -9,13 +9,13 @@ Providing additional code to extend the functionality of the system is simple:
 
 ```julia
 using Phylo
-importall Phylo.API
 
-type SimplestTree <: AbstractTree{Int, Int}
+struct SimplestTree <: AbstractTree{Int, Int}
     nodes::OrderedDict{Int, BinaryNode{Int}}
     branches::Dict{Int, Branch{Int}}
 end
 
+import Phylo.API: _addnode!
 function _addnode!(tree::SimplestTree, num)
     _setnode!(tree, num, BinaryNode{Int}())
     return num
