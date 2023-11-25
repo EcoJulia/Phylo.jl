@@ -371,7 +371,7 @@ using `@enum`), and is the second argument to the constructor:
 
 function DiscreteTrait(tree::AbstractTree, ttype::Type{<:Enum},
                        transition_matrix::AbstractMatrix{Float64},
-                       trait::String = "\$ttype")
+                       trait::String)
 
 The transition matrix holds transition rates from row to column (so
 row sums must be zero), and the transition probabilities in a branch
@@ -460,7 +460,7 @@ created using `@enum`), and is the second argument to the constructor:
 
 function DiscreteTrait(tree::AbstractTree, ttype::Type{<:Enum},
                        transition_rate::Number,
-                       trait::String = "\$ttype")
+                       trait::String)
 
 The transition matrix holds transition rates from row to column (so
 row sums must be zero), and the transition probabilities in a branch

@@ -19,6 +19,7 @@ interact cleanly with other phylogenetic packages.
 module Phylo
 
 import Base: Pair, Tuple, show, eltype, length, getindex
+import Graphs: src, dst, indegree, outdegree, degree
 abstract type Rootedness end
 struct Unrooted <: Rootedness end
 abstract type Rooted <: Rootedness end
@@ -34,9 +35,12 @@ export OneTree, ManyTrees
 abstract type AbstractNode{RootType <: Rootedness, NodeLabel} end
 abstract type AbstractBranch{RootType <: Rootedness, NodeLabel} end
 
+using Distances
 abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
                            N <: AbstractNode{RT, NL},
-                           B <: AbstractBranch{RT, NL}} end
+                           B <: AbstractBranch{RT, NL}} <: Distances.UnionMetric
+end
+
 export AbstractTree
 
 @enum TraversalOrder anyorder preorder inorder postorder breadthfirst
@@ -55,7 +59,7 @@ include("API.jl")
 export _ntrees, _gettrees, _nroots, _getroots, _getroot
 export _treenametype, _gettreenames, _gettree, _gettreename
 export _createbranch!, _deletebranch!, _createnode!, _deletenode!
-export _getnodenames, _hasnode, _getnode, _getnodes
+export _getnodenames, _getnodename, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _getleafinfo, _setleafinfo!, _leafinfotype, _gettreeinfo
@@ -77,7 +81,7 @@ export _getconnections, _addconnection!, _removeconnection!
 export MatchNodeType, MatchNodeTypes, PreferNodeObjects, _prefernodeobjects
 
 # AbstractBranch methods
-export _src, _dst, _getlength
+export _src, _dst, _getlength, _haslength, _conn, _conns
 export MatchBranchType, PreferBranchObjects, _preferbranchobjects
 export MatchBranchNodeType
 
@@ -88,17 +92,16 @@ end
 
 include("Interface.jl")
 # AbstractTree methods
-export ntrees, gettrees, nroots, getroots, getroot
+export ntrees, gettrees, nroots, getroots, getroot, gettree
 export treenametype, gettreenames, gettreename #, getonetree #unimplemented
-export roottype, nodetype, nodedatatype, nodenametype
+export treetype, roottype, nodetype, nodedatatype, nodenametype
 export branchtype, branchdatatype, branchnametype
 export createbranch!, deletebranch!
 export createnode!, createnodes!, deletenode!
-export getnodenames, getnodename, hasnode, getnode, getnodes
-export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
+export getnodenames, getnodename, hasnode, getnode, getnodes, nnodes
+export getleafnames, getleaves, nleaves, getinternalnodes, ninternal
+export getbranchnames, getbranchname, hasbranch, getbranch, getbranches, nbranches
 export hasrootheight, getrootheight, setrootheight!
-export getparent, getancestors #, hasparent # unimplemented
-export getchildren, getdescendants #, haschildren # unimplemented
 export validate!, traversal, branchdims
 
 @deprecate addnode! createnode!
@@ -112,15 +115,17 @@ export validate!, traversal, branchdims
 
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
-export indegree, outdegree, hasinbound, getinbound, getoutbounds
+export degree, indegree, outdegree, hasinbound, getconnections, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, getleaves, nleaves, nnodes, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
 export getnodedata, setnodedata!
+export getparent, getancestors #, hasparent # unimplemented
+export getchildren, getdescendants #, haschildren # unimplemented
+export getsiblings
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
-export src, dst, getlength
+export src, dst, getlength, haslength, conn, conns
 export hasrootheight, getrootheight, setrootheight! #, clearrootheight! #unimplemented
 export getbranchdata, setbranchdata!
 # export getrootdistance # unimplemented
@@ -189,12 +194,15 @@ export distance, distances, heighttoroot, heightstoroot
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
-using Requires
+# This symbol is only defined on Julia versions that support extensions
+if !isdefined(Base, :get_extension)
+    using Requires
+end
+
+@static if !isdefined(Base, :get_extension)
 function __init__()
-    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
-        println("Creating Phylo RCall interface...")
-        include("rcall.jl")
-    end
+    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" include("../ext/PhyloRCallExt.jl")
+end
 end
 
 end # module

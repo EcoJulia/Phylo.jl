@@ -23,7 +23,11 @@ a = IOBuffer()
     @test_nowarn show(a, ts)
     ps = parsenewick("((,),(,,));", TreeType)
     @test_nowarn show(a, ps)
+    @test_nowarn show(a, [ps])
     @test_nowarn show(a, first(nodeiter(ps)))
     @test_nowarn show(a, first(branchiter(ps)))
+    @test_nowarn show(a, (tree=ps, node=first(getnodes(ps))))
+    @test_nowarn show(a, (tree=ps, node=getparent(ps, first(getleaves(ps)))))
+    @test_nowarn show(a, (tree=ps, branch=first(getbranches(ps))))
 end
 end
