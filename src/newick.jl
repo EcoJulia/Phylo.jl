@@ -366,13 +366,30 @@ function parsenewick(tokens::Tokenize.Lexers.Lexer, ::Type{TREE}) where
     end
 end
 
+"""
+    parsenewick(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree
+
+Parse an IOBuffer containing a newick tree and convert into a phylogenetic
+tree of type TREE <: AbstractTree
+"""
 parsenewick(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree =
     parsenewick(tokenize(io), TREE)
 
+"""
+    parsenewick(io::String, ::Type{TREE}) where TREE <: AbstractTree
+
+Parse a String containing a newick tree and convert into a phylogenetic
+tree of type TREE <: AbstractTree
+"""
 parsenewick(s::String, ::Type{TREE}) where TREE <: AbstractTree =
     parsenewick(IOBuffer(s), TREE)
 
+"""
+    parsenewick(io::IOStream, ::Type{TREE}) where TREE <: AbstractTree
 
+Parse an IOStream containing a newick tree and convert into a phylogenetic
+tree of type TREE <: AbstractTree
+"""
 function parsenewick(ios::IOStream, ::Type{TREE}) where TREE <: AbstractTree
     buf = IOBuffer()
     print(buf, read(ios, String))
@@ -380,6 +397,12 @@ function parsenewick(ios::IOStream, ::Type{TREE}) where TREE <: AbstractTree
     return parsenewick(buf, TREE)
 end
 
+"""
+    parsenewick(inp)
+
+Parse some input containing a newick tree and convert into a phylogenetic
+tree of type RootedTree
+"""
 parsenewick(inp) = parsenewick(inp, RootedTree)
 
 function parsetaxa(token, state, tokens, taxa)
@@ -583,7 +606,7 @@ end
 
 function parsenexus(tokens::Tokenize.Lexers.Lexer,
                     ::Type{TREE}) where {RT, NL, N, B,
-                                                    TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+                                         TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     result = iterateskip(tokens)
     result === nothing && return nothing
     token, state = result
@@ -598,15 +621,32 @@ function parsenexus(tokens::Tokenize.Lexers.Lexer,
     end
 end
 
+"""
+    parsenexus(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree
+
+Parse an IOBuffer containing a nexus tree and convert into a phylogenetic
+tree of type TREE <: AbstractTree
+"""
 parsenexus(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree =
     parsenexus(tokenize(io), TREE)
 
-function parsenexus(ios::IOStream, ::Type{TREE}) where {RT, NL, N, B,
-                                TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+"""
+    parsenexus(io::IOStream, ::Type{TREE}) where TREE <: AbstractTree
+
+Parse an IOStream containing a nexus tree and convert into a phylogenetic
+tree of type TREE <: AbstractTree
+"""
+function parsenexus(ios::IOStream, ::Type{TREE}) where TREE <: AbstractTree
     buf = IOBuffer()
     print(buf, read(ios, String))
     seek(buf, 0)
     return parsenexus(buf, TREE)
 end
 
+"""
+    parsenexus(inp)
+
+Parse some input containing a nexus tree and convert into a phylogenetic
+tree of type RootedTree
+"""
 parsenexus(inp) = parsenexus(inp, RootedTree)
