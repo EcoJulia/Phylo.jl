@@ -3,14 +3,13 @@
 ## Modules
 
 ```@autodocs
-Modules = [Phylo, Phylo.API]
+Modules = [Phylo]
 Order   = [:module]
 ```
 
 ## Tree sets
 
 ```@docs
-LinkTree
 TreeSet
 ```
 
@@ -52,9 +51,8 @@ Nonultrametric
 
 ## Iterator types
 
-```@docs
-NodeIterator
-NodeNameIterator
-BranchIterator
-BranchNameIterator
+```@autodocs
+Modules = [Phylo, Phylo.API]
+Public = false
+Order   = [:type]
 ```
