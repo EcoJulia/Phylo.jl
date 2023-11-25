@@ -1046,6 +1046,23 @@ end
 end
 
 """
+    haslength(tree::AbstractTree, branch)
+
+Return whether the branch has a length.
+"""
+function haslength end
+@traitfn function haslength(tree::T, branch::B) where
+    {T <: AbstractTree{OneTree}, B; !MatchBranchType{T, B}}
+    hasbranch(tree, branch) || error("Branch $branch does not exist")
+    return _haslength(tree, _getbranch(tree, branch))
+end
+@traitfn function haslength(tree::T, branch::B) where
+    {T <: AbstractTree{OneTree}, B; MatchBranchType{T, B}}
+    _hasbranch(tree, branch) || error("Branch $branch does not exist")
+    return _haslength(tree, branch)
+end
+
+"""
     getleafnames(::AbstractTree[, ::TraversalOrder])
 
 Retrieve the leaf names from the tree (in some specific order).

@@ -80,7 +80,7 @@ export _getconnections, _addconnection!, _removeconnection!
 export MatchNodeType, MatchNodeTypes, PreferNodeObjects, _prefernodeobjects
 
 # AbstractBranch methods
-export _src, _dst, _getlength, _conn, _conns
+export _src, _dst, _getlength, _haslength, _conn, _conns
 export MatchBranchType, PreferBranchObjects, _preferbranchobjects
 export MatchBranchNodeType
 
@@ -123,7 +123,7 @@ export getnodedata, setnodedata!
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
-export src, dst, getlength, conn, conns
+export src, dst, getlength, haslength, conn, conns
 export hasrootheight, getrootheight, setrootheight! #, clearrootheight! #unimplemented
 export getbranchdata, setbranchdata!
 # export getrootdistance # unimplemented

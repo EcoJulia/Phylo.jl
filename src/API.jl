@@ -886,6 +886,15 @@ function _getlength end
 _getlength(::AbstractTree, _) = missing
 
 """
+    _haslength
+
+Return length of a branch. May be implemented for any AbstractBranch
+subtype.
+"""
+function _haslength end
+_haslength(t::AbstractTree, b) = !ismissing(_getlength(t, b))
+
+"""
     _leafinfotype(::Type{<:AbstractTree})
 
 Returns the type of the leaf info data.
