@@ -1,5 +1,4 @@
 using Phylo.API
-import Graphs: src, dst, indegree, outdegree, degree
 using SimpleTraits
 
 # AbstractTree/Node/Branch type methods

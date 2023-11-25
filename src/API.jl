@@ -764,10 +764,10 @@ AbstractNode subtype, can be inferred from _getinbound and _getoutbounds for
 a rooted node.
 """
 function _getconnections end
-_getconnections(tree::AbstractTree{OneTree}, node) =
+_getconnections(tree::AbstractTree{OneTree, <: Rooted}, node) =
     _hasinbound(tree, node) ?
-    append!([_getinbound(tree, node)], _getoutbounds(tree, node)) :
-    _getoutbounds(tree, node)
+        append!([_getinbound(tree, node)], _getoutbounds(tree, node)) :
+        _getoutbounds(tree, node)
 
 """
     _getsiblings(tree::AbstractTree, node::AbstractNode)

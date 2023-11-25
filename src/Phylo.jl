@@ -19,6 +19,7 @@ interact cleanly with other phylogenetic packages.
 module Phylo
 
 import Base: Pair, Tuple, show, eltype, length, getindex
+import Graphs: src, dst, indegree, outdegree, degree
 abstract type Rootedness end
 struct Unrooted <: Rootedness end
 abstract type Rooted <: Rootedness end
@@ -115,7 +116,7 @@ export validate!, traversal, branchdims
 
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
-export degree, indegree, outdegree, hasinbound, getinbound, getoutbounds
+export degree, indegree, outdegree, hasinbound, getconnections, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
 export getleafnames, getleaves, nleaves, nnodes, ninternal, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
