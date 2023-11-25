@@ -67,11 +67,6 @@ function show(io::IO, object::NamedTuple{(:tree, :node), Tuple{T, N}}) where
     end
 end
 
-function show(io::IO, p::Pair{NT, N}) where {N <: AbstractNode, NT}
-    n = NT <: Number ? "node $(p[1])" : "\"$(p[1])\""
-    show(io, p[2], "$n")
-end
-
 function show(io::IO, object::NamedTuple{(:tree, :branch), Tuple{T, B}}) where 
     {RT <: Rooted, NL, T <: AbstractTree{OneTree, RT, NL}, B}
     source = NL <: Number ? "node $(getnodename(object.tree, src(object.tree, object.branch)))" :
@@ -84,11 +79,6 @@ function show(io::IO, object::NamedTuple{(:tree, :branch), Tuple{T, B}}) where
     else
         print(io, "[$source] --> (branch $(getbranchname(object.tree, object.branch))) --> [$destination]")
     end
-end
-
-function show(io::IO, p::Pair{BT, B}) where {BT, B <: AbstractBranch}
-    b = BT <: Number ? "branch $(p[1])" : "\"$(p[1])\""
-    show(io, p[2], "$b")
 end
 
 function showsimple(io::IO, object::TreeSet)
