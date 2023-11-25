@@ -42,13 +42,6 @@ LinkBranch
 Branch
 ```
 
-## Random tree generator types
-
-```@docs
-Ultrametric
-Nonultrametric
-```
-
 ## Iterator types
 
 ```@autodocs
