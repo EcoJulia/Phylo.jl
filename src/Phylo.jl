@@ -59,7 +59,7 @@ include("API.jl")
 export _ntrees, _gettrees, _nroots, _getroots, _getroot
 export _treenametype, _gettreenames, _gettree, _gettreename
 export _createbranch!, _deletebranch!, _createnode!, _deletenode!
-export _getnodenames, _hasnode, _getnode, _getnodes
+export _getnodenames, _getnodename, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _getleafinfo, _setleafinfo!, _leafinfotype, _gettreeinfo
@@ -102,8 +102,6 @@ export getnodenames, getnodename, hasnode, getnode, getnodes, nnodes
 export getleafnames, getleaves, nleaves, getinternalnodes, ninternal
 export getbranchnames, getbranchname, hasbranch, getbranch, getbranches, nbranches
 export hasrootheight, getrootheight, setrootheight!
-export getparent, getancestors #, hasparent # unimplemented
-export getchildren, getdescendants #, haschildren # unimplemented
 export validate!, traversal, branchdims
 
 @deprecate addnode! createnode!
@@ -121,6 +119,9 @@ export degree, indegree, outdegree, hasinbound, getconnections, getinbound, geto
 export hasoutboundspace, hasinboundspace
 export getleafinfo, setleafinfo!, leafinfotype
 export getnodedata, setnodedata!
+export getparent, getancestors #, hasparent # unimplemented
+export getchildren, getdescendants #, haschildren # unimplemented
+export getsiblings
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
