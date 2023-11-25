@@ -1,6 +1,18 @@
-# Data types
+# Modules and data types
+
+## Modules
+
+```@autodocs
+Modules = [Phylo, Phylo.API]
+Order   = [:module]
+```
 
 ## Tree sets
+
+```@docs
+LinkTree
+TreeSet
+```
 
 ## Tree types
 
@@ -9,7 +21,6 @@ optimised for a specific usage
 
 ```@docs
 LinkTree
-TreeSet
 NamedBinaryTree
 BinaryTree
 NamedTree
