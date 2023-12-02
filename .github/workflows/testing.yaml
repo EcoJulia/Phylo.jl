@@ -16,7 +16,7 @@ jobs:
       matrix:
         julia-version:
           - '1.0'
-          - '1.6'
+          - 'lts'
           - '1'
         os:
           - ubuntu-latest
