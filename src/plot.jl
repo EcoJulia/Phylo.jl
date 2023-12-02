@@ -15,8 +15,8 @@ using RecipesBase
 
     lz = get(plotattributes, :line_z, nothing)
     mz = get(plotattributes, :marker_z, nothing)
-    isnothing(lz) || (line_z := _handlez(lz, tree, n))
-    isnothing(mz) || (marker_z := _handlez(mz, tree, n))
+    lz === nothing || (line_z := _handlez(lz, tree, n))
+    mz === nothing || (marker_z := _handlez(mz, tree, n))
     mg = _handlez(marker_group, tree, n)
     lg = _handlez(line_group, tree, n)
 
@@ -68,7 +68,7 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_
         dend.x, dend.y
     end
     if !isempty(dend.marker_x) || sa !== nothing
-        if isnothing(dend.marker_group)
+        if dend.marker_group === nothing
             @series begin
                 seriestype := :scatter
                 sa !== nothing && (series_annotations := sa)
@@ -125,7 +125,7 @@ end
         x, y
     end
     if !isempty(fan.marker_x) || sa !== nothing
-        if isnothing(fan.marker_group)
+        if fan.marker_group === nothing
             @series begin
                 seriestype := :scatter
                 sa !== nothing && (series_annotations := sa)
@@ -167,7 +167,7 @@ end
 _mylength(x) = 1
 _mylength(x::AbstractVector) = length(x)
 function _handlemarkers(plotattributes, marker_group, tree, d, h, names)
-    isnothing(marker_group) || (plotattributes[:marker_group] = marker_group)
+    marker_group === nothing || (plotattributes[:marker_group] = marker_group)
     markerfields = filter(x->occursin(r"marker", String(x)), keys(plotattributes))
     isempty(markerfields) && return (Float64[], Float64[])
     maxlength =  maximum([_mylength(plotattributes[k]) for k in markerfields])
