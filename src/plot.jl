@@ -196,7 +196,7 @@ descendants. This creates a clearer tree for plotting. The
 process is also called "ladderizing" the tree. Use `rev=true` to
 reverse the sorting order.
 """
-function Base.sort!(tree::AbstractTree; rev = false)
+function Base.sort!(tree::T; rev = false) where T <: AbstractTree
     function loc!(clade::String)
         if isleaf(tree, clade)
             return 1
@@ -204,7 +204,11 @@ function Base.sort!(tree::AbstractTree; rev = false)
 
         sizes = map(loc!, getchildren(tree, clade))
         node = getnode(tree, clade)
-        node.other .= node.other[sortperm(sizes, rev = rev)]
+        if T <: LinkTree
+            node.other .= node.other[sortperm(sizes, rev = rev)]
+        elseif T <: RecursiveTree
+            node.conns .= node.conns[sortperm(sizes, rev = rev)]
+        end
         sum(sizes) + 1
     end
 

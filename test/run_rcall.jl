@@ -11,8 +11,9 @@ global skipR = !rcopy(R"require(ape)")
     @testset "For $TreeType" for TreeType in
         (skipR ? [] : [NamedTree, NamedBinaryTree,
                        BinaryTree{ManyRoots, DataFrame, Vector{Float64}},
+                       Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64},
                        RootedTree, ManyRootTree])
-
+                                              
         @testset "Testing with R rtree($i)" for i in 10:10:50
             rt = rcall(:rtree, i)
             jt = rcopy(TreeType, rt)

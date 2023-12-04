@@ -18,6 +18,9 @@ interact cleanly with other phylogenetic packages.
 """
 module Phylo
 
+const TREENAME = "Tree"
+const NODENAME = "Node"
+
 import Base: Pair, Tuple, show, eltype, length, getindex
 import Graphs: src, dst, indegree, outdegree, degree
 abstract type Rootedness end
@@ -32,13 +35,14 @@ struct OneTree <: TreeType end
 struct ManyTrees <: TreeType end
 export OneTree, ManyTrees
 
-abstract type AbstractNode{RootType <: Rootedness, NodeLabel} end
-abstract type AbstractBranch{RootType <: Rootedness, NodeLabel} end
+abstract type AbstractElt{RootType <: Rootedness, NodeLabel} end
+abstract type AbstractNode{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
+abstract type AbstractBranch{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
 
 using Distances
 abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
-                           N <: AbstractNode{RT, NL},
-                           B <: AbstractBranch{RT, NL}} <: Distances.UnionMetric
+                           Node <: AbstractElt{RT, NL},
+                           Branch <: AbstractElt{RT, NL}} <: Distances.UnionMetric
 end
 
 export AbstractTree
@@ -149,6 +153,9 @@ export PolytomousTree, NamedPolytomousTree
 
 include("LinkTree.jl")
 export LinkBranch, LinkNode, LinkTree
+
+include("RecursiveTree.jl")
+export RecursiveElt, RecursiveBranch, RecursiveNode, RecursiveTree
 export RootedTree, ManyRootTree, UnrootedTree
 
 include("routes.jl")

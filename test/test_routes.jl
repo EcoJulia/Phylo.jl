@@ -6,7 +6,8 @@ using Test
 @testset "Routes" begin
     @testset "For $TreeType" for TreeType in
         [NamedTree, NamedBinaryTree,
-         RootedTree, ManyRootTree]
+        Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64},
+        RootedTree, ManyRootTree]
         species = ["Dog", "Cat", "Human", "Potato"]
         tree = TreeType(species)
         nr = createnode!(tree)

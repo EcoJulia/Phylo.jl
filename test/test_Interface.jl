@@ -19,6 +19,7 @@ end
     @testset "For $TreeType" for TreeType in
         [NamedTree, NamedBinaryTree,
          BinaryTree{ManyRoots, DataFrame, Vector{Float64}},
+         Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64},
          RootedTree, ManyRootTree]
 
         @test treetype(TreeType) == OneTree
