@@ -19,6 +19,7 @@ This package offers a number of different types of tree, each
 optimised for a specific usage
 
 ```@docs
+RecursiveTree
 LinkTree
 NamedBinaryTree
 BinaryTree
@@ -27,17 +28,13 @@ PolytomousTree
 NamedPolytomousTree
 ```
 
-## Node types
+## Node and Branch types
 
 ```@docs
+RecursiveElt
 LinkNode
 BinaryNode
 Node
-```
-
-## Branch types
-
-```@docs
 LinkBranch
 Branch
 ```

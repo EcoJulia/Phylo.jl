@@ -3,7 +3,8 @@ using Unitful
 """
     struct RecursiveElt <: AbstractElt
 
-A type for branches or nodes in a RecursiveTree
+A type for branches or nodes in a RecursiveTree, allowing navigation of the tree without
+using the tree object itself.
 """
 Base.@kwdef mutable struct RecursiveElt{RT, NL, MyType <: AbstractElt{RT, NL}, MyData,
                                         TheirType <: AbstractElt{RT, NL}, TheirData,
@@ -41,7 +42,8 @@ _preferbranchobjects(::Type{<:RecursiveElt}) = true
 """
     struct RecoursiveTree <: AbstractTree
 
-A phylogenetic tree type containing RecursiveElts as nodes and branches
+A phylogenetic tree type containing RecursiveElts as both nodes and branches,
+allowing navigation of the tree  using only the node and branch elements.
 """
 mutable struct RecursiveTree{RT, NL, NodeData, BranchData, LenUnits, TD} <:
     AbstractTree{OneTree, RT, NL,
