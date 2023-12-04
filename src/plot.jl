@@ -15,8 +15,8 @@ using RecipesBase
 
     lz = get(plotattributes, :line_z, nothing)
     mz = get(plotattributes, :marker_z, nothing)
-    lz === nothing || (line_z := _handlez(lz, tree, n))
-    mz === nothing || (marker_z := _handlez(mz, tree, n))
+    isnothing(lz) || (line_z := _handlez(lz, tree, n))
+    isnothing(mz) || (marker_z := _handlez(mz, tree, n))
     mg = _handlez(marker_group, tree, n)
     lg = _handlez(line_group, tree, n)
 
@@ -68,7 +68,7 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_
         dend.x, dend.y
     end
     if !isempty(dend.marker_x) || sa !== nothing
-        if dend.marker_group === nothing
+        if isnothing(dend.marker_group)
             @series begin
                 seriestype := :scatter
                 sa !== nothing && (series_annotations := sa)
@@ -125,7 +125,7 @@ end
         x, y
     end
     if !isempty(fan.marker_x) || sa !== nothing
-        if fan.marker_group === nothing
+        if isnothing(fan.marker_group)
             @series begin
                 seriestype := :scatter
                 sa !== nothing && (series_annotations := sa)
@@ -167,7 +167,7 @@ end
 _mylength(x) = 1
 _mylength(x::AbstractVector) = length(x)
 function _handlemarkers(plotattributes, marker_group, tree, d, h, names)
-    marker_group === nothing || (plotattributes[:marker_group] = marker_group)
+    isnothing(marker_group) || (plotattributes[:marker_group] = marker_group)
     markerfields = filter(x->occursin(r"marker", String(x)), keys(plotattributes))
     isempty(markerfields) && return (Float64[], Float64[])
     maxlength =  maximum([_mylength(plotattributes[k]) for k in markerfields])
@@ -286,7 +286,7 @@ function _circle_transform_segments(xs, ys)
         push!(rety, _ycirc(_y[3], _x[3]), NaN)
     end
     i = 1
-    while !(i === nothing) && i < length(xs)
+    while !isnothing(i) && i < length(xs)
         j = findnext(isnan, xs, i) - 1
         _transform_seg(view(xs,i:j), view(ys, i:j))
         i = j + 2
@@ -311,7 +311,7 @@ julia> evolve(tree) = map_depthfirst((val, node) -> val + randn(), 0., tree, Flo
 """
 function map_depthfirst(FUN, start, tree, eltype = nothing)
     root = first(nodenamefilter(isroot, tree))
-    eltype === nothing && (eltype = typeof(FUN(start, root)))
+    isnothing(eltype) && (eltype = typeof(FUN(start, root)))
     ret = Vector{eltype}()
     function local!(val, node)
         push!(ret, val)

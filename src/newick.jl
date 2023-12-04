@@ -88,12 +88,12 @@ isTRANSLATE(token) = isIDENTIFIER(token, "translate")
 isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end") | isIDENTIFIER(token, "endblock")
 
 function iterateskip(tokens, state = nothing)
-    result = (state === nothing) ? iterate(tokens) : iterate(tokens, state)
-    result === nothing && return nothing
+    result = isnothing(state) ? iterate(tokens) : iterate(tokens, state)
+    isnothing(result) && return nothing
     token, state = result
     while isWHITESPACE(token)
         result = iterate(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     end
     ut = untokenize(token)
@@ -117,7 +117,7 @@ function tokensgetkey(token, state, tokens, finished::Function = isEQ)
             push!(sofar, untokenize(token))
         end
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     end
     return token, state, join(sofar)
@@ -128,7 +128,7 @@ function checktosemi(test::Function, token, state, tokens)
         return false
     end
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     if token.kind != T.SEMICOLON
         tokenerror(token, ";")
@@ -142,23 +142,23 @@ function parsevector(token, state, tokens, ::Type{TY}, sgn) where TY <: Real
         if token.kind == T.PLUS
             sgn = +;
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         elseif token.kind == T.MINUS
             sgn = -;
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         end
         push!(vec, sgn(parse(TY, untokenize(token))))
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
         if token.kind != T.COMMA && token.kind != T.RBRACE
             tokenerror(token, ",")
         elseif token.kind == T.COMMA
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         end
     end
@@ -168,18 +168,18 @@ end
 
 function parsevector(token, state, tokens)
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
 
     sgn = +;
     if token.kind == T.MINUS
         sgn = -;
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     elseif token.kind == T.PLUS
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     end
 
@@ -197,13 +197,13 @@ function parsevector(token, state, tokens)
             push!(vec, untokenize(token))
         end
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
         if token.kind != T.COMMA && token.kind != T.RBRACE
             tokenerror(token, ",")
         elseif token.kind == T.COMMA
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         end
     end
@@ -214,13 +214,13 @@ end
 function parsedict(token, state, tokens)
     dict = Dict{String, Any}()
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     if token.kind != T.AND
         tokenerror(token, "&")
     else
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     end
 
@@ -228,7 +228,7 @@ function parsedict(token, state, tokens)
         token, state, key = tokensgetkey(token, state, tokens, isEQorRSQUARE)
         if token.kind != T.RSQUARE # Allow [&R] as a valid (empty) dict
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
             if token.kind == T.LBRACE
                 token, state, value = parsevector(token, state, tokens)
@@ -237,12 +237,12 @@ function parsedict(token, state, tokens)
                 if token.kind == T.PLUS
                     sgn = +;
                     result = iterateskip(tokens, state)
-                    result === nothing && return nothing
+                    isnothing(result) && return nothing
                     token, state = result
                 elseif token.kind == T.MINUS
                     sgn = -;
                     result = iterateskip(tokens, state)
-                    result === nothing && return nothing
+                    isnothing(result) && return nothing
                     token, state = result
                 end
 
@@ -259,13 +259,13 @@ function parsedict(token, state, tokens)
             dict[key] = value
 
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
             if token.kind != T.COMMA && token.kind != T.RSQUARE
                 tokenerror(token, ", or ]")
             elseif token.kind == T.COMMA
                 result = iterateskip(tokens, state)
-                result === nothing && return nothing
+                isnothing(result) && return nothing
                 token, state = result
             end
         end
@@ -273,7 +273,7 @@ function parsedict(token, state, tokens)
 
     if token.kind == T.RSQUARE
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     end
 
@@ -318,7 +318,7 @@ function parsenode(token, state, tokens, tree::TREE,
     if token.kind == T.COLON
         foundcolon = true
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     end
 
@@ -332,19 +332,19 @@ function parsenode(token, state, tokens, tree::TREE,
     if token.kind == T.COLON || foundcolon
         if token.kind == T.COLON
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         end
         sgn = +;
         if token.kind == T.PLUS
             sgn = +;
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         elseif token.kind == T.MINUS
             sgn = -;
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         end
         if token.kind ∈ [T.INTEGER, T.FLOAT]
@@ -354,7 +354,7 @@ function parsenode(token, state, tokens, tree::TREE,
             tokenerror(token, "a length")
         end
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     end
 
@@ -368,7 +368,7 @@ function parsenewick!(token, state, tokens, tree::TREE,
     mychildren = Dict{NL, Dict{String, Any}}()
     while (token.kind != T.RPAREN) & (token.kind != T.ENDMARKER)
         result = iterateskip(tokens, state)
-        result === nothing &&
+        isnothing(result) &&
             error("Tree ended at depth $depth before right bracket")
         token, state = result
         if token.kind == T.LPAREN
@@ -380,7 +380,7 @@ function parsenewick!(token, state, tokens, tree::TREE,
         end
     end
     result = iterateskip(tokens, state)
-    result === nothing &&
+    isnothing(result) &&
         error("Tree ended at depth $depth before" *
               (depth > 0 ? "right bracket" : "semicolon"))
     token, state = result
@@ -398,7 +398,7 @@ function parsenewick!(token, state, tokens, tree::TREE,
         if token.kind == T.SEMICOLON
             # Am at end of tree
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         else
             error("At end of tree, but not ';'")
@@ -414,7 +414,7 @@ end
 function parsenewick(tokens::Tokenize.Lexers.Lexer, ::Type{TREE}) where
     {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
     result = iterateskip(tokens)
-    if result === nothing
+    if isnothing(result)
         error("Unexpected end of file at start of newick file")
     end
     token, state = result
@@ -475,30 +475,30 @@ function parsetaxa(token, state, tokens, taxa)
         tokenerror(token, "Dimensions")
     end
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     token, state, ntaxstr = tokensgetkey(token, state, tokens)
     if lowercase(ntaxstr) != "ntax"
         error("Unexpected label '$ntaxstr=' not 'ntax='")
     end
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     ntax = parse(Int64, untokenize(token))
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     if token.kind != T.SEMICOLON
         tokenerror(token, ";")
     end
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     if !isTAXLABELS(token)
         tokenerror(token, "Taxlabels")
     end
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
         name = untokenize(token)
@@ -506,17 +506,17 @@ function parsetaxa(token, state, tokens, taxa)
             name = name[2:end-1]
         end
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
         taxa[name] = name
         if token.kind == T.LSQUARE
             while token.kind != T.RSQUARE
                 result = iterateskip(tokens, state)
-                result === nothing && return nothing
+                isnothing(result) && return nothing
                 token, state = result
             end
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         end
     end
@@ -525,7 +525,7 @@ function parsetaxa(token, state, tokens, taxa)
     end
 
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     if !checktosemi(isEND, token, state, tokens)
         tokenerror(token, "End;")
@@ -538,16 +538,16 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
     notaxa = isempty(taxa)
     if isTRANSLATE(token)
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
         while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
             short = untokenize(token)
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
             proper = untokenize(token)
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
             if haskey(taxa, proper)
                 delete!(taxa, proper)
@@ -560,12 +560,12 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
             end
             if token.kind == T.COMMA
                 result = iterateskip(tokens, state)
-                result === nothing && return nothing
+                isnothing(result) && return nothing
                 token, state = result
             end
         end
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
     end
 
@@ -574,7 +574,7 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
     numTrees = 0
     while isTREE(token)
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
         token, state, treename = tokensgetkey(token, state, tokens,
                                               t -> t.kind ∈ [T.LSQUARE, T.EQ])
@@ -593,7 +593,7 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
             tokenerror(token, "=")
         else
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
             if token.kind == T.LSQUARE
                 token, state, _ = parsedict(token, state, tokens)
@@ -603,7 +603,7 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
             tokenerror(token, "(")
         else
             result = parsenewick!(token, state, tokens, trees[treename], taxa)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         end
     end
@@ -612,7 +612,7 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
     end
 
     result = iterateskip(tokens, state)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     return token, state, trees, treedata
 end
@@ -626,38 +626,38 @@ function parsenexus(token, state, tokens, ::Type{TREE}) where
         if token.kind == T.LSQUARE
             while token.kind != T.RSQUARE
                 result = iterateskip(tokens, state)
-                result === nothing && return nothing
+                isnothing(result) && return nothing
                 token, state = result
             end
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
         else
             result = iterateskip(tokens, state)
-            result === nothing && return nothing
+            isnothing(result) && return nothing
             token, state = result
             if checktosemi(isTAXA, token, state, tokens)
                 result = iterateskip(tokens, state)
-                result === nothing && return nothing
+                isnothing(result) && return nothing
                 token, state = result
                 token, state = parsetaxa(token, state, tokens, taxa)
             elseif checktosemi(isTREES, token, state, tokens)
                 result = iterateskip(tokens, state)
-                result === nothing && return nothing
+                isnothing(result) && return nothing
                 token, state = result
                 token, state, trees, treedata = parsetrees(token, state, tokens, TREE, taxa)
             else
                 @warn "Unexpected nexus block '$(untokenize(token))', skipping..."
                 result = iterateskip(tokens, state)
-                result === nothing && return nothing
+                isnothing(result) && return nothing
                 token, state = result
                 while !checktosemi(isEND, token, state, tokens) && token.kind != T.ENDMARKER
                     result = iterateskip(tokens, state)
-                    result === nothing && return nothing
+                    isnothing(result) && return nothing
                     token, state = result
                 end
                 result = iterateskip(tokens, state)
-                result === nothing && return nothing
+                isnothing(result) && return nothing
                 token, state = result
             end
         end
@@ -673,11 +673,11 @@ function parsenexus(tokens::Tokenize.Lexers.Lexer,
                     ::Type{TREE}) where {RT, NL, N, B,
                                          TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     result = iterateskip(tokens)
-    result === nothing && return nothing
+    isnothing(result) && return nothing
     token, state = result
     if token.kind == T.COMMENT && lowercase(untokenize(token)) == "#nexus"
         result = iterateskip(tokens, state)
-        result === nothing && return nothing
+        isnothing(result) && return nothing
         token, state = result
         return parsenexus(token, state, tokens, TREE)
     else
