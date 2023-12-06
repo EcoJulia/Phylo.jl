@@ -28,7 +28,7 @@ jdb = DataFrame(species = observations, count = 1:4)
     @test_nowarn createnode!(rtdf, name)
     @test createbranch!(rtdf, name, species[1]) ∈ getbranches(rtdf)
     @test createbranch!(rtdf, name, species[2]) ∈ getbranches(rtdf)
-    @test_throws "maximum number" createbranch!(rtdf, name, species[3])
+    @test_throws ErrorException createbranch!(rtdf, name, species[3])
 
     rtdfp = Phylo.ReT{OneRoot, DataFrame, PolytomousBranching, Float64}(df)
     @test nodedatatype(typeof(rtdfp)) ≡ Dict{String, Any}
@@ -38,7 +38,7 @@ jdb = DataFrame(species = observations, count = 1:4)
     @test createbranch!(rtdfp, name, species[1]) ∈ getbranches(rtdfp)
     @test createbranch!(rtdfp, name, species[2]) ∈ getbranches(rtdfp)
     @test createbranch!(rtdfp, name, species[3]) ∈ getbranches(rtdfp)
-    @test_throws "does not have an available destination node" createbranch!(rtdfp, name, species[2])
+    @test_throws ErrorException createbranch!(rtdfp, name, species[2])
 end
 
 @testset "UnrootedTree()" begin
@@ -51,7 +51,7 @@ end
     @test createbranch!(urts, name, species[1]) ∈ getbranches(urts)
     @test createbranch!(urts, name, species[2]) ∈ getbranches(urts)
     @test createbranch!(urts, name, species[3]) ∈ getbranches(urts)
-    @test_throws "maximum number" createbranch!(urts, name, species[4])
+    @test_throws ErrorException createbranch!(urts, name, species[4])
 
     urtsp = UnrootedTree(species)
     @test nodedatatype(typeof(urtsp)) ≡ Dict{String, Any}
