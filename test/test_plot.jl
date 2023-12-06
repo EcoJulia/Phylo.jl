@@ -13,7 +13,7 @@ using Random
     @test plot(tree, markersize = 10, markercolor = :steelblue,
                markerstrokecolor = :white,
                series_annotations = text.(1:nnodes(tree), 5, :center, :center, :white),
-                                          tipfont = (4,)).init
+               tipfont = (4,)).init
 
     @enum TemperatureTrait lowTempPref midTempPref highTempPref
     tempsampler = SymmetricDiscreteTrait(tree, TemperatureTrait, 0.4, "Temperature")
