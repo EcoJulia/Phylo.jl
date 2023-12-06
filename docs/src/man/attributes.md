@@ -49,6 +49,7 @@ getbranch
 getbranches
 gettreeinfo
 validate!
+invalidate!
 branchdims
 treetype
 ```

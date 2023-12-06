@@ -1229,11 +1229,11 @@ function validate!(tree::T) where
 end
 
 """
-    invalidate!(tree::AbstractTree)
+    invalidate!(tree::AbstractTree, state = missing)
 
-Invalidate the tree.
+Confirm that the tree is no longer necessarily valid, and remove cache information.
 """
-invalidate!(tree::AbstractTree) = _invalidate!(tree)
+invalidate!(tree::AbstractTree, state = missing) = _invalidate!(tree, state)
 
 """
     traversal(::AbstractTree, ::TraversalOrder)

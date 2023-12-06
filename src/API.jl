@@ -518,7 +518,7 @@ function _validate! end
 _validate!(::AbstractTree) = true
 
 """
-    _invalidate!(::AbstractTree)
+    _invalidate!(::AbstractTree, state)
 
 Confirm that the tree is no longer necessarily valid, and remove cache information.
 """
