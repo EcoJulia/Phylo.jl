@@ -76,7 +76,7 @@ end
     b = createbranch!(rtjdb, name, observations[1], data = nothing)
     @test b ∈ getbranches(rtjdb)
     @test deletebranch!(rtjdb, b)
-    @test createbranch!(rtjdb, name, observations[1], data = nothing) ∈ getbranches(rtdfp)
+    @test createbranch!(rtjdb, name, observations[1], data = nothing) ∈ getbranches(rtjdb)
 
 end
 
