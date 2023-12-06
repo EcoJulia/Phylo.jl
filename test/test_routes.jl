@@ -49,6 +49,7 @@ using Test
             length(branchfuture(tree, root))
         nn = first(nodenamefilter(isleaf, tree))
         @test length(branchhistory(tree, nn)) == length(getancestors(tree, nn))
+        @test length(branchfuture(tree, root)) == length(nodefuture(tree, root)) - 1
         @test Set(getancestors(tree, nn)) ⊆ Set(nodehistory(tree, nn))
         n = first(nodefilter(isleaf, tree))
         @test length(branchhistory(tree, n)) == length(getancestors(tree, n))
