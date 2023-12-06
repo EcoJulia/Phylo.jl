@@ -652,8 +652,8 @@ function _deletebranch!(tree::RecursiveTree{RT}, branch::RecursiveBranch{RT}) wh
 end
 
 function _deletebranch!(tree::RecursiveTree{Unrooted}, branch::RecursiveBranch{Unrooted})
-    _removeconnection!(tree, branch.in, branch)
     _removeconnection!(tree, branch.conns[1], branch)
+    _removeconnection!(tree, branch.conns[2], branch)
     tree.branches[branch.id] = missing
     _invalidate!(tree)
     return true

@@ -37,6 +37,9 @@ jdb = DataFrame(species = observations, count = 1:4)
     @test_nowarn createnode!(rtdfp, name)
     @test createbranch!(rtdfp, name, species[1]) ∈ getbranches(rtdfp)
     @test createbranch!(rtdfp, name, species[2]) ∈ getbranches(rtdfp)
+    b = createbranch!(rtdfp, name, species[3])
+    @test b ∈ getbranches(rtdfp)
+    @test deletebranch!(rtdfp, b)
     @test createbranch!(rtdfp, name, species[3]) ∈ getbranches(rtdfp)
     @test_throws ErrorException createbranch!(rtdfp, name, species[2])
 end
@@ -70,7 +73,11 @@ end
     @test branchdatatype(typeof(rtjdb)) ≡ Nothing
     @test leafinfotype(typeof(rtjdb)) ≡ typeof(jdb)
     @test_nowarn createnode!(rtjdb, name)
-    @test createbranch!(rtjdb, name, observations[1], data = nothing) ∈ getbranches(rtjdb)
+    b = createbranch!(rtjdb, name, observations[1], data = nothing)
+    @test b ∈ getbranches(rtjdb)
+    @test deletebranch!(rtjdb, b)
+    @test createbranch!(rtjdb, name, observations[1], data = nothing) ∈ getbranches(rtdfp)
+
 end
 
 end
