@@ -512,10 +512,17 @@ function _clearrootheight! end
 """
     _validate!(::AbstractTree)
 
-
+Check whether the tree is internally valid.
 """
 function _validate! end
 _validate!(::AbstractTree) = true
+
+"""
+    _invalidate!(::AbstractTree)
+
+Confirm that the tree is no longer necessarily valid, and remove cache information.
+"""
+function _invalidate! end
 
 """
     _traversal(tree::AbstractTree, order::TraversalOrder, todo, sofar)
@@ -629,7 +636,7 @@ _indegree(tree::AbstractTree{OneTree, Unrooted}, node) =
 Is there space for a new inbound connection on a node?
 """
 function _hasinboundspace end
-_hasinboundspace(tree::AbstractTree{OneTree}, node) =
+_hasinboundspace(tree::AbstractTree{OneTree, <: Rooted}, node) =
     !_hasinbound(tree, node)
 
 """

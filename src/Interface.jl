@@ -1229,6 +1229,13 @@ function validate!(tree::T) where
 end
 
 """
+    invalidate!(tree::AbstractTree)
+
+Invalidate the tree.
+"""
+invalidate!(tree::AbstractTree) = _invalidate!(tree)
+
+"""
     traversal(::AbstractTree, ::TraversalOrder)
     traversal(::AbstractTree, ::TraversalOrder, init)
 

@@ -35,6 +35,11 @@ struct OneTree <: TreeType end
 struct ManyTrees <: TreeType end
 export OneTree, ManyTrees
 
+abstract type BranchingType end
+struct BinaryBranching <: BranchingType end
+struct PolytomousBranching <: BranchingType end
+export BinaryBranching, PolytomousBranching
+
 abstract type AbstractElt{RootType <: Rootedness, NodeLabel} end
 abstract type AbstractNode{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
 abstract type AbstractBranch{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
@@ -72,7 +77,7 @@ export _getbranchdata, _setbranchdata!, _branchdatatype
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
-export _validate!, _traversal, _branchdims
+export _validate!, _invalidate!, _traversal, _branchdims
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 export HoldsNodeData, MatchTreeNameType
 
@@ -106,7 +111,7 @@ export getnodenames, getnodename, hasnode, getnode, getnodes, nnodes
 export getleafnames, getleaves, nleaves, getinternalnodes, ninternal
 export getbranchnames, getbranchname, hasbranch, getbranch, getbranches, nbranches
 export hasrootheight, getrootheight, setrootheight!
-export validate!, traversal, branchdims
+export validate!, invalidate!, traversal, branchdims
 
 @deprecate addnode! createnode!
 @deprecate addnodes! createnodes!
@@ -156,7 +161,7 @@ export LinkBranch, LinkNode, LinkTree
 
 include("RecursiveTree.jl")
 export RecursiveElt, RecursiveBranch, RecursiveNode, RecursiveTree
-export RootedTree, ManyRootTree, UnrootedTree
+export RootedTree, ManyRootTree, UnrootedTree, BinaryRootedTree
 
 include("routes.jl")
 export branchhistory, branchfuture, branchroute

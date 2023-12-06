@@ -8,36 +8,35 @@ using the tree object itself.
 """
 Base.@kwdef mutable struct RecursiveElt{RT, NL, MyType <: AbstractElt{RT, NL}, MyData,
                                         TheirType <: AbstractElt{RT, NL}, TheirData,
-                                        LenUnits <: Number} <: AbstractElt{RT, NL}
+                                        BT <: BranchingType, LenUnits <: Number} <:
+    AbstractElt{RT, NL}
+
     name::Union{NL, Nothing} = nothing
     id::Union{Int, Missing} = missing
     in::Union{RecursiveElt{RT, NL, TheirType, TheirData, MyType, MyData,
-                           LenUnits}, Nothing} = nothing
+                           BT, LenUnits}, Nothing} = nothing
     conns::Vector{RecursiveElt{RT, NL, TheirType, TheirData, MyType, MyData,
-                               LenUnits}} =
-        RecursiveElt{RT, NL, TheirType, TheirData, MyType, MyData, LenUnits}[]
+                               BT, LenUnits}} =
+        RecursiveElt{RT, NL, TheirType, TheirData, MyType, MyData, BT, LenUnits}[]
     data::MyData = _emptydata(MyData)
     length::Union{LenUnits, Missing} = missing
 end
 
-const RecursiveNode{RT, NL, NodeData, BranchData, LenUnits} =
+const RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits} =
     RecursiveElt{RT, NL, AbstractNode{RT, NL}, NodeData,
-                 AbstractBranch{RT, NL}, BranchData, LenUnits}
+                 AbstractBranch{RT, NL}, BranchData, BT, LenUnits}
 
-const RecursiveBranch{RT, NL, NodeData, BranchData, LenUnits} =
-                      RecursiveElt{RT, NL, AbstractBranch{RT, NL}, BranchData,
-                                   AbstractNode{RT, NL}, NodeData, LenUnits}    
+const RecursiveBranch{RT, NL, NodeData, BranchData, BT, LenUnits} =
+    RecursiveElt{RT, NL, AbstractBranch{RT, NL}, BranchData,
+                 AbstractNode{RT, NL}, NodeData, BT, LenUnits}    
 
-RecursiveNode{RT, NL, NodeData, BranchData, LenUnits}(name::NL, data::NodeData = nothing) where
-    {RT, NL, NodeData, BranchData, LenUnits} =
+RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits}(name::NL, data::NodeData = nothing) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits} =
     RecursiveNode{RT, NL, NodeData, BranchData,
-                  LenUnits}(name, nothing,
-                            RecursiveBranch{RT, NL, NodeData,
-                                            BranchData, LenUnits}[], data, missing)
-
-import Phylo.API: _prefernodeobjects, _preferbranchobjects
-_prefernodeobjects(::Type{<:RecursiveElt}) = true
-_preferbranchobjects(::Type{<:RecursiveElt}) = true
+                  BT, LenUnits}(name, nothing,
+                                RecursiveBranch{RT, NL, NodeData,
+                                                BranchData, LenUnits}[],
+                                data, missing)
 
 """
     struct RecoursiveTree <: AbstractTree
@@ -45,40 +44,40 @@ _preferbranchobjects(::Type{<:RecursiveElt}) = true
 A phylogenetic tree type containing RecursiveElts as both nodes and branches,
 allowing navigation of the tree  using only the node and branch elements.
 """
-mutable struct RecursiveTree{RT, NL, NodeData, BranchData, LenUnits, TD} <:
+mutable struct RecursiveTree{RT, NL, NodeData, BranchData, BT <: BranchingType, LenUnits, TD} <:
     AbstractTree{OneTree, RT, NL,
-                 RecursiveNode{RT, NL, NodeData, BranchData, LenUnits},
-                 RecursiveBranch{RT, NL, NodeData, BranchData, LenUnits}}
+                 RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits},
+                 RecursiveBranch{RT, NL, NodeData, BranchData, BT, LenUnits}}
 
     name::String
     nodedict::Dict{NL, Int}
-    roots::Vector{RecursiveNode{RT, NL, NodeData, BranchData, LenUnits}}
-    nodes::Vector{Union{RecursiveNode{RT, NL, NodeData, BranchData, LenUnits},
+    roots::Vector{RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits}}
+    nodes::Vector{Union{RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits},
                         Missing}}
-    branches::Vector{Union{RecursiveBranch{RT, NL, NodeData, BranchData, LenUnits},
+    branches::Vector{Union{RecursiveBranch{RT, NL, NodeData, BranchData, BT, LenUnits},
                            Missing}}
     data::Dict{String, Any}
     tipdata::TD
     rootheight::Union{LenUnits, Missing}
     isvalid::Union{Bool, Missing}
     cache::Dict{TraversalOrder,
-                Vector{RecursiveNode{RT, NL, NodeData, BranchData, LenUnits}}}
+                Vector{RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits}}}
 
     function RecursiveTree{RT, NL, NodeData, BranchData,
-                           LenUnits, TD}(tipnames::Vector{NL} = NL[];
-                                         name::String = TREENAME,
-                                         tipdata::TD = _emptydata(TD),
-                                         rootheight::Union{LenUnits, Missing} = missing,
-                                         validate::Bool = false) where
-        {RT, NL, NodeData, BranchData, LenUnits, TD}
-        NT = RecursiveNode{RT, NL, NodeData, BranchData, LenUnits}
-        BT = RecursiveBranch{RT, NL, NodeData, BranchData, LenUnits}
+                           BT, LenUnits, TD}(tipnames::Vector{NL} = NL[];
+                                             name::String = TREENAME,
+                                             tipdata::TD = _emptydata(TD),
+                                             rootheight::Union{LenUnits, Missing} = missing,
+                                             validate::Bool = false) where
+        {RT, NL, NodeData, BranchData, BT, LenUnits, TD}
+        NT = RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits}
+        BrT = RecursiveBranch{RT, NL, NodeData, BranchData, BT, LenUnits}
         tree = new{RT, NL, NodeData, BranchData,
-                   LenUnits, TD}(name, Dict{NL, NT}(), NT[],
-                                 Union{NT, Missing}[], Union{BT, Missing}[],
-                                        Dict{String, Any}(),
-                                        tipdata, rootheight, missing,
-                                        Dict{TraversalOrder, Vector{NT}}())
+                   BT, LenUnits, TD}(name, Dict{NL, NT}(), NT[],
+                                     Union{NT, Missing}[], Union{BrT, Missing}[],
+                                     Dict{String, Any}(),
+                                     tipdata, rootheight, missing,
+                                     Dict{TraversalOrder, Vector{NT}}())
         
         if !isempty(tipnames)
             createnodes!(tree, tipnames)
@@ -96,10 +95,25 @@ mutable struct RecursiveTree{RT, NL, NodeData, BranchData, LenUnits, TD} <:
     end
 end
 
+function RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD}(leafinfos::TD) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits, TD}
+
+    leafnames = unique(info[1] for info in getiterator(leafinfos))
+    return RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD}(leafnames; tipdata = leafinfos)
+end
+
+import Phylo.API: _prefernodeobjects, _preferbranchobjects
+_prefernodeobjects(::Type{<:RecursiveTree}) = true
+_prefernodeobjects(::Type{<:RecursiveNode}) = true
+_prefernodeobjects(::Type{<:RecursiveElt}) = true
+_preferbranchobjects(::Type{<:RecursiveTree}) = true
+_preferbranchobjects(::Type{<:RecursiveBranch}) = true
+_preferbranchobjects(::Type{<:RecursiveElt}) = true
+
 import Phylo.API: _validate!
 function _validate!(tree::RecursiveTree{RT, NL, NodeData, BranchData,
-                                        LenUnits, TD}) where
-    {RT, NL, NodeData, BranchData, LenUnits, TD}
+                                        BT, LenUnits, TD}) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits, TD}
 
     tree.isvalid = true
 
@@ -151,6 +165,15 @@ function _validate!(tree::RecursiveTree{RT, NL, NodeData, BranchData,
                                 @warn "Mismatch between node name $(node.name) and its connections"
                             end
                         end
+                        if BT ≡ BinaryBranching && length(getoutbounds(tree, node)) > 2
+                            tree.isvalid = false
+                            @warn "Node name $(node.name) has too many outbound connections"
+                        end
+                    else # Unrooted
+                        if BT ≡ BinaryBranching && length(getoutbounds(tree, node)) > 3
+                            tree.isvalid = false
+                            @warn "Node name $(node.name) has too many outbound connections"
+                        end
                     end
                 end
             end
@@ -191,28 +214,35 @@ function _validate!(tree::RecursiveTree{RT, NL, NodeData, BranchData,
     return tree.isvalid
 end
 
+import Phylo.API: _invalidate!
+function _invalidate!(tree::RecursiveTree, state = missing)
+    empty!(tree.cache)
+    tree.isvalid = state
+end
+
 # Type aliases
 
-const ReB{RT, LenUnits} = RecursiveBranch{RT, String, Dict{String, Any}, Dict{String, Any}, LenUnits}
-const ReN{RT, LenUnits} = RecursiveNode{RT, String, Dict{String, Any}, Dict{String, Any}, LenUnits}
-const ReT{RT, TD, LenUnits} = RecursiveTree{RT, String, Dict{String, Any}, Dict{String, Any}, LenUnits, TD}
-const ReTD{RT, LenUnits} = ReT{RT, Dict{String, Any}, LenUnits}
-const RootedTree = ReTD{OneRoot, Float64}
-const ManyRootTree = ReTD{ManyRoots, Float64}
-const UnrootedTree = ReTD{Unrooted, Float64}
+const ReB{RT, BT, LenUnits} = RecursiveBranch{RT, String, Dict{String, Any}, Dict{String, Any}, BT, LenUnits}
+const ReN{RT, BT, LenUnits} = RecursiveNode{RT, String, Dict{String, Any}, Dict{String, Any}, BT, LenUnits}
+const ReT{RT, TD, BT, LenUnits} = RecursiveTree{RT, String, Dict{String, Any}, Dict{String, Any}, BT, LenUnits, TD}
+const ReTD{RT, BT, LenUnits} = ReT{RT, Dict{String, Any}, BT, LenUnits}
+const BinaryRootedTree = ReTD{OneRoot, BinaryBranching, Float64}
+const RootedTree = ReTD{OneRoot, PolytomousBranching, Float64}
+const ManyRootTree = ReTD{ManyRoots, PolytomousBranching, Float64}
+const UnrootedTree = ReTD{Unrooted, PolytomousBranching, Float64}
 
 # Types matches
 
 _emptydata(::Type{Data}) where Data = Data()
-_emptydata(::Type{RecursiveNode{RT, NL, NodeData, BranchData, LenUnits}}) where
-    {RT, NL, NodeData, BranchData, LenUnits} = _newdata(NodeData)
-_emptydata(::Type{RecursiveBranch{RT, NL, NodeData, BranchData, LenUnits}}) where
-    {RT, NL, NodeData, BranchData, LenUnits} = _newdata(BranchData)
+_emptydata(::Type{RecursiveNode{RT, NL, NodeData, BranchData}}) where
+    {RT, NL, NodeData, BranchData} = _newdata(NodeData)
+_emptydata(::Type{RecursiveBranch{RT, NL, NodeData, BranchData}}) where
+    {RT, NL, NodeData, BranchData} = _newdata(BranchData)
 
 _tiplabeltype(::Type{Nothing}) = Nothing
 _tiplabeltype(::Type{<: Dict{NL}}) where NL = NL
-_tiplabeltype(::Type{RecursiveTree{RT, NL, NodeData, BranchData, LenUnits, TD}}) where
-    {RT, NL, NodeData, BranchData, LenUnits, TD} = _tiplabeltype(TD)
+_tiplabeltype(::Type{RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD}}) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits, TD} = _tiplabeltype(TD)
 
 _matchlabels(::Type{S}, ::Type{T}) where {S, T} = false
 _matchlabels(::Type{S}, ::Type{S}) where S = true
@@ -229,15 +259,15 @@ _gettreename(tree::RecursiveTree) = tree.name
 # Information about leaves in a single store on the tree
 
 import Phylo.API: _leafinfotype
-_leafinfotype(::Type{<:RecursiveTree{RT, NL, NodeData, BranchData, LenUnits, TD}}) where
-    {RT, NL, NodeData, BranchData, LenUnits, TD} = TD
+_leafinfotype(::Type{<:RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD}}) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits, TD} = TD
 
 import Phylo.API: _getleafinfo
 _getleafinfo(tree::RecursiveTree) = tree.tipdata
 
 import Phylo.API: _setleafinfo!
-_setleafinfo!(tree::RecursiveTree{RT, NL, NodeData, BranchData, LenUnits, TD}, leafinfo::TD) where
-    {RT, NL, NodeData, BranchData, LenUnits, TD} = (tree.tipdata = leafinfo)
+_setleafinfo!(tree::RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD}, leafinfo::TD) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits, TD} = (tree.tipdata = leafinfo)
 
 # Retrieving nodes
 
@@ -257,9 +287,8 @@ _getnodenames(tree::RecursiveTree) = keys(tree.nodedict)
 import Phylo.API: _hasnode
 _hasnode(tree::RecursiveTree{RT, NL}, name::NL) where {RT, NL} =
     haskey(tree.nodedict, name)
-_hasnode(tree::RecursiveTree{RT, NL, NodeData, BranchData, LenUnits}, node::N) where
-    {RT, NL, NodeData, BranchData, LenUnits,
-     N <: RecursiveNode{RT, NL, NodeData, BranchData, LenUnits}} =
+_hasnode(tree::RecursiveTree{RT, NL}, node::N) where
+    {RT, NL, N <: RecursiveNode{RT, NL}} =
     haskey(tree.nodedict, node.name)
 
 import Phylo.API: _getnode
@@ -273,11 +302,11 @@ _getnodename(::RecursiveTree{RT, NL}, name::NL) where {RT, NL} = name
 # Creating and destroy nodes
 
 import Phylo.API: _createnode!
-function _createnode!(tree::RecursiveTree{RT, NL, NodeData, BranchData, LenUnits},
+function _createnode!(tree::RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD},
                       name::Union{NL, Missing}, data::NodeData = _emptydata(NodeData)) where
-    {RT <: Rooted, NL, NodeData, BranchData, LenUnits}
+    {RT <: Rooted, NL, NodeData, BranchData, BT, LenUnits, TD}
 
-    NT = RecursiveNode{RT, NL, NodeData, BranchData, LenUnits}
+    NT = RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits}
     nodename = ismissing(name) ? _newnodelabel(tree) : name
     _hasnode(tree, nodename) && error("Node $nodename already exists in tree.")
     id = length(tree.nodes) + 1
@@ -286,15 +315,15 @@ function _createnode!(tree::RecursiveTree{RT, NL, NodeData, BranchData, LenUnits
     tree.nodedict[nodename] = id
     push!(tree.roots, node)
 
-    tree.isvalid = missing
+    _invalidate!(tree)
     return node
 end
 
-function _createnode!(tree::RecursiveTree{Unrooted, NL, NodeData, BranchData, LenUnits},
+function _createnode!(tree::RecursiveTree{Unrooted, NL, NodeData, BranchData, BT, LenUnits, TD},
                       name::Union{NL, Missing}, data::NodeData = _emptydata(NodeData)) where
-    {NL, NodeData, BranchData, LenUnits}
+    {NL, NodeData, BranchData, BT, LenUnits, TD}
 
-    NT = RecursiveNode{Unrooted, NL, NodeData, BranchData, LenUnits}
+    NT = RecursiveNode{Unrooted, NL, NodeData, BranchData, BT, LenUnits}
     nodename = ismissing(name) ? _newnodelabel(tree) : name
     _hasnode(tree, nodename) && error("Node $nodename already exists in tree.")
     id = length(tree.nodes) + 1
@@ -302,7 +331,7 @@ function _createnode!(tree::RecursiveTree{Unrooted, NL, NodeData, BranchData, Le
     push!(tree.nodes, node)
     tree.nodedict[nodename] = id
 
-    tree.isvalid = missing
+    _invalidate!(tree)
     return node
 end
 
@@ -324,7 +353,7 @@ function _deletenode!(tree::RecursiveTree, node::RecursiveNode)
     tree.nodes[tree.nodedict[node.name]] = missing
     delete!(tree.nodedict, node.name)
     filter!(n -> n ≢ node, tree.roots)
-    tree.isvalid = missing
+    _invalidate!(tree)
     return true
 end
 
@@ -353,7 +382,7 @@ function _addinbound!(tree::RecursiveTree{RT},
         error("RecursiveNode $(node.name) already has an inbound connection")
     node.in = branch
     filter!(n -> n ≠ node, tree.roots)
-    tree.isvalid = missing
+    _invalidate!(tree)
 end
 
 import Phylo.API: _removeinbound!
@@ -365,15 +394,32 @@ function _removeinbound!(tree::RecursiveTree{RT},
         error("Node $(node.name) has no inbound connection from branch $(branch.id)")
     node.in = nothing
     push!(tree.roots, node)
-    tree.isvalid = missing
+    _invalidate!(tree)
 end
+
+import Phylo.API: _hasoutboundspace
+_hasoutboundspace(::RecursiveTree{<: Rooted, NL, TheirData, MyData,
+                  BinaryBranching, LenUnits, TD},
+                  node::RecursiveNode{<: Rooted, NL, TheirData, MyData,
+                                      BinaryBranching, LenUnits}) where
+    {NL, TheirData, MyData, TD, LenUnits} = length(node.conns) < 2
+
+import Phylo.API: _hasspace
+_hasspace(::RecursiveTree{Unrooted, NL, TheirData, MyData,
+                          BinaryBranching, LenUnits, TD},
+node::RecursiveNode{Unrooted, NL, TheirData, MyData,
+                    BinaryBranching, LenUnits}) where
+    {NL, TheirData, MyData, LenUnits, TD} = length(node.conns) < 3
 
 import Phylo.API: _addoutbound!
 function _addoutbound!(tree::RecursiveTree{RT},
                        node::RecursiveNode{RT},
                        branch::RecursiveBranch{RT}) where RT <: Rooted
+    _hasoutboundspace(tree, node) ||
+        error("Node $(from.name) has no outbound space")
+
     push!(node.conns, branch)
-    tree.isvalid = missing
+    _invalidate!(tree)
 end
 
 import Phylo.API: _removeoutbound!
@@ -384,7 +430,7 @@ function _removeoutbound!(tree::RecursiveTree{RT},
         error("Node $(node.name) does not have outbound connection to branch $(branch.id)")
     end
     filter!(p -> p ≢ branch, node.conns)
-    tree.isvalid = missing
+    _invalidate!(tree)
 end
 
 import Phylo.API: _addconnection!
@@ -395,7 +441,7 @@ function _addconnection!(tree::RecursiveTree{Unrooted},
         error("Node $(node.name) does not have space for a new connection")
     end
     push!(node.conns, branch)
-    tree.isvalid = missing
+    _invalidate!(tree)
 end
 
 import Phylo.API: _removeconnection!
@@ -406,7 +452,7 @@ function _removeconnection!(tree::RecursiveTree{Unrooted},
         error("Node $(node.name) does not have connection to branch $(branch.id)")
     end
     filter!(p -> p ≢ branch, node.conns)
-    tree.isvalid = missing
+    _invalidate!(tree)
 end
 
 # Retrieving branches
@@ -436,8 +482,8 @@ _getbranchname(::RecursiveTree, branch::RecursiveBranch) = branch.id
 
 import Phylo.API: _branchdims
 _branchdims(T::Type{<:RecursiveTree}) = _branchdims(branchtype(T))
-_branchdims(::Type{<:RecursiveBranch{RT, NL, NodeData, BranchData, LenUnits}}) where
-    {RT, NL, NodeData, BranchData, LenUnits} = dimension(LenUnits)
+_branchdims(::Type{<:RecursiveBranch{RT, NL, NodeData, BranchData, BT, LenUnits}}) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits} = dimension(LenUnits)
 
 import Phylo.API: _getlength
 _getlength(::RecursiveTree, branch::RecursiveBranch) = branch.length
@@ -463,34 +509,34 @@ _conns(::RecursiveTree{Unrooted}, branch::RecursiveBranch{Unrooted}) = branch.co
 # Information about individual nodes stored on the nodes
 
 import Phylo.API: _nodedatatype
-_nodedatatype(::Type{<:RecursiveTree{RT, NL, NodeData, BranchData, LenUnits, TD}}) where
-    {RT, NL, NodeData, BranchData, LenUnits, TD} = NodeData
-_nodedatatype(::Type{<:RecursiveNode{RT, NL, NodeData, BranchData, LenUnits}}) where
-    {RT, NL, NodeData, BranchData, LenUnits} = NodeData
+_nodedatatype(::Type{<:RecursiveTree{RT, NL, NodeData, BranchData}}) where
+    {RT, NL, NodeData, BranchData} = NodeData
+_nodedatatype(::Type{<:RecursiveNode{RT, NL, NodeData, BranchData}}) where
+    {RT, NL, NodeData, BranchData} = NodeData
 
 import Phylo.API: _getnodedata
 _getnodedata(::RecursiveTree, node::RecursiveNode) = node.data
 
 import Phylo.API: _setnodedata!
-_setnodedata!(::RecursiveTree{RT, NL, NodeData, BranchData, LenUnits},
-              node::RecursiveNode{RT, NL, NodeData, BranchData, LenUnits},
-              data::NodeData) where {RT, NL, NodeData, BranchData, LenUnits} = (node.data = data)
+_setnodedata!(::RecursiveTree{RT, NL, NodeData, BranchData},
+              node::RecursiveNode{RT, NL, NodeData, BranchData},
+              data::NodeData) where {RT, NL, NodeData, BranchData} = (node.data = data)
 
 # Information about individual branches stored on the branches
 
 import Phylo.API: _branchdatatype
-_branchdatatype(::Type{<:RecursiveTree{RT, NL, NodeData, BranchData, LenUnits, TD}}) where
-    {RT, NL, NodeData, BranchData, LenUnits, TD} = BranchData
-_branchdatatype(::Type{<:RecursiveBranch{RT, NL, NodeData, BranchData, LenUnits}}) where
-    {RT, NL, NodeData, BranchData, LenUnits} = BranchData
+_branchdatatype(::Type{<:RecursiveTree{RT, NL, NodeData, BranchData}}) where
+    {RT, NL, NodeData, BranchData} = BranchData
+_branchdatatype(::Type{<:RecursiveBranch{RT, NL, NodeData, BranchData}}) where
+    {RT, NL, NodeData, BranchData} = BranchData
 
 import Phylo.API: _getbranchdata
 _getbranchdata(::RecursiveTree, branch::RecursiveBranch) = branch.data
 
 import Phylo.API: _setbranchdata!
-_setbranchdata!(::RecursiveTree{RT, NL, NodeData, BranchData, LenUnits},
-                branch::RecursiveBranch{RT, NL, NodeData, BranchData, LenUnits},
-                data::BranchData) where {RT, NL, NodeData, BranchData, LenUnits} =
+_setbranchdata!(::RecursiveTree{RT, NL, NodeData, BranchData},
+                branch::RecursiveBranch{RT, NL, NodeData, BranchData},
+                data::BranchData) where {RT, NL, NodeData, BranchData} =
     (branch.data = data)
 
 # New label methods
@@ -507,13 +553,13 @@ import Phylo.API: _newbranchlabel
 _newbranchlabel(tree::RecursiveTree) = length(tree.branches) + 1
 
 import Phylo.API: _createbranch!
-function _createbranch!(tree::RecursiveTree{RT, NL, NodeData, BranchData, LenUnits},
-                        from::RecursiveNode{RT, NL, NodeData, BranchData, LenUnits},
-                        to::RecursiveNode{RT, NL, NodeData, BranchData, LenUnits},
+function _createbranch!(tree::RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD},
+                        from::RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits},
+                        to::RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits},
                         len::Union{LenUnits, Missing} = missing,
                         name = missing,
                         data::BranchData = _emptydata(BranchData)) where
-    {RT <: Rooted, NL, NodeData, BranchData, LenUnits}
+    {RT <: Rooted, NL, NodeData, BranchData, BT, LenUnits, TD}
 
     if ismissing(name)
         name = length(tree.branches) + 1
@@ -523,14 +569,14 @@ function _createbranch!(tree::RecursiveTree{RT, NL, NodeData, BranchData, LenUni
         error("Branch length must be positive or missing (no recorded length), not $len")
 
     _hasinboundspace(tree, to) ||
-        error("Node $(from.in.name) already has an inbound connection")
+        error("Node $(to.name) already has an inbound connection")
 
     _hasoutboundspace(tree, from) ||
-        error("Node $(to.conns[1].name) already has an outbound connection")
+        error("Node $(from.name) has no outbound space")
 
     branch = RecursiveBranch{RT, NL, NodeData, BranchData,
-                             LenUnits}(id = name, in = from, conns = [to],
-                                       length = len, data = data)
+                             BT, LenUnits}(id = name, in = from, conns = [to],
+                                           length = len, data = data)
     
     if 1 ≤ name ≤ length(tree.branches)
         tree.branches[name] = branch
@@ -548,17 +594,17 @@ function _createbranch!(tree::RecursiveTree{RT, NL, NodeData, BranchData, LenUni
     _addoutbound!(tree, from, branch)
     _addinbound!(tree, to, branch)
 
-    tree.isvalid = missing
+    _invalidate!(tree)
     return branch
 end
 
-function _createbranch!(tree::RecursiveTree{Unrooted, NL, NodeData, BranchData, LenUnits},
-                        from::RecursiveNode{Unrooted, NL, NodeData, BranchData, LenUnits},
-                        to::RecursiveNode{Unrooted, NL, NodeData, BranchData, LenUnits},
+function _createbranch!(tree::RecursiveTree{Unrooted, NL, NodeData, BranchData, BT, LenUnits, TD},
+                        from::RecursiveNode{Unrooted, NL, NodeData, BranchData, BT, LenUnits},
+                        to::RecursiveNode{Unrooted, NL, NodeData, BranchData, BT, LenUnits},
                         len::Union{LenUnits, Missing} = missing,
                         name = missing,
                         data::BranchData = _emptydata(BranchData)) where
-    {Unrooted, NL, NodeData, BranchData, LenUnits}
+    {Unrooted, NL, NodeData, BranchData, BT, LenUnits, TD}
 
     if ismissing(name)
         name = length(tree.branches) + 1
@@ -568,14 +614,14 @@ function _createbranch!(tree::RecursiveTree{Unrooted, NL, NodeData, BranchData, 
         error("Branch length must be positive or missing (no recorded length), not $length")
 
     branch = RecursiveBranch{Unrooted, NL, NodeData, BranchData,
-                             LenUnits}(id = name, conns = [to, from],
-                                       length = len, data = data)
+                             BT, LenUnits}(id = name, conns = [to, from],
+                                           length = len, data = data)
 
     _hasspace(tree, from) ||
-        error("Node $(from.name) has no space from new connections")
+        error("Node $(from.name) has no space for new connections")
 
     _hasspace(tree, to) ||
-        error("Node $(to.name) has no space from new connections")
+        error("Node $(to.name) has no space for new connections")
 
     if 1 ≤ name ≤ length(tree.branches)
         tree.branches[name] = branch
@@ -593,7 +639,7 @@ function _createbranch!(tree::RecursiveTree{Unrooted, NL, NodeData, BranchData, 
     _addconnection!(tree, from, branch)
     _addconnection!(tree, to, branch)
 
-    tree.isvalid = missing
+    _invalidate!(tree)
     return branch
 end
 
@@ -601,7 +647,7 @@ function _deletebranch!(tree::RecursiveTree{RT}, branch::RecursiveBranch{RT}) wh
     _removeoutbound!(tree, branch.in, branch)
     _removeinbound!(tree, branch.conns[1], branch)
     tree.branches[branch.id] = missing
-    tree.isvalid = missing
+    _invalidate!(tree)
     return true
 end
 
@@ -609,7 +655,7 @@ function _deletebranch!(tree::RecursiveTree{Unrooted}, branch::RecursiveBranch{U
     _removeconnection!(tree, branch.in, branch)
     _removeconnection!(tree, branch.conns[1], branch)
     tree.branches[branch.id] = missing
-    tree.isvalid = missing
+    _invalidate!(tree)
     return true
 end
 
