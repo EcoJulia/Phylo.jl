@@ -12,8 +12,8 @@ using AxisArrays
         nextnode = pop!(nodestoprocess)
         push!(nodesprocessed, nextnode)
         if hasinbound(tree, nextnode)
-            push!(branches, _getinbound(tree, nextnode))
-            push!(nodestoprocess, _getparent(tree, nextnode))
+            push!(branches, getinbound(tree, nextnode))
+            push!(nodestoprocess, getparent(tree, nextnode))
         end
     end
     return branches, nodesprocessed
@@ -29,8 +29,8 @@ end
         nextnode = pop!(nodestoprocess)
         push!(nodesprocessed, nextnode)
         if hasinbound(tree, nextnode)
-            push!(branches, _getinbound(tree, nextnode))
-            push!(nodestoprocess, _getparent(tree, nextnode))
+            push!(branches, getinbound(tree, nextnode))
+            push!(nodestoprocess, getparent(tree, nextnode))
         end
     end
     return branches, nodesprocessed
@@ -45,8 +45,8 @@ end
     while !isempty(nodestoprocess)
         nextnode = pop!(nodestoprocess)
         push!(nodesprocessed, nextnode)
-        append!(branches, _getoutbounds(tree, nextnode))
-        append!(nodestoprocess, _getchildren(tree, nextnode))
+        append!(branches, getoutbounds(tree, nextnode))
+        append!(nodestoprocess, getchildren(tree, nextnode))
     end
     return branches, nodesprocessed
 end
@@ -60,8 +60,8 @@ end
     while !isempty(nodestoprocess)
         nextnode = pop!(nodestoprocess)
         push!(nodesprocessed, nextnode)
-        append!(branches, _getoutbounds(tree, nextnode))
-        append!(nodestoprocess, _getchildren(tree, nextnode))
+        append!(branches, getoutbounds(tree, nextnode))
+        append!(nodestoprocess, getchildren(tree, nextnode))
     end
     return branches, nodesprocessed
 end

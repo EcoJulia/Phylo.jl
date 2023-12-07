@@ -18,6 +18,9 @@ interact cleanly with other phylogenetic packages.
 """
 module Phylo
 
+const TREENAME = "Tree"
+const NODENAME = "Node"
+
 import Base: Pair, Tuple, show, eltype, length, getindex
 import Graphs: src, dst, indegree, outdegree, degree
 abstract type Rootedness end
@@ -32,13 +35,19 @@ struct OneTree <: TreeType end
 struct ManyTrees <: TreeType end
 export OneTree, ManyTrees
 
-abstract type AbstractNode{RootType <: Rootedness, NodeLabel} end
-abstract type AbstractBranch{RootType <: Rootedness, NodeLabel} end
+abstract type BranchingType end
+struct BinaryBranching <: BranchingType end
+struct PolytomousBranching <: BranchingType end
+export BinaryBranching, PolytomousBranching
+
+abstract type AbstractElt{RootType <: Rootedness, NodeLabel} end
+abstract type AbstractNode{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
+abstract type AbstractBranch{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
 
 using Distances
 abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
-                           N <: AbstractNode{RT, NL},
-                           B <: AbstractBranch{RT, NL}} <: Distances.UnionMetric
+                           Node <: AbstractElt{RT, NL},
+                           Branch <: AbstractElt{RT, NL}} <: Distances.UnionMetric
 end
 
 export AbstractTree
@@ -68,7 +77,7 @@ export _getbranchdata, _setbranchdata!, _branchdatatype
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
-export _validate!, _traversal, _branchdims
+export _validate!, _invalidate!, _traversal, _branchdims
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 export HoldsNodeData, MatchTreeNameType
 
@@ -102,7 +111,7 @@ export getnodenames, getnodename, hasnode, getnode, getnodes, nnodes
 export getleafnames, getleaves, nleaves, getinternalnodes, ninternal
 export getbranchnames, getbranchname, hasbranch, getbranch, getbranches, nbranches
 export hasrootheight, getrootheight, setrootheight!
-export validate!, traversal, branchdims
+export validate!, invalidate!, traversal, branchdims
 
 @deprecate addnode! createnode!
 @deprecate addnodes! createnodes!
@@ -149,7 +158,10 @@ export PolytomousTree, NamedPolytomousTree
 
 include("LinkTree.jl")
 export LinkBranch, LinkNode, LinkTree
-export RootedTree, ManyRootTree, UnrootedTree
+
+include("RecursiveTree.jl")
+export RecursiveElt, RecursiveBranch, RecursiveNode, RecursiveTree
+export RootedTree, ManyRootTree, UnrootedTree, BinaryRootedTree
 
 include("routes.jl")
 export branchhistory, branchfuture, branchroute

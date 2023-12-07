@@ -1,5 +1,9 @@
 # NEWS
 
+- v0.5.0
+  - Add recursive tree, node and branch types
+  - Improve testing
+  - Note, this is a breaking change because the RootedTree type is now an alias for RecursiveTree, not LinkTree for efficiency
 - v0.4.24
   - Fix workflows
 - v0.4.23

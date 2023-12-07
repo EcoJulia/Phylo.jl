@@ -97,12 +97,11 @@ the same way
 
 ```@example plotting
 plot(hummers, 
-    size = (400, 800), 
-    linecolor = :orange, linewidth = 5, 
-    markersize = 10, markercolor = :steelblue, markerstrokecolor = :white,
-    series_annotations = text.(1:nnodes(hummers), 5, :center, :center, :white,
-    tipfont = (4,))
-)
+     size = (400, 800), 
+     linecolor = :orange, linewidth = 5, 
+     markersize = 10, markercolor = :steelblue, markerstrokecolor = :white,
+     series_annotations = text.(1:nnodes(hummers), 5, :center, :center, :white),
+     tipfont = (4,))
 ```
 
 The `marker_group` and `line_group` keywords allow plotting discrete values onto

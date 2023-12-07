@@ -13,7 +13,7 @@ do not give warnings or errors, not that they are correct!
 ntips = 10
 a = IOBuffer()
 @testset "Nonultrametric{$TreeType}" for TreeType in
-    [NamedTree, NamedPolytomousTree, RootedTree]
+    [NamedTree, NamedPolytomousTree, Phylo.LTD{OneRoot, Float64}, RootedTree]
 
     nt = rand(Nonultrametric{TreeType}(ntips))
     @test_nowarn show(a, nt)
