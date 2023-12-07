@@ -1,6 +1,6 @@
 using Phylo
 using Phylo: Rootedness, Rooted, TreeType, TraversalOrder
-using Phylo: AbstractNode, AbstractBranch, AbstractTree
+using Phylo: AbstractElt, AbstractNode, AbstractBranch, AbstractTree
 using SimpleTraits
 using Unitful
 
@@ -30,7 +30,6 @@ using Unitful
 
 """
     _prefernodeobjects(::Type{<:AbstractTree})
-    _prefernodeobjects(::Type{<:AbstractNode})
 
 Does this tree or node type prefer nodes to be objects or names? Must be
 implemented for every node type.
@@ -41,7 +40,6 @@ _prefernodeobjects(::Type{<:AbstractTree{TT, RT, NL, N, B}}) where
 
 """
     _preferbranchobjects(::Type{<:AbstractTree})
-    _preferbranchobjects(::Type{<:AbstractBranch})
 
 Does this tree or branch type prefer branches to be objects or names? Must be
 implemented for every branch type.
@@ -410,8 +408,7 @@ or a pair) from a tree. Must be implemented for PreferBranchObjects tree types.
 function _getbranchname end
 _getbranchname(::AbstractTree{OneTree, RT, NL, N},
                pair::Pair{NL, N}) where {RT, NL, N} = pair[1]
-_getbranchname(::AbstractTree{OneTree, RT},
-               branchname::Int) where RT = branchname
+_getbranchname(::AbstractTree{OneTree}, id::Int) = id
 
 """
     _getbranches(tree::AbstractTree)
@@ -515,10 +512,17 @@ function _clearrootheight! end
 """
     _validate!(::AbstractTree)
 
-
+Check whether the tree is internally valid.
 """
 function _validate! end
 _validate!(::AbstractTree) = true
+
+"""
+    _invalidate!(::AbstractTree, state)
+
+Confirm that the tree is no longer necessarily valid, and remove cache information.
+"""
+function _invalidate! end
 
 """
     _traversal(tree::AbstractTree, order::TraversalOrder, todo, sofar)
@@ -632,7 +636,7 @@ _indegree(tree::AbstractTree{OneTree, Unrooted}, node) =
 Is there space for a new inbound connection on a node?
 """
 function _hasinboundspace end
-_hasinboundspace(tree::AbstractTree{OneTree}, node) =
+_hasinboundspace(tree::AbstractTree{OneTree, <: Rooted}, node) =
     !_hasinbound(tree, node)
 
 """
@@ -644,7 +648,7 @@ function _outdegree end
 _outdegree(tree::AbstractTree{OneTree, <: Rooted}, node) =
     length(_getoutbounds(tree, node))
 _outdegree(tree::AbstractTree{OneTree, Unrooted},
-           node::AbstractNode{Unrooted}) =
+           node::AbstractElt{Unrooted}) =
                _degree(tree, node) == 0 ? 0 : missing
 
 """
@@ -751,13 +755,9 @@ Return the child node(s) for this node. May be implemented for any rooted
 AbstractNode subtype.
 """
 function _getchildren end
-_getchildren(tree::T, node::N) where
-    {RT <: Rooted, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
-     T <: AbstractTree{OneTree, RT, NL, N, B}} =
+_getchildren(tree::AbstractTree{OneTree, RT}, node::N) where {RT <: Rooted, N <: AbstractElt{RT}} =
     N[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
-_getchildren(tree::T, node::NL) where
-{RT <: Rooted, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
- T <: AbstractTree{OneTree, RT, NL, N, B}} =
+_getchildren(tree::AbstractTree{OneTree, RT, NL}, node::NL) where {RT <: Rooted, NL} =
     NL[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
 
 """
@@ -838,10 +838,10 @@ end
 
 # AbstractBranch methods
 """
-    _src(branch::AbstractBranch)
+    _src(tree, branch)
 
 Return source node for a branch. Must be implemented for any rooted
-AbstractBranch subtype.
+branch type.
 """
 function _src end
 _src(::T, ::B) where {T, B} = error("No _src() function for $T, $B")

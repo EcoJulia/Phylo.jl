@@ -7,44 +7,32 @@ using SimpleTraits
 
 Returns tree number (OneTree, ManyTrees) from a tree type.
 """
-treetype(::Type{T}) where {TT <: TreeType, RT, NL, N, B,
-                           T <: AbstractTree{TT, RT, NL, N, B}} = TT
+treetype(::Type{T}) where {TT, T <: AbstractTree{TT}} = TT
 
 """
     roottype(::Type{AbstractTree})
-    roottype(::Type{AbstractNode})
-    roottype(::Type{AbstractBranch})
+    roottype(::Type{AbstractElt})
 
-Returns root type from a tree type.
+Returns root type from a tree, node, branch or other element type.
 """
-roottype(::Type{T}) where {TT, RT <: Rootedness, NL, N, B,
-                           T <: AbstractTree{TT, RT, NL, N, B}} = RT
-roottype(::Type{N}) where {RT <: Rootedness, NL,
-                           N <: AbstractNode{RT, NL}} = RT
-roottype(::Type{B}) where {RT <: Rootedness, NL,
-                           B <: AbstractBranch{RT, NL}} = RT
+roottype(::Type{T}) where {TT, RT, T <: AbstractTree{TT, RT}} = RT
+roottype(::Type{E}) where {RT, E <: AbstractElt{RT}} = RT
 
 """
     nodenametype(::Type{AbstractTree})
-    nodenametype(::Type{AbstractNode})
-    nodenametype(::Type{AbstractBranch})
+    nodenametype(::Type{AbstractElt})
 
 Returns type of node names from a tree type.
 """
-nodenametype(::Type{T}) where {TT, RT, NL, N, B,
-                               T <: AbstractTree{TT, RT, NL, N, B}} = NL
-nodenametype(::Type{N}) where {RT <: Rootedness, NL,
-                               N <: AbstractNode{RT, NL}} = NL
-nodenametype(::Type{B}) where {RT <: Rootedness, NL,
-                               B <: AbstractBranch{RT, NL}} = NL
+nodenametype(::Type{T}) where {TT, RT, NL, T <: AbstractTree{TT, RT, NL}} = NL
+nodenametype(::Type{E}) where {RT, NL, E <: AbstractElt{RT, NL}} = NL
 
 """
     nodetype(::Type{AbstractTree})
 
 Returns type of nodes from a tree type.
 """
-nodetype(::Type{T}) where {TT, RT, NL, N <: AbstractNode, B,
-                           T <: AbstractTree{TT, RT, NL, N, B}} = N
+nodetype(::Type{T}) where {TT, RT, NL, NT, T <: AbstractTree{TT, RT, NL, NT}} = NT
 
 """
     branchnametype(::AbstractTree)
@@ -52,16 +40,15 @@ nodetype(::Type{T}) where {TT, RT, NL, N <: AbstractNode, B,
 Returns type of branch names from a branch type.
 """
 branchnametype(::Type{<: AbstractTree}) = Int
-branchnametype(::Type{<: AbstractNode}) = Int
-branchnametype(::Type{<: AbstractBranch}) = Int
+branchnametype(::Type{<: AbstractElt}) = Int
 
 """
     branchtype(::Type{AbstractTree})
 
 Returns type of branches from a tree type.
 """
-branchtype(::Type{T}) where {TT, RT, NL, N, B <: AbstractBranch,
-                             T <: AbstractTree{TT, RT, NL, N, B}} = B
+branchtype(::Type{T}) where {TT, RT, NL, NT, BT <: AbstractElt,
+                             T <: AbstractTree{TT, RT, NL, NT, BT}} = BT
 
 """
     treenametype(::Type{AbstractTree})
@@ -1240,6 +1227,13 @@ function validate!(tree::T) where
 
     return _validate!(tree)
 end
+
+"""
+    invalidate!(tree::AbstractTree, state = missing)
+
+Confirm that the tree is no longer necessarily valid, and remove cache information.
+"""
+invalidate!(tree::AbstractTree, state = missing) = _invalidate!(tree, state)
 
 """
     traversal(::AbstractTree, ::TraversalOrder)

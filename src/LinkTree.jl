@@ -86,9 +86,6 @@ const LB{RT, LenUnits} = LinkBranch{RT, String, Dict{String, Any}, LenUnits}
 const LN{RT, LenUnits} = LinkNode{RT, String, Dict{String, Any}, LB{RT, LenUnits}}
 const LT{RT, TD, LenUnits} = LinkTree{RT, String, LN{RT, LenUnits}, LB{RT, LenUnits}, TD}
 const LTD{RT, LenUnits} = LT{RT, Dict{String, Any}, LenUnits}
-const RootedTree = LTD{OneRoot, Float64}
-const ManyRootTree = LTD{ManyRoots, Float64}
-const UnrootedTree = LTD{Unrooted, Float64}
 
 # LinkBranch methods
 function LinkBranch(name::Int,
@@ -221,9 +218,6 @@ function _removeconnection!(tree::AbstractTree,
 end
 
 # LinkTree methods
-const TREENAME = "Tree"
-const NODENAME = "Node"
-
 import Phylo.API: _validate!
 function _validate!(tree::LinkTree{RT, NL, N, B, TD}) where {RT, NL, N, B, TD}
     tree.isvalid = true

@@ -6,7 +6,8 @@ using Test
 @testset "Routes" begin
     @testset "For $TreeType" for TreeType in
         [NamedTree, NamedBinaryTree,
-         RootedTree, ManyRootTree]
+        Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64},
+        RootedTree, ManyRootTree]
         species = ["Dog", "Cat", "Human", "Potato"]
         tree = TreeType(species)
         nr = createnode!(tree)
@@ -48,6 +49,7 @@ using Test
             length(branchfuture(tree, root))
         nn = first(nodenamefilter(isleaf, tree))
         @test length(branchhistory(tree, nn)) == length(getancestors(tree, nn))
+        @test length(branchfuture(tree, root)) == length(nodefuture(tree, root)) - 1
         @test Set(getancestors(tree, nn)) ⊆ Set(nodehistory(tree, nn))
         n = first(nodefilter(isleaf, tree))
         @test length(branchhistory(tree, n)) == length(getancestors(tree, n))
