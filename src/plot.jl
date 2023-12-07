@@ -196,7 +196,7 @@ descendants. This creates a clearer tree for plotting. The
 process is also called "ladderizing" the tree. Use `rev=true` to
 reverse the sorting order.
 """
-function Base.sort!(tree::AbstractTree; rev = false)
+function Base.sort!(tree::T; rev = false) where T <: AbstractTree
     function loc!(clade::String)
         if isleaf(tree, clade)
             return 1
@@ -204,7 +204,11 @@ function Base.sort!(tree::AbstractTree; rev = false)
 
         sizes = map(loc!, getchildren(tree, clade))
         node = getnode(tree, clade)
-        node.other .= node.other[sortperm(sizes, rev = rev)]
+        if T <: LinkTree
+            node.other .= node.other[sortperm(sizes, rev = rev)]
+        elseif T <: RecursiveTree
+            node.conns .= node.conns[sortperm(sizes, rev = rev)]
+        end
         sum(sizes) + 1
     end
 
@@ -282,7 +286,7 @@ function _circle_transform_segments(xs, ys)
         push!(rety, _ycirc(_y[3], _x[3]), NaN)
     end
     i = 1
-    while !(i === nothing) && i < length(xs)
+    while !isnothing(i) && i < length(xs)
         j = findnext(isnan, xs, i) - 1
         _transform_seg(view(xs,i:j), view(ys, i:j))
         i = j + 2
@@ -293,10 +297,10 @@ end
 """
     map_depthfirst(FUN, start, tree, eltype = nothing)
 
-Apply `FUN` to each node in `tree` in depth-first order, and return the result. 
-`FUN` must take two arguments, `val` and `node`,  where `val` is the result of 
-applying `FUN` to the previous node, and `node` is the current node. `start` 
-specifies the initial value of `val`, and `eltype` specifies the type of the 
+Apply `FUN` to each node in `tree` in depth-first order, and return the result.
+`FUN` must take two arguments, `val` and `node`,  where `val` is the result of
+applying `FUN` to the previous node, and `node` is the current node. `start`
+specifies the initial value of `val`, and `eltype` specifies the type of the
 return value of `FUN`.
 
 ### Examples
@@ -307,7 +311,7 @@ julia> evolve(tree) = map_depthfirst((val, node) -> val + randn(), 0., tree, Flo
 """
 function map_depthfirst(FUN, start, tree, eltype = nothing)
     root = first(nodenamefilter(isroot, tree))
-    eltype === nothing && (eltype = typeof(FUN(start, root)))
+    isnothing(eltype) && (eltype = typeof(FUN(start, root)))
     ret = Vector{eltype}()
     function local!(val, node)
         push!(ret, val)

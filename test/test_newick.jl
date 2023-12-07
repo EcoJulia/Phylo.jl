@@ -37,7 +37,7 @@ using Test
     end
     
     @testset "For $TreeType" for TreeType in
-        [NamedTree, RootedTree, ManyRootTree]
+        [NamedTree, Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64}, RootedTree, ManyRootTree]
         @test nnodes(parsenewick("((,),(,,));", TreeType)) == 8
         @test ["where", "when it's good", "Not mine", "MyLeaf", "next"] ⊆
             nodenameiter(parsenewick("""((MyLeaf,"when it's good",next),

@@ -7,7 +7,7 @@ abstract type AbstractBranchTree{RT, N, B, LI, ND} <:
 end
 
 import Phylo.API: _hasinbound
-function _hasinbound(tree::AbstractBranchTree{<: Rooted}, name::String) 
+function _hasinbound(tree::AbstractBranchTree{<: Rooted}, name::String)
     return tree.nodes[name].inbound !== nothing
 end
 

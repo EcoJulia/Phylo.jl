@@ -1,5 +1,5 @@
 """
-    BinaryNode{B}(AbstractVector{B}, AbstractVector{B}) <: AbstractNode
+    struct BinaryNode <: AbstractNode
 
 A node of strict binary phylogenetic tree
 """
@@ -29,7 +29,7 @@ import Phylo.API: _prefernodeobjects
 _prefernodeobjects(::Type{<:BinaryNode}) = false
 
 """
-    Node{RT, NL, T}(AbstractVector{T}, AbstractVector{T}) <: AbstractNode
+    struct Node <: AbstractNode
 
 A node of potentially polytomous phylogenetic tree
 """
@@ -52,49 +52,3 @@ mutable struct Node{RT <: Rooted, NL, B <: AbstractBranch{RT, NL}} <:
 end
 
 _prefernodeobjects(::Type{<:Node}) = false
-
-import Phylo.API: _getinbound
-function _getinbound(tree::AbstractTree, node::Node)
-    _hasinbound(tree, node) ||
-        error("Node has no inbound connection")
-    return node.inbound
-end
-
-import Phylo.API: _addinbound!
-function _addinbound!(tree::AbstractTree, node::Node{RT, NL, B},
-                      inbound::B) where {RT, NL, B <: AbstractBranch}
-    _hasinbound(tree, node) &&
-        error("Node already has an inbound connection")
-    node.inbound = inbound
-end
-
-import Phylo.API: _removeinbound!
-function _removeinbound!(tree::AbstractTree,
-                         node::Node{RT, NL, B},
-                         inbound::B) where {RT, NL, B <: AbstractBranch}
-    _hasinbound(tree, node) || error("Node has no inbound connection")
-    node.inbound == inbound ||
-        error("Node has no inbound connection from branch $inbound")
-    node.inbound = nothing
-end
-
-import Phylo.API: _getoutbounds
-function _getoutbounds(::AbstractTree, node::Node)
-    return node.outbounds
-end
-
-import Phylo.API: _addoutbound!
-function _addoutbound!(::AbstractTree, node::Node{RT, NL, B},
-                       outbound::B) where {RT, NL, B <: AbstractBranch}
-    push!(node.outbounds, outbound)
-end
-
-import Phylo.API: _removeoutbound!
-function _removeoutbound!(::AbstractTree, node::Node{RT, NL, B},
-                          outbound::B) where {RT, NL, B <: AbstractBranch}
-    outbound ∈ node.outbounds ? filter!(n -> n != outbound, node.outbounds) :
-         error("Node does not have outbound connection to branch $outbound")
-end
-
-import Phylo.API: _getnodename
-_getnodename(::AbstractTree, node::Node) = node.name

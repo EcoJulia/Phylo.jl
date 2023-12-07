@@ -1,18 +1,22 @@
 # Creating phylogenies
 
-### Reading phylogenies from disk
+## Reading phylogenies from disk
+
 Phylo can read newick trees either from strings,
+
 ```@example reading
 using Phylo
 simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
 ```
 
 which will result in the following tree:
+
 ```@example reading
 getbranches(simpletree)
 ```
 
 or from files
+
 ```@example reading
 tree = open(parsenewick, Phylo.path("H1N1.newick"))
 ```
@@ -25,6 +29,7 @@ ts = open(parsenexus, Phylo.path("H1N1.trees"))
 
 Reading multiple trees from a nexus file returns a `TreeSet` - index to get
 the individual trees
+
 ```@example reading
 gettreeinfo(ts)
 ```
@@ -33,10 +38,12 @@ gettreeinfo(ts)
 ts["TREE1"]
 ```
 
-### Creating random phylogenies
+## Creating random phylogenies
+
 The package can be used to generate random trees using the framework from
  `Distributions`. For instance, to construct a sampler for 5 tip non-ultrametric
  trees and generate a random tree of that type
+
 ```@example random_trees
 using Phylo
 nu = Nonultrametric(5);
@@ -44,15 +51,17 @@ tree = rand(nu)
 ```
 
 Or two trees
+
 ```@example random_trees
 trees = rand(nu, ["Tree 1", "Tree 2"])
 ```
 
-### Importing phylogenies from R
+## Importing phylogenies from R
+
 Phylo allows transferring trees from R's `ape` package directly via RCall.
-This allows any existing R library functions to be carried out on julia trees. 
+This allows any existing R library functions to be carried out on julia trees.
 Naturally the medium-term plan is to make this package feature-complete
-with existing functionality in R, and as a result the R interface is not built 
+with existing functionality in R, and as a result the R interface is not built
 into the package, avoiding having RCall (and R) a dependency. Instead, if you
 want to use the R interface you need to do it manually, as below:
 
@@ -110,3 +119,4 @@ parsenewick
 parsenexus
 Nonultrametric
 Ultrametric
+```

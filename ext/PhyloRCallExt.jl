@@ -1,7 +1,20 @@
+module PhyloRCallExt
+
+if isdefined(Base, :get_extension)
+    using RCall
+    using RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
+    import RCall: rcopy
+    import RCall: rcopytype
+    import RCall: sexp
+else
+    using ..RCall
+    using ..RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
+    import ..RCall: rcopy
+    import ..RCall: rcopytype
+    import ..RCall: sexp
+end
+
 using Phylo
-using .RCall
-using .RCall: protect, unprotect, rcall_p, RClass, isObject, isS4
-import .RCall: rcopy
 
 function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     if !isObject(rt) || isS4(rt) || rcopy(String, rcall_p(:class, rt)) != "phylo"
@@ -31,11 +44,8 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     return tree
 end
 
-import .RCall.rcopytype
 
 rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = RootedTree
-
-import .RCall.sexp
 
 function sexp(tree::T) where T <: AbstractTree
     validate!(tree) || @warn "Tree does not internally validate"
@@ -69,4 +79,6 @@ function sexp(tree::T) where T <: AbstractTree
     setclass!(sobj, sexp("phylo"))
     unprotect(1)
     return sobj
+end
+
 end

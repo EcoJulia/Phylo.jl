@@ -1,6 +1,6 @@
 using Phylo
 using Phylo: Rootedness, Rooted, TreeType, TraversalOrder
-using Phylo: AbstractNode, AbstractBranch, AbstractTree
+using Phylo: AbstractElt, AbstractNode, AbstractBranch, AbstractTree
 using SimpleTraits
 using Unitful
 
@@ -23,14 +23,13 @@ using Unitful
 @traitimpl MatchBranchType{T, B} <- _matchbranchtype(T, B)
 
 @traitdef MatchBranchNodeType{T, B, N}
-@traitimpl MatchBranchNodeType{T, B, N} <- _matchbranchnodetype(T, N)
+@traitimpl MatchBranchNodeType{T, B, N} <- _matchbranchnodetype(T, B, N)
 
 @traitdef MatchTreeNameType{T, TN}
 @traitimpl MatchTreeNameType{T, TN} <- _matchtreenametype(T, TN)
 
 """
     _prefernodeobjects(::Type{<:AbstractTree})
-    _prefernodeobjects(::Type{<:AbstractNode})
 
 Does this tree or node type prefer nodes to be objects or names? Must be
 implemented for every node type.
@@ -41,7 +40,6 @@ _prefernodeobjects(::Type{<:AbstractTree{TT, RT, NL, N, B}}) where
 
 """
     _preferbranchobjects(::Type{<:AbstractTree})
-    _preferbranchobjects(::Type{<:AbstractBranch})
 
 Does this tree or branch type prefer branches to be objects or names? Must be
 implemented for every branch type.
@@ -62,7 +60,7 @@ _matchnodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
 _matchnodetype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
                ::Type{NL}) where {TT, RT, NL, N, B} = !_prefernodeobjects(N)
 _matchnodetypes(::Type{<:AbstractTree}, ::Type{<:Any}, ::Type{<:Any}) = false
-_matchnodetypes(::Type{T}, ::Type{N}, ::Type{N}) where {T, N} =
+_matchnodetypes(::Type{T}, ::Type{N}, ::Type{N}) where {T <: AbstractTree, N} =
     _matchnodetype(T, N)
 
     """
@@ -86,9 +84,8 @@ _matchbranchtype(::Type{<:AbstractTree{TT, RT, NL, N, B}},
 Does this tree type prefer the branch and node types provided?
 """
 function _matchbranchnodetype end
-_matchbranchtype(::Type{T}, ::Type{B}, ::Type{N}) where
-    {TT, RT, NL, N, B, T <: AbstractTree{TT, RT, NL, N, B}} =
-                    _matchbranchtype(T, B) && _matchnodetype(T, N)
+_matchbranchnodetype(::Type{T}, ::Type{B}, ::Type{N}) where {T <: AbstractTree, B, N} =
+    _matchbranchtype(T, B) && _matchnodetype(T, N)
 
 """
     _matchtreenametype(::Type{<:AbstractTree}, ::Type{X})
@@ -375,25 +372,32 @@ a branch or a pair) from a tree. Must be implemented for any PreferBranchObjects
 tree and branch label type.
 """
 function _getbranch end
-@traitfn _getbranch(tree::T,
+@traitfn _getbranch(::T,
                     branch::B) where {RT, NL, N, B,
                                       T <: AbstractTree{OneTree, RT, NL, N, B};
                                       PreferBranchObjects{T}} = branch
-@traitfn _getbranch(tree::T,
+@traitfn _getbranch(::T,
                     pair::Pair{Int, B}) where {RT, NL, N, B,
                                                T <: AbstractTree{OneTree, RT,
                                                                  NL, N, B};
                                                PreferBranchObjects{T}} = pair[2]
-@traitfn _getbranch(tree::T,
+@traitfn _getbranch(::T,
                     branchname::Int) where {T <: AbstractTree{OneTree};
                                             !PreferBranchObjects{T}} =
                                                 branchname
-@traitfn _getbranch(tree::T,
+@traitfn _getbranch(::T,
                     pair::Pair{Int, B}) where {RT, NL, N, B,
                                                T <: AbstractTree{OneTree,
                                                                  RT, NL, N, B};
                                                !PreferBranchObjects{T}} =
                                                    pair[1]
+@traitfn _getbranch(tree::T, src::N1, dst::N2) where
+    {T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}} =
+    first(b for b in _getbranches(tree) if _src(tree, b) == src && _dst(tree, b) == dst)
+
+@traitfn _getbranch(tree::T, src::N1, dst::N2) where
+    {T <: AbstractTree{OneTree}, N1, N2; !MatchNodeTypes{T, N1, N2}} =
+    _getbranch(tree, _getnode(tree, src), _getnode(tree, dst))
 
 """
     _getbranchname(::AbstractTree, id)
@@ -404,8 +408,7 @@ or a pair) from a tree. Must be implemented for PreferBranchObjects tree types.
 function _getbranchname end
 _getbranchname(::AbstractTree{OneTree, RT, NL, N},
                pair::Pair{NL, N}) where {RT, NL, N} = pair[1]
-_getbranchname(::AbstractTree{OneTree, RT},
-               branchname::Int) where RT = branchname
+_getbranchname(::AbstractTree{OneTree}, id::Int) = id
 
 """
     _getbranches(tree::AbstractTree)
@@ -453,6 +456,11 @@ _hasbranch(tree::AbstractTree{OneTree},
                                       T <: AbstractTree{OneTree, RT, NL, N, B};
                                       PreferBranchObjects{T}} =
                                           branch ∈ _getbranches(tree)
+
+@traitfn function _hasbranch(tree::T, src::N1, dst::N2) where
+    {T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}}
+    return any(_src(tree, b) == src && _dst(tree, b) == dst for b in _getbranches(tree))
+end
 
 """
     _createbranch!(tree::AbstractTree, source, destination[,
@@ -504,10 +512,17 @@ function _clearrootheight! end
 """
     _validate!(::AbstractTree)
 
-
+Check whether the tree is internally valid.
 """
 function _validate! end
 _validate!(::AbstractTree) = true
+
+"""
+    _invalidate!(::AbstractTree, state)
+
+Confirm that the tree is no longer necessarily valid, and remove cache information.
+"""
+function _invalidate! end
 
 """
     _traversal(tree::AbstractTree, order::TraversalOrder, todo, sofar)
@@ -621,7 +636,7 @@ _indegree(tree::AbstractTree{OneTree, Unrooted}, node) =
 Is there space for a new inbound connection on a node?
 """
 function _hasinboundspace end
-_hasinboundspace(tree::AbstractTree{OneTree}, node) =
+_hasinboundspace(tree::AbstractTree{OneTree, <: Rooted}, node) =
     !_hasinbound(tree, node)
 
 """
@@ -633,7 +648,7 @@ function _outdegree end
 _outdegree(tree::AbstractTree{OneTree, <: Rooted}, node) =
     length(_getoutbounds(tree, node))
 _outdegree(tree::AbstractTree{OneTree, Unrooted},
-           node::AbstractNode{Unrooted}) =
+           node::AbstractElt{Unrooted}) =
                _degree(tree, node) == 0 ? 0 : missing
 
 """
@@ -740,13 +755,9 @@ Return the child node(s) for this node. May be implemented for any rooted
 AbstractNode subtype.
 """
 function _getchildren end
-_getchildren(tree::T, node::N) where
-    {RT <: Rooted, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
-     T <: AbstractTree{OneTree, RT, NL, N, B}} =
+_getchildren(tree::AbstractTree{OneTree, RT}, node::N) where {RT <: Rooted, N <: AbstractElt{RT}} =
     N[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
-_getchildren(tree::T, node::NL) where
-{RT <: Rooted, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
- T <: AbstractTree{OneTree, RT, NL, N, B}} =
+_getchildren(tree::AbstractTree{OneTree, RT, NL}, node::NL) where {RT <: Rooted, NL} =
     NL[_dst(tree, branch) for branch in _getoutbounds(tree, node)]
 
 """
@@ -757,10 +768,10 @@ AbstractNode subtype, can be inferred from _getinbound and _getoutbounds for
 a rooted node.
 """
 function _getconnections end
-_getconnections(tree::AbstractTree{OneTree}, node) =
+_getconnections(tree::AbstractTree{OneTree, <: Rooted}, node) =
     _hasinbound(tree, node) ?
-    append!([_getinbound(tree, node)], _getoutbounds(tree, node)) :
-    _getoutbounds(tree, node)
+        append!([_getinbound(tree, node)], _getoutbounds(tree, node)) :
+        _getoutbounds(tree, node)
 
 """
     _getsiblings(tree::AbstractTree, node::AbstractNode)
@@ -827,10 +838,10 @@ end
 
 # AbstractBranch methods
 """
-    _src(branch::AbstractBranch)
+    _src(tree, branch)
 
 Return source node for a branch. Must be implemented for any rooted
-AbstractBranch subtype.
+branch type.
 """
 function _src end
 _src(::T, ::B) where {T, B} = error("No _src() function for $T, $B")
@@ -877,6 +888,15 @@ subtype.
 """
 function _getlength end
 _getlength(::AbstractTree, _) = missing
+
+"""
+    _haslength
+
+Return length of a branch. May be implemented for any AbstractBranch
+subtype.
+"""
+function _haslength end
+_haslength(t::AbstractTree, b) = !ismissing(_getlength(t, b))
 
 """
     _leafinfotype(::Type{<:AbstractTree})

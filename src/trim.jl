@@ -4,6 +4,7 @@ using Phylo.API
 
 """
     getinternalnodes(t::AbstractTree)
+
 Function to retrieve only the internal nodes from a tree, `t`, which does not
 include tips or root.
 

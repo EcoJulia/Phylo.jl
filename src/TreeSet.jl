@@ -1,3 +1,8 @@
+"""
+    TreeSet
+
+A collection of trees with the same tips.
+"""
 mutable struct TreeSet{LABEL, RT, NL, N, B, TREE <:
                        AbstractTree{OneTree, RT, NL, N, B}} <:
     AbstractTree{ManyTrees, RT, NL, N, B}

@@ -1,30 +1,48 @@
-# Data types
+# Modules and data types
 
-### Tree sets
+## Modules
 
-### Tree types
+```@autodocs
+Modules = [Phylo]
+Order   = [:module]
+```
+
+## Tree sets
+
+```@docs
+TreeSet
+```
+
+## Tree types
+
 This package offers a number of different types of tree, each
 optimised for a specific usage
 
-### Node types
-
-
-### Branch types
-
-
 ```@docs
-BinaryTree
+RecursiveTree
+LinkTree
 NamedBinaryTree
-BinaryNode
-Node
+BinaryTree
 NamedTree
 PolytomousTree
 NamedPolytomousTree
-LinkTree
-LinkBranch
+```
+
+## Node and Branch types
+
+```@docs
+RecursiveElt
 LinkNode
-RootedTree
-ManyRootTree
-UnrootedTree
-TreeSet
+BinaryNode
+Node
+LinkBranch
+Branch
+```
+
+## Iterator types
+
+```@autodocs
+Modules = [Phylo, Phylo.API]
+Public = false
+Order   = [:type]
 ```

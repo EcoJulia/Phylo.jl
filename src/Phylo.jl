@@ -18,7 +18,11 @@ interact cleanly with other phylogenetic packages.
 """
 module Phylo
 
+const TREENAME = "Tree"
+const NODENAME = "Node"
+
 import Base: Pair, Tuple, show, eltype, length, getindex
+import Graphs: src, dst, indegree, outdegree, degree
 abstract type Rootedness end
 struct Unrooted <: Rootedness end
 abstract type Rooted <: Rootedness end
@@ -31,12 +35,21 @@ struct OneTree <: TreeType end
 struct ManyTrees <: TreeType end
 export OneTree, ManyTrees
 
-abstract type AbstractNode{RootType <: Rootedness, NodeLabel} end
-abstract type AbstractBranch{RootType <: Rootedness, NodeLabel} end
+abstract type BranchingType end
+struct BinaryBranching <: BranchingType end
+struct PolytomousBranching <: BranchingType end
+export BinaryBranching, PolytomousBranching
 
+abstract type AbstractElt{RootType <: Rootedness, NodeLabel} end
+abstract type AbstractNode{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
+abstract type AbstractBranch{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
+
+using Distances
 abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
-                           N <: AbstractNode{RT, NL},
-                           B <: AbstractBranch{RT, NL}} end
+                           Node <: AbstractElt{RT, NL},
+                           Branch <: AbstractElt{RT, NL}} <: Distances.UnionMetric
+end
+
 export AbstractTree
 
 @enum TraversalOrder anyorder preorder inorder postorder breadthfirst
@@ -55,7 +68,7 @@ include("API.jl")
 export _ntrees, _gettrees, _nroots, _getroots, _getroot
 export _treenametype, _gettreenames, _gettree, _gettreename
 export _createbranch!, _deletebranch!, _createnode!, _deletenode!
-export _getnodenames, _hasnode, _getnode, _getnodes
+export _getnodenames, _getnodename, _hasnode, _getnode, _getnodes
 export _getbranchnames, _getbranchname, _hasbranch, _getbranch, _getbranches
 export _hasrootheight, _getrootheight, _setrootheight!, _clearrootheight!
 export _getleafinfo, _setleafinfo!, _leafinfotype, _gettreeinfo
@@ -64,7 +77,7 @@ export _getbranchdata, _setbranchdata!, _branchdatatype
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
-export _validate!, _traversal, _branchdims
+export _validate!, _invalidate!, _traversal, _branchdims
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 export HoldsNodeData, MatchTreeNameType
 
@@ -77,7 +90,7 @@ export _getconnections, _addconnection!, _removeconnection!
 export MatchNodeType, MatchNodeTypes, PreferNodeObjects, _prefernodeobjects
 
 # AbstractBranch methods
-export _src, _dst, _getlength
+export _src, _dst, _getlength, _haslength, _conn, _conns
 export MatchBranchType, PreferBranchObjects, _preferbranchobjects
 export MatchBranchNodeType
 
@@ -88,18 +101,17 @@ end
 
 include("Interface.jl")
 # AbstractTree methods
-export ntrees, gettrees, nroots, getroots, getroot
+export ntrees, gettrees, nroots, getroots, getroot, gettree
 export treenametype, gettreenames, gettreename #, getonetree #unimplemented
-export roottype, nodetype, nodedatatype, nodenametype
+export treetype, roottype, nodetype, nodedatatype, nodenametype
 export branchtype, branchdatatype, branchnametype
 export createbranch!, deletebranch!
 export createnode!, createnodes!, deletenode!
-export getnodenames, getnodename, hasnode, getnode, getnodes
-export getbranchnames, getbranchname, hasbranch, getbranch, getbranches
+export getnodenames, getnodename, hasnode, getnode, getnodes, nnodes
+export getleafnames, getleaves, nleaves, getinternalnodes, ninternal
+export getbranchnames, getbranchname, hasbranch, getbranch, getbranches, nbranches
 export hasrootheight, getrootheight, setrootheight!
-export getparent, getancestors #, hasparent # unimplemented
-export getchildren, getdescendants #, haschildren # unimplemented
-export validate!, traversal, branchdims
+export validate!, invalidate!, traversal, branchdims
 
 @deprecate addnode! createnode!
 @deprecate addnodes! createnodes!
@@ -112,15 +124,17 @@ export validate!, traversal, branchdims
 
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
-export indegree, outdegree, hasinbound, getinbound, getoutbounds
+export degree, indegree, outdegree, hasinbound, getconnections, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
-export getleafnames, getleaves, nleaves, nnodes, nbranches
 export getleafinfo, setleafinfo!, leafinfotype
 export getnodedata, setnodedata!
+export getparent, getancestors #, hasparent # unimplemented
+export getchildren, getdescendants #, haschildren # unimplemented
+export getsiblings
 export hasheight, getheight, setheight!
 
 # AbstractTree / AbstractBranch methods
-export src, dst, getlength
+export src, dst, getlength, haslength, conn, conns
 export hasrootheight, getrootheight, setrootheight! #, clearrootheight! #unimplemented
 export getbranchdata, setbranchdata!
 # export getrootdistance # unimplemented
@@ -144,7 +158,10 @@ export PolytomousTree, NamedPolytomousTree
 
 include("LinkTree.jl")
 export LinkBranch, LinkNode, LinkTree
-export RootedTree, ManyRootTree, UnrootedTree
+
+include("RecursiveTree.jl")
+export RecursiveElt, RecursiveBranch, RecursiveNode, RecursiveTree
+export RootedTree, ManyRootTree, UnrootedTree, BinaryRootedTree
 
 include("routes.jl")
 export branchhistory, branchfuture, branchroute
@@ -193,12 +210,15 @@ export estimaterates, TraitTree
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
-using Requires
+# This symbol is only defined on Julia versions that support extensions
+if !isdefined(Base, :get_extension)
+    using Requires
+end
+
+@static if !isdefined(Base, :get_extension)
 function __init__()
-    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" begin
-        println("Creating Phylo RCall interface...")
-        include("rcall.jl")
-    end
+    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" include("../ext/PhyloRCallExt.jl")
+end
 end
 
 end # module
