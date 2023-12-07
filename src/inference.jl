@@ -4,23 +4,32 @@ using Optim
 using StaticArrays
 
 
-mutable struct TraitData{NTraits}
-    name::Vector{String}          #SizedVector{NTraits, String}
-    value::Vector{Float64}        #SizedVector{NTraits, Float64}
-    t::Float64
+abstract type AbstractTraitData end
+
+mutable struct TraitData{NTraits} <: AbstractTraitData 
+    name::Vector{String}          #Name of traits
+    value::Vector{Float64}        #Trait values
+    t::Float64                    #branch length
     logV::Float64
-    p::Float64
-    yl::Vector{Float64}           #SizedVector{NTraits, Float64}
-    xl::Float64
-    Q::Vector{Float64}            #SizedVector{NTraits, Float64}
-    xx::Float64
-    yy::Matrix{Float64}           #SizedMatrix{NTraits, NTraits, Float64}
-    v::Vector{Float64} 
+    p::Float64                    # 1' V^(-1) 1
+    yl::Vector{Float64}           # 1' V^(-1) y  (y is trait values)
+    xl::Float64                   # 1' V^(-1) x  (we set x as 1)
+    Q::Vector{Float64}            # x' V^(-1) y
+    xx::Float64                   # x' V^(-1) x
+    yy::Matrix{Float64}           # y' V^(-1) y
+    v::Vector{Float64}            #used for PIC
+    xlmult::Vector{Float64}       # 1' W^(-1) x  
+    pmult::Matrix{Float64}        # 1' W^(-1) C1      
+    xxmult::Matrix{Float64}       # x' W^(-1) x 
+    yymult::Float64               # y' W^(-1) y
+    Qmult::Float64                # x' W^(-1) y
+    ylmult::Matrix{Float64}       # 1' W^(-1) y
 end
 
 traitdata(name::Vector{String}, value::Vector{Float64}, t::Float64 = 0.0) =
     TraitData{length(name)}(name, value, t, NaN, NaN, fill(NaN, length(name)), NaN, 
-                            fill(NaN, length(name)), NaN, fill(NaN, length(name), length(name)), fill(NaN, length(name)))
+                            fill(NaN, length(name)), NaN, fill(NaN, length(name), length(name)), fill(NaN, length(name)), fill(NaN, length(name)),
+                            fill(NaN, length(name), length(name)), fill(NaN, length(name), length(name)), NaN, NaN, fill(NaN, length(name), length(name)))
 
 TraitData{NTraits}() where NTraits = traitdata(fill("", NTraits), fill(NaN, NTraits))
 
@@ -91,7 +100,7 @@ function estimaterates!(tree::T, trait::Vector{String}, lambda) where T <: Abstr
 
     #get information from tree in order to preform threepoint
     nodes = getnodes(tree, postorder)
-    n = nleaves(tree)
+    
 
     if lambda !== missing
         t = [getnodedata(tree, node).t for node in nodes]
@@ -128,15 +137,17 @@ function estimaterates!(tree::T, trait::Vector{String}, lambda) where T <: Abstr
 
     threepoint!(tree, trait, nodes)
 
+    n = nleaves(tree)
+
     #information from last node
     nN = last(nodes)
     nd = getnodedata(tree, nN)
 
     betahat = inv(nd.xx) * nd.Q
-    sigmahat = (nd.yy - 2 * betahat * nd.Q' + betahat * nd.xx * betahat') / n
+    sigmahat = ((nd.yy - 2 * betahat * nd.Q' + betahat * nd.xx * betahat') / n)
 
-
-    while any(i -> i < 0, sigmahat)
+ #NEED TO THINK ABOUT THIS
+    while any(i -> i < 0, diag(sigmahat))
         leaves = getleaves(tree)
         for leaf in leaves
             ld = getnodedata(tree, leaf)
@@ -149,7 +160,7 @@ function estimaterates!(tree::T, trait::Vector{String}, lambda) where T <: Abstr
 
     k = length(trait)
 
-    negloglik = (1.0 / 2.0) * (n * k * log(2π) .+ nd.logV + n + n * log(det(sigmahat))) 
+    negloglik = (1.0 / 2.0) * (n * k * log(2π) + nd.logV + n + n * log(abs(det(sigmahat)))) 
 
 
     return betahat, sigmahat, negloglik, lambda #only return lambda if used
@@ -182,13 +193,9 @@ function estimaterates(tree::T, trait::Vector{String}; lambda = missing) where T
         end
     end
 
-    if typeof(lambda) == Missing
-        return estimaterates!(tree, trait, lambda)
-    elseif length(lambda) == 1 
-        return estimaterates!(tree, trait, lambda)
-    else
-        return estimateratesmultlambda!(tree, trait, lambda)
-    end
+   
+    return estimaterates!(tree, trait, lambda)
+   
 end
 
 function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N}, trait::Vector{String}, n::Int) where 
@@ -241,8 +248,183 @@ function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N}, trait::V
     return negloglik
 end
 
-##############################
+####################################################################
 
+function threepointmultlambda!(tree::T, trait::Vector{String}, nodes::Vector{N}, C::Matrix{Float64}, lambda::Vector{Float64}) where 
+    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+     T <: AbstractTree{TT, RT, NL, N, B}}
+    #prefrom algortihm in Ho & Ane 2014 for multiple lambda
+    #function estimaterates gets inputs into right form
+
+    for node in nodes
+        nd = getnodedata(tree, node)
+        nodet = nd.t
+
+        C1 = diagm(sqrt.(lambda)) * C * diagm(sqrt.(lambda))
+
+        C1inv = C1^(-1)
+
+        k = length(trait)
+
+        I = diagm(ones(k))
+
+        if isleaf(tree, node)
+            nodetrait = nd.value
+
+            height = heighttoroot(tree, node)
+
+            # update node data
+            nd.logV = log(abs(det(C * height - (height - nodet) * C1))) 
+            nd.pmult = inv(height * C * C1inv - (height - nodet) * I)
+            nd.ylmult = repeat(nodetrait, 1, k)'
+            nd.xlmult = ones(k)
+            nd.Q = nd.ylmult' * nd.pmult * C1inv * ones(k)
+            nd.xx = ones(k)' * nd.pmult * C1inv * ones(k)
+            nd.yy = nd.ylmult' * nd.pmult * C1inv * nd.ylmult
+
+
+        else
+            # find direct desendents 
+            children = getchildren(tree, node)
+
+            # child data
+            childdata = getnodedata.(tree, children)
+    
+            # calc pA and ws
+            childp = [s.pmult for s in childdata]
+            pA = sum(childp)
+            
+            nochildren = length(childp)
+
+            ws = fill(fill(NaN, k, k), nochildren)
+
+            pAinv = pA^(-1)
+            for i in 1:nochildren
+                 ws[i] = pAinv * childp[i]
+            end
+
+            # update node data
+            nd.logV = sum(s.logV for s in childdata) + log(abs(det(I + nodet * pA))) #need to think about why the determinant is negative and if its okay
+            nd.pmult = pA * (I + nodet * pA)^(-1)
+            nd.xlmult = sum(ws .* [s.xlmult for s in childdata]) #dimensions may be wrong here
+            nd.ylmult = sum(ws .* [s.ylmult for s in childdata])
+
+
+            nd.Q = sum(s.Q for s in childdata) + nd.ylmult' * nodet * pA^2 * (I + nodet * pA)^(-1) * C1inv * nd.xlmult
+            nd.xx = sum(s.xx for s in childdata) + nd.xlmult' * (nodet * pA^2) * (I + nodet * pA)^(-1) * C1inv * nd.xlmult
+            nd.yy = sum(s.yy for s in childdata) + nd.ylmult' * nodet * pA^2 * (I + nodet * pA)^(-1) * C1inv * nd.ylmult
+
+
+        end
+        # @assert getnodedata(tree, node) === nd
+    end
+
+    return tree
+end
+
+function tooptimisemultlambda(lambda::Vector{Float64}, C::Matrix{Float64}, tree::T, nodes::Vector{N}, trait::Vector{String}, n::Int) where 
+    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+    T <: AbstractTree{TT, RT, NL, N, B}}
+    #lambda - value for Signal 
+    #C - evolutionary rates and covariances matrix  
+    #tree - tree
+    #nodes - nodes of the tree in traversal order
+    #t - vector of og branch lengths
+    #trait - string of what trait is called on the tree
+    #N - total number of nodes
+    #n - number of leaves
+
+
+    threepointmultlambda!(tree, trait, nodes, C, lambda)
+    #print after each call to double check runninng
+    print('.')
+
+
+    #information from last node
+    nN = last(nodes)
+    nd = getnodedata(tree, nN)
+
+    betahat = inv(nd.xx) * nd.Q
+
+    k = length(trait)
+
+    negloglik = (1.0 / 2.0) * (n * k * log(2π) + nd.logV + n + log(abs(det((nd.yy - 2 * betahat * nd.Q' + betahat * nd.xx * betahat')))))
+    return negloglik
+end
+
+function estimaterates!(tree::T, trait::Vector{String}, lambda::Vector{Float64}) where T <: AbstractTree
+
+    #gather information from tree in order to preform threepoint
+    nodes = getnodes(tree, postorder)
+    n = nleaves(tree)
+
+    #Get C by running algorithm w/o lambda
+    betahat, C, negloglik = estimaterates(tree, trait) 
+    print(C)
+    
+    t = [getnodedata(tree, node).t for node in nodes]
+
+    k = length(lambda)
+
+    #info for optimiser
+    lower = fill(floatmin(), k)
+
+    #upper is going to be largest lambda can be without going past the leaves
+    #want to find longest internal branch
+    intnodeheights = nodeheights(tree, noleaves=true)
+    longnodeheight = maximum(intnodeheights)
+
+    leafnodeheights = nodeheights(tree, onlyleaves=true)
+    shortleafheight = minimum(leafnodeheights)
+
+    upper = fill(shortleafheight/longnodeheight, k)
+    
+    #lowest value of C, diagonals cant be lower than zero, off diagonals dont have restriction 
+    lowerC = fill(-Inf, k, k)
+
+    for i in 1:k
+        lowerC[i,i] = 0
+    end
+
+    #upper value of C, no restirction
+    upperC = fill(Inf, k, k)
+
+
+    for i in 1:3
+        #optimise to find lambda
+        optslambda = optimize(x -> tooptimisemultlambda(x, C, tree, nodes, trait, n),
+                   lower, upper, lambda, Fminbox(LBFGS()), Optim.Options(time_limit = 30))
+        #get lambda value
+        lambda = Optim.minimizer(optslambda)
+        #print to ensure its running and see how it's going
+        print(lambda)
+
+        #optimise to find C
+        optsC = optimize(x -> tooptimisemultlambda(lambda, x, tree, nodes, trait, n), 
+                    lowerC, upperC, C, Fminbox(LBFGS()), Optim.Options(time_limit = 30))
+        #get C value
+        C = Optim.minimizer(optsC)
+        
+    end
+
+
+    #information from last node
+    nN = last(nodes)
+    nd = getnodedata(tree, nN)
+
+    betahat = inv(nd.xx) * nd.Q
+
+    k = length(trait)
+
+    negloglik = (1.0 / 2.0) * (n * k * log(2π) + nd.logV + n + log(abs(det((nd.yy - 2 * betahat * nd.Q' + betahat * nd.xx * betahat')))))
+
+    return betahat, C, negloglik, lambda
+end
+
+
+#PIC calculations, ignore for now
+##############################
+#=
 function pic!(tree::T, trait::Vector{String}, nodes::Vector{N}, lambda::Vector{Float64}) where 
     {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
      T <: AbstractTree{TT, RT, NL, N, B}}
@@ -377,160 +559,6 @@ end
         return estimateratesflambda!(tree, trait, lambda)
     end
 
-####################################################################
-
-    function threepointmultlambda!(tree::T, trait::Vector{String}, nodes::Vector{N}, C::Matrix{Float64}, lambda::Vector{Float64}) where 
-        {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
-         T <: AbstractTree{TT, RT, NL, N, B}}
-        #prefrom algortihm in Ho & Ane 2014
-        #function estimaterates gets inputs into right form
-        #nodes - vector of nodes in the traversal order
-    
-    
-        for node in nodes
-            nd = getnodedata(tree, node)
-            nodet = nd.t
-    
-            C1 = diagm(lambda) * C * diagm(lambda)
-
-            k = length(trait)
-
-            #need to see if node is a tip (leaf)
-            if isleaf(tree, node)
-                nodetrait = nd.value
-
-                parent = getparent(tree, node)
-
-                parentdata = getnodedata(tree, parent)
-
-                parentt = parentdata.t
-                
-                # update node data
-                nd.logV = log(det(nodet * C - (nodet - parentt) * C1))
-                nd.p = inv(nodet * C * C1 - (nodet - parentt) * diagm(ones(k)))
-                nd.yl = C1^(-1) * nodetrait
-                nd.xl = 1.0
-                nd.Q = p * nodetrait
-                nd.xx = p
-                nd.yy = nodetrait' * p * nodetrait
-    
-            else
-                # need to find direct desendents 
-                children = getchildren(tree, node)
-    
-                # child data
-                childdata = getnodedata.(tree, children)
-        
-                # calculations
-                childp = [s.p for s in childdata]
-                pA = sum(childp)
-                ws = pA^(-1) * childp
-                wshat = childp *  pA^(-1)
-               
-                calc = diagm(ones(k)) + nodet * pA
-                nd.logV = sum(s.logV for s in childdata) + log(det(calc))
-                nd.p = pA / calc
-                nd.xl = sum(ws .* [s.xl for s in childdata]) 
-                nd.yl = sum(ws .* [s.yl for s in childdata])
-    
-                c2 = nodet * pA^2 * calc^(-1)
-                nd.Q = sum(s.Q for s in childdata) -  nd.xl' * c2 * nd.yl
-                nd.xx = sum(s.xx for s in childdata) - nd.xl' * c2 * nd.xl
-                nd.yy = sum(s.yy for s in childdata) - nd.yl' * c2 * nd.yl
-    
-            end
-            # @assert getnodedata(tree, node) === nd
-        end
-    
-        return tree
-    end
-
-    function tooptimisemultlambda(lambda::Vector{Float64}, C::Matrix{Float64}, tree::T, nodes::Vector{N}, trait::Vector{String}, n::Int) where 
-        {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
-        T <: AbstractTree{TT, RT, NL, N, B}}
-        #lambda - value for Signal   
-        #tree - tree
-        #nodes - nodes of the tree in traversal order
-        #t - vector of og branch lengths
-        #trait - string of what trait is called on the tree
-        #N - total number of nodes
-        #n - number of leaves
-    
-        #= dont need to change the tree lengths
-        for node in nodes
-            #val = getnodedata(tree, node).value
-            if hasinbound(tree, node)
-                len = _getlength(tree, _getinbound(tree, node)) * lambda[1]
-                if isleaf(tree, node)
-                    full = getheight(tree, node)
-                    len = len + full * (1 - lambda[1])
-                end
-                getnodedata(tree, node).t = len
-            else
-                getnodedata(tree, node).t = 0
-            end
-        end
-        =#
-    
-        threepointmultlambda!(tree, trait, nodes, C, lambda)
-    
-        #information from last node
-        nN = last(nodes)
-        nd = getnodedata(tree, nN)
-    
- 
-        negloglik = (1.0 / 2.0) * (n * log(2π) .+ nd.logV + n + n * log(det(C)))
-        return negloglik
-    end
-
-    function estimateratesmultlambda!(tree::T, trait::Vector{String}, lambda::Vector{Float64}) where T <: AbstractTree
-
-        #get information from tree in order to preform threepoint
-        nodes = getnodes(tree, postorder)
-        n = nleaves(tree)
-
-        #Get C
-        betahat, C, negloglik = estimaterates(tree, trait) 
-    
-        
-        t = [getnodedata(tree, node).t for node in nodes]
-    
-        #info for optimiser
-        lower = zeros(length(lambda))
-    
-        #upper is going to be largest lambda can be without going past the leaves
-        #want to find longest internal branch
-        intnodeheights = nodeheights(tree, noleaves=true)
-        longnodeheight = maximum(intnodeheights)
-    
-        leafnodeheights = nodeheights(tree, onlyleaves=true)
-        shortleafheight = minimum(leafnodeheights)
-    
-        upper = fill(shortleafheight/longnodeheight, length(lambda))
-    
-        for i in 1:3
-        #optimise to find lambda
-        optslambda = optimize(x -> tooptimisemultlambda(x, C, tree, nodes, trait, n),
-                       lower, upper, lambda, Fminbox(LBFGS()), Optim.Options(iterations = 300))
-        lambda = Optim.minimizer(optslambda)
-
-        optsC = optimize(x -> tooptimisemultlambda(lambda, x, tree, nodes, trait, n), C, Optim.Options(iterations = 300))
-        lambda = Optim.minimizer(optsC)
-        end
-
-    
-        #information from last node
-        nN = last(nodes)
-        nd = getnodedata(tree, nN)
-    
-        betahat = inv(nd.xx) * nd.Q
-    
-        k = length(trait)
-    
-        negloglik = (1.0 / 2.0) * (n * k * log(2π) .+ nd.logV + n + n * log(det(C))) 
-    
-    
-        return betahat, C, negloglik, lambda
-    end
+=#
     
     
