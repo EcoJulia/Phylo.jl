@@ -46,7 +46,7 @@ estimaterates(tree, ["trait1", "trait2"], lambda = [0.8, 0.8])
 
 #Preform inference on multiple traits using real world data
 #load the tree
-const multtree3::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}), "Data/Qian2016.tree")
+const multtree3::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}), "Data/Qian2016.tree");
 
 #load the data
 df = DataFrame(CSV.File("Data/Myrtaceae.csv"))

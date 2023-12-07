@@ -26,6 +26,8 @@ mutable struct TraitData{NTraits} <: AbstractTraitData
     ylmult::Matrix{Float64}       # 1' W^(-1) y
 end
 
+traitdata(name::String, value::Float64, t::Float64 = 0.0) = traitdata([name], [value], t)
+
 traitdata(name::Vector{String}, value::Vector{Float64}, t::Float64 = 0.0) =
     TraitData{length(name)}(name, value, t, NaN, NaN, fill(NaN, length(name)), NaN, 
                             fill(NaN, length(name)), NaN, fill(NaN, length(name), length(name)), fill(NaN, length(name)), fill(NaN, length(name)),
@@ -33,16 +35,14 @@ traitdata(name::Vector{String}, value::Vector{Float64}, t::Float64 = 0.0) =
 
 TraitData{NTraits}() where NTraits = traitdata(fill("", NTraits), fill(NaN, NTraits))
 
-const TLB{RT, LenUnits} = LinkBranch{RT, String, Nothing, LenUnits}
-const TLN{NT, RT, LenUnits} = LinkNode{RT, String, TraitData{NT}, TLB{RT, LenUnits}}
-const TLT{NT, RT, TD, LenUnits} = LinkTree{RT, String, TLN{NT, RT, LenUnits}, TLB{RT, LenUnits}, TD}
-const TLTD{NT, RT, LenUnits} = TLT{NT, RT, Dict{String, Any}, LenUnits}
-const TraitTree{NTraits} = TLTD{NTraits, OneRoot, Float64}
-
-
+const TReB{NT, RT, BT, LenUnits} = RecursiveBranch{RT, String, TraitData{NT}, Nothing, BT, LenUnits}
+const TReN{NT, RT, BT, LenUnits} = RecursiveNode{RT, String, TraitData{NT}, Nothing, BT, LenUnits}
+const TReT{NT, RT, TD, BT, LenUnits} = RecursiveTree{RT, String, TraitData{NT}, Nothing, BT, LenUnits, TD}
+const TReTD{NT, RT, BT, LenUnits} = TReT{NT, RT, Dict{String, Any}, BT, LenUnits}
+const TraitTree{NTraits} = TReTD{NTraits, OneRoot, PolytomousBranching, Float64}
 
 function threepoint!(tree::T, trait::Vector{String}, nodes::Vector{N}) where 
-    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+    {TT, RT, NL, N <: AbstractElt{RT, NL}, B <: AbstractElt{RT, NL},
      T <: AbstractTree{TT, RT, NL, N, B}}
     #prefrom algortihm in Ho & Ane 2014
     #function estimaterates gets inputs into right form
@@ -199,7 +199,7 @@ function estimaterates(tree::T, trait::Vector{String}; lambda = missing) where T
 end
 
 function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N}, trait::Vector{String}, n::Int) where 
-    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+    {TT, RT, NL, N <: AbstractElt{RT, NL}, B <: AbstractElt{RT, NL},
     T <: AbstractTree{TT, RT, NL, N, B}}
     #lambda - value for Signal   
     #tree - tree
@@ -251,7 +251,7 @@ end
 ####################################################################
 
 function threepointmultlambda!(tree::T, trait::Vector{String}, nodes::Vector{N}, C::Matrix{Float64}, lambda::Vector{Float64}) where 
-    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+    {TT, RT, NL, N <: AbstractElt{RT, NL}, B <: AbstractElt{RT, NL},
      T <: AbstractTree{TT, RT, NL, N, B}}
     #prefrom algortihm in Ho & Ane 2014 for multiple lambda
     #function estimaterates gets inputs into right form
@@ -323,7 +323,7 @@ function threepointmultlambda!(tree::T, trait::Vector{String}, nodes::Vector{N},
 end
 
 function tooptimisemultlambda(lambda::Vector{Float64}, C::Matrix{Float64}, tree::T, nodes::Vector{N}, trait::Vector{String}, n::Int) where 
-    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+    {TT, RT, NL, N <: AbstractElt{RT, NL}, B <: AbstractElt{RT, NL},
     T <: AbstractTree{TT, RT, NL, N, B}}
     #lambda - value for Signal 
     #C - evolutionary rates and covariances matrix  
@@ -426,7 +426,7 @@ end
 ##############################
 #=
 function pic!(tree::T, trait::Vector{String}, nodes::Vector{N}, lambda::Vector{Float64}) where 
-    {TT, RT, NL, N <: AbstractNode{RT, NL}, B <: AbstractBranch{RT, NL},
+    {TT, RT, NL, N <: AbstractElt{RT, NL}, B <: AbstractElt{RT, NL},
      T <: AbstractTree{TT, RT, NL, N, B}}
     #prefrom algortihm in Ho & Ane 2014
     #function estimaterates gets inputs into right form
