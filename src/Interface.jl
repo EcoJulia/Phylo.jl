@@ -859,20 +859,21 @@ end
 end
 
 """
-    getconnections(tree::AbstractTree, nodee)
+    getconnections(tree::AbstractTree, node, exclude = [])
 
 Returns all of the branches connected to a node.
 """
 function getconnections end
-@traitfn function getconnections(tree::T, node::NL) where
+@traitfn function getconnections(tree::T, node::NL, exclude::Vector = []) where
     {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
-    return _getconnections(tree, _getnode(tree, node))
+    return _getconnections(tree, _getnode(tree, node), exclude)
 end
-@traitfn function getconnections(tree::T, node::N) where
+
+@traitfn function getconnections(tree::T, node::N, exclude::Vector = []) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
     _hasnode(tree, node) || error("Node $node does not exist")
-    return _getconnections(tree, node)
+    return _getconnections(tree, node, exclude)
 end
 
 """
@@ -988,6 +989,7 @@ function conns end
     hasbranch(tree, branch) || error("Branch $branch does not exist")
     return _conns(tree, getbranch(tree, branch))
 end
+
 @traitfn function conns(tree::T, branch::B) where
     {T <: AbstractTree{OneTree}, B; MatchBranchType{T, B}}
     _hasbranch(tree, branch) || error("Branch $branch does not exist")
