@@ -183,12 +183,16 @@ include("rand.jl")
 export Nonultrametric, Ultrametric
 export BrownianTrait, DiscreteTrait, SymmetricDiscreteTrait
 
-# Read Newick Tree
-include("newick.jl")
-export parsenewick, parsenexus
-
 # Display methods expanded
 include("show.jl")
+
+# Read and write Newick Trees
+include("newick.jl")
+export parsenewick
+
+# Read and write Nexus Trees
+include("nexus.jl")
+export parsenexus
 
 # Method for trimming trees
 include("trim.jl")

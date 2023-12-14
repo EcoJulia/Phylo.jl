@@ -786,7 +786,7 @@ _getsiblings(tree::AbstractTree{OneTree, <: Rooted}, node) =
     append!([_getparent(tree, node)], _getchildren(tree, node)) :
     _getchildren(tree, node)
 _getsiblings(tree::AbstractTree{OneTree, Unrooted}, node) =
-    [_conn(tree, branch, node) for branch in _getconnections(tree, node)]
+    [_conn(tree, branch, node) for branch in _getconnections(tree, node, [])]
 
 """
     _addconnection!(tree::AbstractTree, node::AbstractNode, branch)

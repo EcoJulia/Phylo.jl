@@ -3,9 +3,6 @@ using Phylo.API
 using Printf
 
 abstract type OutputType end
-abstract type NewickLike <: OutputType end
-struct Newick <: NewickLike end
-struct Nexus <: NewickLike end
 struct CompactOutput <: OutputType end
 struct StandardOutput <: OutputType end
 
@@ -67,52 +64,6 @@ function outputnode!(io::IO, tree::AbstractTree, node, ::StandardOutput, ot)
     return nothing
 end
 
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, String}, node, ::Newick,
-                     ::Type{Nothing}) where {TT, RT}
-    print(io, "\"", getnodename(tree, node), "\"")
-    return nothing
-end
-
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, <: Number}, node, ::Newick,
-                     ::Type{Nothing}) where {TT, RT}
-    print(io, getnodename(tree, node))
-    return nothing
-end
-
-function outputnode!(io::IO, tree::AbstractTree, node, ::Newick, ::Type{<: Dict})
-    print(io, "\"", getnodename(tree, node), "\"")
-    nd = getnodedata(tree, node)
-    if !isempty(nd)
-        print(io, "[&")
-        for (i, key) in enumerate(keys(nd))
-            if i > 1
-                print(io, ",")
-            end
-            value = nd[key]
-            if value isa String
-                print(io, key, "=\"", value, "\"")
-            elseif value isa Number
-                print(io, key, "=", value)
-            elseif value isa Vector
-                print(io, key, "={")
-                for (j, elt) in enumerate(value)
-                    if j > 1
-                        print(io, ",")
-                    end
-                    if elt isa String
-                        print(io, "\"", elt, "\"")
-                    elseif elt isa Number
-                        print(io, elt)
-                    end
-                end
-                print(io, "}")
-            end
-        end
-        print(io, "]")
-    end
-    return nothing
-end
-
 function outputnode(tree::AbstractTree, node, ot::OutputType)
     ios = IOBuffer()
     outputnode!(ios, tree, node, ot)
@@ -140,97 +91,11 @@ function outputbranch!(io::IO, tree::TREE, branch, ::StandardOutput,
     return nothing
 end
 
-function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{Nothing})
-    if haslength(tree, branch)
-        print(io, ":", getlength(tree, branch))
-    end
-    return nothing
-end
-
-function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{<: Dict})
-    if haslength(tree, branch)
-        print(io, ":")
-        bd = getbranchdata(tree, branch)
-        if !isempty(bd)
-            print(io, "[&")
-            for (i, key) in enumerate(keys(bd))
-                if i > 1
-                    print(io, ",")
-                end
-                value = nd[key]
-                if value isa String
-                    print(io, key, "=\"", value, "\"")
-                elseif value isa Number
-                    print(io, key, "=", value)
-                elseif value isa Vector
-                    print(io, key, "={")
-                    for (j, elt) in enumerate(value)
-                        if j > 1
-                            print(io, ",")
-                        end
-                        if elt isa String
-                            print(io, "\"", elt, "\"")
-                        elseif elt isa Number
-                            print(io, elt)
-                        end
-                    end
-                    print(io, key, "}")
-                end
-            end
-            print(io, "]")
-        end
-        print(io, getlength(tree, branch))
-    end
-    return nothing
-end
-
 function outputbranch(tree::AbstractTree, branch, ot::OutputType)
     ios = IOBuffer()
     outputbranch!(ios, tree, branch, ot)
     return String(take!(ios))
 end
-
-function outputsubtree!(io::IO, tree::T, node, ot::Newick) where T <: AbstractTree{OneTree, OneRoot}
-    if !isleaf(tree, node)
-        print(io, "(")
-        for (i, branch) in enumerate(getoutbounds(tree, node))
-            if i > 1
-                print(io, ",")
-            end
-            outputsubtree!(io, tree, dst(tree, branch), ot)
-            outputbranch!(io, tree, branch, ot, branchdatatype(T))
-        end
-        print(io, ")")
-    end
-    outputnode!(io, tree, node, ot, nodedatatype(T))
-    return nothing
-end
-
-function outputsubtree!(io::IO, tree::T, node, ot::Newick, exclude = []) where T <: AbstractTree{OneTree, Unrooted}
-    cs = getconnections(tree, node, exclude)
-    if !isempty(cs)
-        print(io, "(")
-        for (i, branch) in cs
-            if i > 1
-                print(io, ",")
-            end
-            outputsubtree!(io, tree, dst(tree, branch), ot, [branch])
-            outputbranch!(io, tree, branch, ot, branchdatatype(T))
-        end
-        print(io, ")")
-    end
-    outputnode!(io, tree, node, ot, nodedatatype(T))
-    return nothing
-end
-
-function outputtree!(io::IO, tree::AbstractTree{OneTree}, node, ot::Newick)
-    outputsubtree!(io::IO, tree::AbstractTree{OneTree}, node, ot::Newick)
-    print(io, ";")
-    return nothing
-end
-
-outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, ot::Newick) =
-    outputtree!(io, tree, getroot(tree), ot)
 
 function outputtree!(io::IO, tree::TREE, ::CompactOutput) where TREE <: AbstractTree{OneTree}
     print(io, "$TREE with $(nleaves(tree)) tips and $(nroots(tree)) $(nroots(tree) == 1 ? "root" : "roots"). ")
@@ -320,6 +185,7 @@ function outputtree(tree::AbstractTree, ot::OutputType)
     return String(take!(ios))
 end
 
+import Base: show
 function show(io::IO, tree::TREE) where TREE <: AbstractTree{OneTree}
     if get(io, :compact, false)
         outputtree!(io, tree, CompactOutput())
