@@ -79,22 +79,35 @@ make_tokenizer((error,
 =#
 
 abstract type NewickLike <: OutputType end
-struct Newick <: NewickLike end
+struct Newick{T} <: NewickLike
+    translate::T
+end
 
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, String}, node, ::Newick,
+Newick() = Newick(nothing)
+
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick{Dict{T, Int}},
+                     ::Type{Nothing}) where {TT, RT, T}
+    nn = getnodename(tree, node)
+    if haskey(newick.translate, nn)
+        print(io, newick.translate[nn])
+    end
+return nothing
+end
+
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, String}, node, ::Newick{Nothing},
                      ::Type{Nothing}) where {TT, RT}
     print(io, "'", getnodename(tree, node), "'")
     return nothing
 end
 
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, <: Number}, node, ::Newick,
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, <: Number}, node, ::Newick{Nothing},
                      ::Type{Nothing}) where {TT, RT}
     print(io, getnodename(tree, node))
     return nothing
 end
 
-function outputnode!(io::IO, tree::AbstractTree, node, ::Newick, ::Type{<: Dict})
-    print(io, "'", getnodename(tree, node), "'")
+function outputnode!(io::IO, tree::AbstractTree, node, newick::Newick, ::Type{<: Dict})
+    outputnode!(io, tree, node, newick, Nothing)
     nd = getnodedata(tree, node)
     if !isempty(nd)
         print(io, "[&")
