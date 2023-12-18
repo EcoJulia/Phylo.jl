@@ -1,5 +1,7 @@
 struct Nexus <: NewickLike end
 
+treeOutputType(::Type{<: AbstractTree{ManyTrees}}) = Nexus
+
 function parsenexus(token, state, tokens, ::Type{TREE}) where
     {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     trees = missing

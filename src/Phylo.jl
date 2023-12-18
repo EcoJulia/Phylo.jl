@@ -188,11 +188,11 @@ include("show.jl")
 
 # Read and write Newick Trees
 include("newick.jl")
-export parsenewick
+export parsenewick, Newick
 
 # Read and write Nexus Trees
 include("nexus.jl")
-export parsenexus
+export parsenexus, Nexus
 
 # Method for trimming trees
 include("trim.jl")

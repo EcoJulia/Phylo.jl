@@ -85,18 +85,27 @@ end
 
 Newick() = Newick(nothing)
 
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick{Dict{T, Int}},
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick{<: Dict{T, String}},
                      ::Type{Nothing}) where {TT, RT, T}
+    nn = getnodename(tree, node)
+    if haskey(newick.translate, nn)
+        print(io, "\"", newick.translate[nn], "\"")
+    end
+    return nothing
+end
+
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick{<: Dict{T, W}},
+    ::Type{Nothing}) where {TT, RT, T, W}
     nn = getnodename(tree, node)
     if haskey(newick.translate, nn)
         print(io, newick.translate[nn])
     end
-return nothing
+    return nothing
 end
 
 function outputnode!(io::IO, tree::AbstractTree{TT, RT, String}, node, ::Newick{Nothing},
                      ::Type{Nothing}) where {TT, RT}
-    print(io, "'", getnodename(tree, node), "'")
+    print(io, "\"", getnodename(tree, node), "\"")
     return nothing
 end
 
@@ -106,7 +115,7 @@ function outputnode!(io::IO, tree::AbstractTree{TT, RT, <: Number}, node, ::Newi
     return nothing
 end
 
-function outputnode!(io::IO, tree::AbstractTree, node, newick::Newick, ::Type{<: Dict})
+function outputnode!(io::IO, tree::AbstractTree, node, newick::Newick{NT}, ::Type{<: Dict}) where NT
     outputnode!(io, tree, node, newick, Nothing)
     nd = getnodedata(tree, node)
     if !isempty(nd)
@@ -117,7 +126,7 @@ function outputnode!(io::IO, tree::AbstractTree, node, newick::Newick, ::Type{<:
             end
             value = nd[key]
             if value isa String
-                print(io, key, "='", value, "'")
+                print(io, key, "=\"", value, "\"")
             elseif value isa Number
                 print(io, key, "=", value)
             elseif value isa Vector
@@ -127,7 +136,7 @@ function outputnode!(io::IO, tree::AbstractTree, node, newick::Newick, ::Type{<:
                         print(io, ",")
                     end
                     if elt isa String
-                        print(io, "'", elt, "'")
+                        print(io, "\"", elt, "\"")
                     elseif elt isa Number
                         print(io, elt)
                     end
@@ -159,7 +168,7 @@ function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{
                 end
                 value = nd[key]
                 if value isa String
-                    print(io, key, "='", value, "'")
+                    print(io, key, "=\"", value, "\"")
                 elseif value isa Number
                     print(io, key, "=", value)
                 elseif value isa Vector
@@ -169,7 +178,7 @@ function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{
                             print(io, ",")
                         end
                         if elt isa String
-                            print(io, "'", elt, "'")
+                            print(io, "\"", elt, "\"")
                         elseif elt isa Number
                             print(io, elt)
                         end
@@ -184,7 +193,8 @@ function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{
     return nothing
 end
 
-function outputsubtree!(io::IO, tree::T, node, ot::Newick) where T <: AbstractTree{OneTree, OneRoot}
+function outputsubtree!(io::IO, tree::T, node, ot::Newick{NT}) where
+    {T <: AbstractTree{OneTree, OneRoot}, NT}
     if !isleaf(tree, node)
         print(io, "(")
         for (i, branch) in enumerate(getoutbounds(tree, node))
@@ -200,7 +210,8 @@ function outputsubtree!(io::IO, tree::T, node, ot::Newick) where T <: AbstractTr
     return nothing
 end
 
-function outputsubtree!(io::IO, tree::T, node, ot::Newick, exclude = []) where T <: AbstractTree{OneTree, Unrooted}
+function outputsubtree!(io::IO, tree::T, node, ot::Newick{NT}, exclude = []) where
+    {T <: AbstractTree{OneTree, Unrooted}, NT}
     cs = getconnections(tree, node, exclude)
     if !isempty(cs)
         print(io, "(")
@@ -217,18 +228,20 @@ function outputsubtree!(io::IO, tree::T, node, ot::Newick, exclude = []) where T
     return nothing
 end
 
-function outputtree!(io::IO, tree::AbstractTree{OneTree}, node, ot::Newick)
-    outputsubtree!(io::IO, tree::AbstractTree{OneTree}, node, ot::Newick)
+function outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, node, ot::Newick{NT}) where NT
+    outputsubtree!(io, tree, node, ot)
     print(io, ";")
     return nothing
 end
 
-outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, ot::Newick) =
+outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, ot::Newick{NT}) where NT =
     outputtree!(io, tree, getroot(tree), ot)
 
-write(io::IO, tree::T, ::Type{OT} = TT ≡ OneTree ? Newick : Nexus) where
-    {TT <: TreeType, T <: AbstractTree{TT}, OT <: NewickLike} =
+write(io::IO, tree::T, ::Type{OT} = treeOutputType(T)) where
+    {T <: AbstractTree, OT <: NewickLike} =
     outputtree!(io, tree, OT())
+
+treeOutputType(::Type{<: AbstractTree{OneTree}}) = Newick
 
 function write(file::String, tree::AbstractTree)
     open(file, "w") do io
