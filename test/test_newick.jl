@@ -54,8 +54,30 @@ using Test
         @test_throws Exception parsenewick("((,),(,))", TreeType)
         @test_throws Exception parsenewick("((,),(,);", TreeType)
         tree = open(f -> parsenewick(f, TreeType), Phylo.path("H1N1.newick"))
-        @test nleaves(tree) == 507
-        @test ntrees(tree) == 1
+        if roottype(TreeType) == OneRoot
+            @test_nowarn Phylo.write("t1.newick", tree)
+            tree2 = open(f -> parsenewick(f, TreeType), "t1.newick")
+            @test nleaves(tree) == nleaves(tree2) == 507
+            @test ntrees(tree) == ntrees(tree2) == 1
+            @test Set(getnodenames(tree)) == Set(getnodenames(tree2))
+            @test Set(getleafnames(tree)) == Set(getleafnames(tree2))
+            names = getnodenames(tree2)
+            open("t2.newick", "w") do io
+                Phylo.outputtree!(io, tree2, Newick(Dict(names .=> 1:nnodes(tree2))))
+            end
+            tree3 = open(f -> parsenewick(f, TreeType), "t2.newick")
+            @test Set(getnodenames(tree3)) == Set(string.(1:nnodes(tree3)))
+            open("t3.newick", "w") do io
+                Phylo.outputtree!(io, tree3, Newick(Dict(string.(1:nnodes(tree3)) .=> names)))
+            end
+            tree4 = open(f -> parsenewick(f, TreeType), "t3.newick")
+            @test Set(getnodenames(tree)) == Set(getnodenames(tree4))
+            @test Set(getleafnames(tree)) == Set(getleafnames(tree4))
+        else
+            @test nleaves(tree) == 507
+            @test ntrees(tree) == 1
+        end
+    
         treex = open(f -> parsenexus(f, TreeType), Phylo.path("H1N1.trees"))
         @test nleaves(tree) == nleaves(treex) ==
             nleaves(treex["TREE1"]) == nleaves(treex["TREE2"])
