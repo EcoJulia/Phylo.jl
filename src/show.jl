@@ -64,9 +64,9 @@ function outputnode!(io::IO, tree::AbstractTree, node, ::StandardOutput, ot)
     return nothing
 end
 
-function outputnode(tree::AbstractTree, node, ot::OutputType)
+function outputnode(tree::TREE, node, ot::OutputType) where TREE <: AbstractTree
     ios = IOBuffer()
-    outputnode!(ios, tree, node, ot)
+    outputnode!(ios, tree, node, ot, nodedatatype(TREE))
     return String(take!(ios))
 end
 
@@ -82,12 +82,12 @@ end
 function outputbranch!(io::IO, tree::TREE, branch, ::StandardOutput,
                        _ = branchdatatype(TREE)) where {TT, TREE <: AbstractTree{TT, <: Rooted}}
     print(io, "[")
-    outputnode!(io, tree, branch.in, CompactOutput(), Nothing)
+    outputnode!(io, tree, src(tree, branch), CompactOutput(), Nothing)
     print(io, "] --> (")
     outputbranch!(io, tree, branch, CompactOutput(), Nothing)
     print(io, ") --> [")
-    outputnode!(io, tree, branch.conns[1], CompactOutput(), Nothing)
-    prinln(io, "]")
+    outputnode!(io, tree, dst(tree, branch), CompactOutput(), Nothing)
+    println(io, "]")
     return nothing
 end
 

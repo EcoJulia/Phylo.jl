@@ -54,6 +54,15 @@ using Test
         @test_throws Exception parsenewick("((,),(,))", TreeType)
         @test_throws Exception parsenewick("((,),(,);", TreeType)
         tree = open(f -> parsenewick(f, TreeType), Phylo.path("H1N1.newick"))
+        a = IOBuffer()
+        @test_nowarn show(IOContext(a, :compact => false), tree)
+        @test String(take!(a)) == Phylo.outputtree(tree, Phylo.StandardOutput())
+        @test_nowarn show(IOContext(a, :compact => true), tree)
+        @test String(take!(a)) == Phylo.outputtree(tree, Phylo.CompactOutput())
+        @test Phylo.outputnode(tree, first(getnodes(tree)), Phylo.CompactOutput()) isa String
+        @test Phylo.outputnode(tree, first(getnodes(tree)), Phylo.StandardOutput()) isa String
+        @test Phylo.outputbranch(tree, first(getbranches(tree)), Phylo.CompactOutput()) isa String
+        @test Phylo.outputbranch(tree, first(getbranches(tree)), Phylo.StandardOutput()) isa String
         if roottype(TreeType) == OneRoot
             @test_nowarn Phylo.write("t1.newick", tree)
             tree2 = open(f -> parsenewick(f, TreeType), "t1.newick")
@@ -79,6 +88,7 @@ using Test
         end
     
         treex = open(f -> parsenexus(f, TreeType), Phylo.path("H1N1.trees"))
+        @test_nowarn show(a, treex)
         @test nleaves(tree) == nleaves(treex) ==
             nleaves(treex["TREE1"]) == nleaves(treex["TREE2"])
         @test ntrees(treex) == 2
