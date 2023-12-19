@@ -212,15 +212,16 @@ end
 outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, ot::Newick{NT}) where NT =
     outputtree!(io, tree, getroot(tree), ot)
 
-write(io::IO, tree::T, ::Type{OT} = treeOutputType(T)) where
+write(io::IO, tree::T, ot::OT) where
     {T <: AbstractTree, OT <: NewickLike} =
-    outputtree!(io, tree, OT())
+    outputtree!(io, tree, ot)
 
 treeOutputType(::Type{<: AbstractTree{OneTree}}) = Newick
 
-function write(file::String, tree::AbstractTree)
+function write(file::String, tree::T, ot::OT = treeOutputType(T)()) where
+    {T <: AbstractTree, OT <: NewickLike}
     open(file, "w") do io
-        write(io, tree)
+        write(io, tree, ot)
     end
 end
 
