@@ -1,3 +1,8 @@
+"""
+    Nexus
+
+Type to specify nexus format for input or output.
+"""
 struct Nexus <: NewickLike end
 
 treeOutputType(::Type{<: AbstractTree{ManyTrees}}) = Nexus

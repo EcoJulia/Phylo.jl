@@ -52,6 +52,7 @@ validate!
 invalidate!
 branchdims
 treetype
+treesettype
 ```
 
 ## Methods on Nodes

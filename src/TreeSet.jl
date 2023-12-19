@@ -19,6 +19,12 @@ end
 TreeSet(trees::AbstractVector{T}) where T <: AbstractTree{OneTree} =
     TreeSet(Dict(Pair.(Base.OneTo(length(trees)), trees)))
 
+"""
+    treesettype(::Type{AbstractTree}, ::Type{LABEL} = String)
+
+Returns type of a TreeSet containing a collection of trees, from those trees' type
+and the type of label used to identify trees.
+"""
 treesettype(::Type{TREE}, ::Type{LABEL} = String) where
     {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}, LABEL} =
     TreeSet{LABEL, RT, NL, N, B, TREE}

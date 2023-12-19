@@ -83,6 +83,14 @@ make_tokenizer((error,
 =#
 
 abstract type NewickLike <: OutputType end
+"""
+    Newick{T}
+
+Type to specify newick format for input or output. Parameterised
+optionally (default `Nothing`) by `T` to allow a dictionary to
+specify which nodes to export and how to map their names during
+export.
+"""
 struct Newick{T} <: NewickLike
     translate::T
 end
