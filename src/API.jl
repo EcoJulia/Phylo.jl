@@ -194,8 +194,6 @@ Returns a tree - either itself if it is a single tree, or the single tree
 in a set with label id. Must be implemented for any ManyTrees type.
 """
 function _gettree end
-_gettree(treepair::Pair{Label, <: AbstractTree{OneTree}}) where Label =
-    treepair[2]
 @traitfn function _gettree(tree::T,
                            id::TN) where {T <: AbstractTree{OneTree}, TN;
                                           MatchTreeNameType{T, TN}}
@@ -302,8 +300,8 @@ _nroots(tree::AbstractTree{OneTree, Unrooted}) = 0
 """
     _getnode(::AbstractTree, id)
 
-Returns the node or name associated with id (which could be a name,
-a node or a pair) from a tree. Must be implemented for any PreferNodeObjects
+Returns the node or name associated with id (which could be a name or
+a node) from a tree. Must be implemented for any PreferNodeObjects
 tree and node label type.
 """
 function _getnode end
@@ -312,29 +310,17 @@ function _getnode end
                                   T <: AbstractTree{OneTree, RT, NL, N};
                                   PreferNodeObjects{T}} = node
 @traitfn _getnode(tree::T,
-                  pair::Pair{NL, N}) where {RT, NL, N,
-                                            T <: AbstractTree{OneTree,
-                                                              RT, NL, N};
-                                            PreferNodeObjects{T}} = pair[2]
-@traitfn _getnode(tree::T,
                   nodename::NL) where {RT, NL,
                                        T <: AbstractTree{OneTree, RT, NL};
                                        !PreferNodeObjects{T}} = nodename
-@traitfn _getnode(tree::T,
-                  pair::Pair{NL, N}) where {RT, NL, N,
-                                            T <: AbstractTree{OneTree,
-                                                              RT, NL, N};
-                                            !PreferNodeObjects{T}} = pair[1]
 
 """
     _getnodename(::AbstractTree, id)
 
-Returns the name of a node associated with id (which could be a name, a node
-or a pair) from a tree. Must be implemented for PreferNodeObjects tree types.
+Returns the name of a node associated with id (which could be a name or a node)
+from a tree. Must be implemented for PreferNodeObjects tree types.
 """
 function _getnodename end
-_getnodename(::AbstractTree{OneTree, RT, NL, N},
-             pair::Pair{NL, N}) where {RT, NL, N} = pair[1]
 _getnodename(::AbstractTree{OneTree, RT, NL, N},
              nodename::NL) where {RT, NL, N} = nodename
 
@@ -367,8 +353,8 @@ function _deletenode! end
 """
     _getbranch(::AbstractTree, id)
 
-Returns the branch or name associated with id (which could be a name,
-a branch or a pair) from a tree. Must be implemented for any PreferBranchObjects
+Returns the branch or name associated with id (which could be a name or
+a branch) from a tree. Must be implemented for any PreferBranchObjects
 tree and branch label type.
 """
 function _getbranch end
@@ -377,20 +363,9 @@ function _getbranch end
                                       T <: AbstractTree{OneTree, RT, NL, N, B};
                                       PreferBranchObjects{T}} = branch
 @traitfn _getbranch(::T,
-                    pair::Pair{Int, B}) where {RT, NL, N, B,
-                                               T <: AbstractTree{OneTree, RT,
-                                                                 NL, N, B};
-                                               PreferBranchObjects{T}} = pair[2]
-@traitfn _getbranch(::T,
                     branchname::Int) where {T <: AbstractTree{OneTree};
                                             !PreferBranchObjects{T}} =
                                                 branchname
-@traitfn _getbranch(::T,
-                    pair::Pair{Int, B}) where {RT, NL, N, B,
-                                               T <: AbstractTree{OneTree,
-                                                                 RT, NL, N, B};
-                                               !PreferBranchObjects{T}} =
-                                                   pair[1]
 @traitfn _getbranch(tree::T, src::N1, dst::N2) where
     {T <: AbstractTree{OneTree}, N1, N2; MatchNodeTypes{T, N1, N2}} =
     first(b for b in _getbranches(tree) if _src(tree, b) == src && _dst(tree, b) == dst)
@@ -402,12 +377,10 @@ function _getbranch end
 """
     _getbranchname(::AbstractTree, id)
 
-Returns the name of a branch associated with id (which could be a name, a branch
-or a pair) from a tree. Must be implemented for PreferBranchObjects tree types.
+Returns the name of a branch associated with id (which could be a name or a branch)
+from a tree. Must be implemented for PreferBranchObjects tree types.
 """
 function _getbranchname end
-_getbranchname(::AbstractTree{OneTree, RT, NL, N},
-               pair::Pair{NL, N}) where {RT, NL, N} = pair[1]
 _getbranchname(::AbstractTree{OneTree}, id::Int) = id
 
 """
