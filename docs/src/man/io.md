@@ -63,7 +63,7 @@ and nexus for ManyTrees trees (e.g. a TreeSet). However, you can tell it to use 
 for a OneTree:
 
 ```@example io
-Phylo.write("test.trees", simpletree, Nexus())
+Phylo.write("test.trees", simpletree, format = Nexus())
 ```
 
 ## Creating random phylogenies

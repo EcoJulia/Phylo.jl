@@ -35,7 +35,7 @@ function outputtree!(io::IO, tree::AbstractTree{TT, OneRoot}, ::Nexus) where TT
             end
         end
     end
-    
+
     for tn in gettreenames(tree)
         println(io)
         print(io, "TREE $tn")
@@ -46,6 +46,153 @@ function outputtree!(io::IO, tree::AbstractTree{TT, OneRoot}, ::Nexus) where TT
         println(io)
     end
     println(io, "END;")
+end
+
+function parsetaxa(token, state, tokens, taxa)
+    if !isDIMENSIONS(token)
+        tokenerror(token, "Dimensions")
+    end
+    result = iterateskip(tokens, state)
+    isnothing(result) && return nothing
+    token, state = result
+    token, state, ntaxstr = tokensgetkey(token, state, tokens)
+    if lowercase(ntaxstr) != "ntax"
+        error("Unexpected label '$ntaxstr=' not 'ntax='")
+    end
+    result = iterateskip(tokens, state)
+    isnothing(result) && return nothing
+    token, state = result
+    ntax = parse(Int64, untokenize(token))
+    result = iterateskip(tokens, state)
+    isnothing(result) && return nothing
+    token, state = result
+    if token.kind != T.SEMICOLON
+        tokenerror(token, ";")
+    end
+    result = iterateskip(tokens, state)
+    isnothing(result) && return nothing
+    token, state = result
+    if !isTAXLABELS(token)
+        tokenerror(token, "Taxlabels")
+    end
+    result = iterateskip(tokens, state)
+    isnothing(result) && return nothing
+    token, state = result
+    while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
+        name = untokenize(token)
+        if token.kind ∈ [T.STRING, T.CHAR]
+            name = name[2:end-1]
+        end
+        result = iterateskip(tokens, state)
+        isnothing(result) && return nothing
+        token, state = result
+        taxa[name] = name
+        if token.kind == T.LSQUARE
+            while token.kind != T.RSQUARE
+                result = iterateskip(tokens, state)
+                isnothing(result) && return nothing
+                token, state = result
+            end
+            result = iterateskip(tokens, state)
+            isnothing(result) && return nothing
+            token, state = result
+        end
+    end
+    if length(taxa) != ntax
+        @warn "Taxa list length ($(length(taxa))) and ntax ($ntax) do not match"
+    end
+
+    result = iterateskip(tokens, state)
+    isnothing(result) && return nothing
+    token, state = result
+    if !checktosemi(isEND, token, state, tokens)
+        tokenerror(token, "End;")
+    end
+    return iterateskip(tokens, state)
+end
+
+function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
+    {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
+    notaxa = isempty(taxa)
+    if isTRANSLATE(token)
+        result = iterateskip(tokens, state)
+        isnothing(result) && return nothing
+        token, state = result
+        while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
+            short = untokenize(token)
+            result = iterateskip(tokens, state)
+            isnothing(result) && return nothing
+            token, state = result
+            proper = untokenize(token)
+            result = iterateskip(tokens, state)
+            isnothing(result) && return nothing
+            token, state = result
+            if haskey(taxa, proper)
+                delete!(taxa, proper)
+                taxa[short] = proper
+            elseif notaxa
+                @warn "Found a '$short' => '$proper' link without a taxa entry first"
+                taxa[short] = proper
+            else
+                @warn "Missing '$proper' in taxa block, but in 'trees -> translate' block"
+            end
+            if token.kind == T.COMMA
+                result = iterateskip(tokens, state)
+                isnothing(result) && return nothing
+                token, state = result
+            end
+        end
+        result = iterateskip(tokens, state)
+        isnothing(result) && return nothing
+        token, state = result
+    end
+
+    trees = Dict{String, TREE}()
+    treedata = Dict{String, Dict{String, Any}}()
+    numTrees = 0
+    while isTREE(token)
+        result = iterateskip(tokens, state)
+        isnothing(result) && return nothing
+        token, state = result
+        token, state, treename = tokensgetkey(token, state, tokens,
+                                              t -> t.kind ∈ [T.LSQUARE, T.EQ])
+        numTrees += 1
+        if numTrees < 10
+            @info "Created a tree called '$treename'"
+        elseif numTrees == 10
+            @info "[Stopping reporting on tree creation]"
+        end
+        trees[treename] = TREE()
+        createnodes!(trees[treename], collect(values(taxa)))
+        if token.kind == T.LSQUARE
+            token, state, treedata[treename] = parsedict(token, state, tokens)
+        end
+        if !isEQ(token)
+            tokenerror(token, "=")
+        else
+            result = iterateskip(tokens, state)
+            isnothing(result) && return nothing
+            token, state = result
+            if token.kind == T.LSQUARE
+                token, state, _ = parsedict(token, state, tokens)
+            end
+        end
+        if token.kind != T.LPAREN
+            tokenerror(token, "(")
+        else
+            result = parsenewick!(token, state, tokens, trees[treename], taxa)
+            isnothing(result) && return nothing
+            token, state = result
+        end
+    end
+    if !checktosemi(isEND, token, state, tokens)
+        tokenerror(token, "End;")
+    end
+
+    result = iterateskip(tokens, state)
+    isnothing(result) && return nothing
+    token, state = result
+    return token, state, trees, treedata
 end
 
 function parsenexus(token, state, tokens, ::Type{TREE}) where
@@ -146,3 +293,6 @@ Parse some input containing a nexus tree and convert into a phylogenetic
 tree of type RootedTree
 """
 parsenexus(inp) = parsenexus(inp, RootedTree)
+
+parsenewicklike(::Type{T}, str, format::Nexus) where T <: AbstractTree =
+    parsenexus(str, eltype(T))

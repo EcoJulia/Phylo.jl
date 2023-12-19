@@ -19,6 +19,10 @@ end
 TreeSet(trees::AbstractVector{T}) where T <: AbstractTree{OneTree} =
     TreeSet(Dict(Pair.(Base.OneTo(length(trees)), trees)))
 
+treesettype(::Type{TREE}, ::Type{LABEL} = String) where
+    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}, LABEL} =
+    TreeSet{LABEL, RT, NL, N, B, TREE}
+
 import Base.IteratorSize
 function IteratorSize(::Type{TreeSet})
     return HasLength()
@@ -53,7 +57,10 @@ import Base.eltype
 eltype(::TreeSet{LABEL, RT, NL, N, B, TREE}) where
     {LABEL, RT, NL, N, B,
      TREE <: AbstractTree{OneTree, RT, NL, N, B}} = TREE
-
+eltype(::Type{TreeSet{LABEL, RT, NL, N, B, TREE}}) where
+    {LABEL, RT, NL, N, B,
+     TREE <: AbstractTree{OneTree, RT, NL, N, B}} = TREE
+ 
 import Base.length
 length(ts::TreeSet) = length(ts.trees)
 

@@ -9,6 +9,10 @@
 # Length → empty | ":" FPNum
 # FPNum number
 
+# These are punctuation: () [] {} / \, ; := * ' "` + - <> 
+# These are newline: (1) single text character for carriage return (ASCII 13), (2) linefeed (ASCII 10), (3) carriage return followed immediately by a linefeed
+# These are whitespace: newline, space, tab, ascii 0-6
+
 # open_meta + ("[^"]*"+|[^,=\s]+) + spc + (=\s*(\{[^=}]*\}|"[^"]*"+|[^,]+))? + close_meta
 
 using ParserCombinator
@@ -212,16 +216,17 @@ end
 outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, ot::Newick{NT}) where NT =
     outputtree!(io, tree, getroot(tree), ot)
 
-write(io::IO, tree::T, ot::OT) where
-    {T <: AbstractTree, OT <: NewickLike} =
-    outputtree!(io, tree, ot)
-
 treeOutputType(::Type{<: AbstractTree{OneTree}}) = Newick
 
-function write(file::String, tree::T, ot::OT = treeOutputType(T)()) where
+import Base: write
+write(io::IO, tree::T; format::OT = treeOutputType(T)()) where
+    {T <: AbstractTree, OT <: NewickLike} =
+    outputtree!(io, tree, format)
+
+function write(file::String, tree::T; format::OT = treeOutputType(T)()) where
     {T <: AbstractTree, OT <: NewickLike}
     open(file, "w") do io
-        write(io, tree, ot)
+        write(io, tree, format = format)
     end
 end
 
@@ -632,149 +637,11 @@ tree of type RootedTree
 """
 parsenewick(inp) = parsenewick(inp, RootedTree)
 
-function parsetaxa(token, state, tokens, taxa)
-    if !isDIMENSIONS(token)
-        tokenerror(token, "Dimensions")
-    end
-    result = iterateskip(tokens, state)
-    isnothing(result) && return nothing
-    token, state = result
-    token, state, ntaxstr = tokensgetkey(token, state, tokens)
-    if lowercase(ntaxstr) != "ntax"
-        error("Unexpected label '$ntaxstr=' not 'ntax='")
-    end
-    result = iterateskip(tokens, state)
-    isnothing(result) && return nothing
-    token, state = result
-    ntax = parse(Int64, untokenize(token))
-    result = iterateskip(tokens, state)
-    isnothing(result) && return nothing
-    token, state = result
-    if token.kind != T.SEMICOLON
-        tokenerror(token, ";")
-    end
-    result = iterateskip(tokens, state)
-    isnothing(result) && return nothing
-    token, state = result
-    if !isTAXLABELS(token)
-        tokenerror(token, "Taxlabels")
-    end
-    result = iterateskip(tokens, state)
-    isnothing(result) && return nothing
-    token, state = result
-    while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
-        name = untokenize(token)
-        if token.kind ∈ [T.STRING, T.CHAR]
-            name = name[2:end-1]
-        end
-        result = iterateskip(tokens, state)
-        isnothing(result) && return nothing
-        token, state = result
-        taxa[name] = name
-        if token.kind == T.LSQUARE
-            while token.kind != T.RSQUARE
-                result = iterateskip(tokens, state)
-                isnothing(result) && return nothing
-                token, state = result
-            end
-            result = iterateskip(tokens, state)
-            isnothing(result) && return nothing
-            token, state = result
-        end
-    end
-    if length(taxa) != ntax
-        @warn "Taxa list length ($(length(taxa))) and ntax ($ntax) do not match"
-    end
+parsenewicklike(::Type{T}, str, format::Newick) where T <: AbstractTree =
+    parsenewick(str, T)
 
-    result = iterateskip(tokens, state)
-    isnothing(result) && return nothing
-    token, state = result
-    if !checktosemi(isEND, token, state, tokens)
-        tokenerror(token, "End;")
-    end
-    return iterateskip(tokens, state)
-end
+import Base: parse
+parse(::Type{T}, str; format::OT = treeOutputType(T)()) where
+    {T <: AbstractTree, OT <: NewickLike} = parsenewicklike(T, str, format)
 
-function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
-    {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
-    notaxa = isempty(taxa)
-    if isTRANSLATE(token)
-        result = iterateskip(tokens, state)
-        isnothing(result) && return nothing
-        token, state = result
-        while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
-            short = untokenize(token)
-            result = iterateskip(tokens, state)
-            isnothing(result) && return nothing
-            token, state = result
-            proper = untokenize(token)
-            result = iterateskip(tokens, state)
-            isnothing(result) && return nothing
-            token, state = result
-            if haskey(taxa, proper)
-                delete!(taxa, proper)
-                taxa[short] = proper
-            elseif notaxa
-                @warn "Found a '$short' => '$proper' link without a taxa entry first"
-                taxa[short] = proper
-            else
-                @warn "Missing '$proper' in taxa block, but in 'trees -> translate' block"
-            end
-            if token.kind == T.COMMA
-                result = iterateskip(tokens, state)
-                isnothing(result) && return nothing
-                token, state = result
-            end
-        end
-        result = iterateskip(tokens, state)
-        isnothing(result) && return nothing
-        token, state = result
-    end
-
-    trees = Dict{String, TREE}()
-    treedata = Dict{String, Dict{String, Any}}()
-    numTrees = 0
-    while isTREE(token)
-        result = iterateskip(tokens, state)
-        isnothing(result) && return nothing
-        token, state = result
-        token, state, treename = tokensgetkey(token, state, tokens,
-                                              t -> t.kind ∈ [T.LSQUARE, T.EQ])
-        numTrees += 1
-        if numTrees < 10
-            @info "Created a tree called '$treename'"
-        elseif numTrees == 10
-            @info "[Stopping reporting on tree creation]"
-        end
-        trees[treename] = TREE()
-        createnodes!(trees[treename], collect(values(taxa)))
-        if token.kind == T.LSQUARE
-            token, state, treedata[treename] = parsedict(token, state, tokens)
-        end
-        if !isEQ(token)
-            tokenerror(token, "=")
-        else
-            result = iterateskip(tokens, state)
-            isnothing(result) && return nothing
-            token, state = result
-            if token.kind == T.LSQUARE
-                token, state, _ = parsedict(token, state, tokens)
-            end
-        end
-        if token.kind != T.LPAREN
-            tokenerror(token, "(")
-        else
-            result = parsenewick!(token, state, tokens, trees[treename], taxa)
-            isnothing(result) && return nothing
-            token, state = result
-        end
-    end
-    if !checktosemi(isEND, token, state, tokens)
-        tokenerror(token, "End;")
-    end
-
-    result = iterateskip(tokens, state)
-    isnothing(result) && return nothing
-    token, state = result
-    return token, state, trees, treedata
-end
+parse(::Type{T}; kwargs...) where T <: AbstractTree = str -> parse(T, str; kwargs...)

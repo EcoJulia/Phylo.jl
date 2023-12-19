@@ -19,8 +19,16 @@ using Test
     @testset "For $TreeType" for TreeType in
         [NamedTree, Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64}, RootedTree, ManyRootTree]
         tree = open(f -> parsenewick(f, TreeType), Phylo.path("H1N1.newick"))
-        a = IOBuffer()
+        tree_p = open(f -> parse(TreeType, f, format = Newick()), Phylo.path("H1N1.newick"))
+        @test getnodenames(tree) == getnodenames(tree_p)
+        tree_pf = open(parse(TreeType), Phylo.path("H1N1.newick"))
+        @test getnodenames(tree) == getnodenames(tree_pf)
         treex = open(f -> parsenexus(f, TreeType), Phylo.path("H1N1.trees"))
+        treex_p = open(parse(Phylo.treesettype(TreeType), format = Nexus()), Phylo.path("H1N1.trees"))
+        @test getnodenames(treex) == getnodenames(treex_p)
+        treex_pf = open(f -> parse(Phylo.treesettype(TreeType), f), Phylo.path("H1N1.trees"))
+        @test getnodenames(treex) == getnodenames(treex_pf)
+        a = IOBuffer()
         @test_nowarn show(a, treex)
         @test ntrees(treex) == 2
         @test nleaves(tree) == nleaves(treex) ==
