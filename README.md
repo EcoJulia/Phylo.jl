@@ -24,8 +24,8 @@ installed with `add`. For example:
 
 ## Project Status
 
-The package is confirmed to work against Julia v1.6, the current LTS Julia
-v1.4 release and the latest release on Linux, macOS, and Windows. It is also
+The package is confirmed to work against the current LTS Julia v1.6 release
+and the latest release on Linux, macOS, and Windows. It is also
 tested against nightly.
 
 ## Contributing and Questions
