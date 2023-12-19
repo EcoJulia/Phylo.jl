@@ -28,10 +28,12 @@ function outputtree!(io::IO, tree::AbstractTree{TT, OneRoot}, ::Nexus) where TT
     end
 
     for tn in gettreenames(tree)
+        println(io)
         print(io, "TREE $tn")
         outputmetacomment!(io, gettreeinfo(tree)[tn], Nexus())
         print(io, " = [&R] ")
         outputtree!(io, tree[tn], getroot(tree[tn]), Newick(d))
+        println(io)
     end
     println(io, "END;")
 end
