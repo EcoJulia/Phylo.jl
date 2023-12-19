@@ -1,7 +1,7 @@
 # Traversing and iterating over trees
 The code also provides iterators, and filtered iterators over the
 branches, nodes, branchnames and nodenames of a tree (using the random tree from
-[Creating phylogenies](input.md))
+[Creating and writing phylogenies](io.md))
 ```@example random_trees
 using Phylo
 nu = Nonultrametric(5);
