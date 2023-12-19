@@ -30,11 +30,11 @@ ts = open(parsenexus, Phylo.path("H1N1.trees"))
 Reading multiple trees from a nexus file returns a `TreeSet` - index to get
 the individual trees
 
-```@example reading
+```@example io
 gettreeinfo(ts)
 ```
 
-```@example reading
+```@example io
 ts["TREE1"]
 ```
 
