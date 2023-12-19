@@ -55,10 +55,14 @@ using Test
         @test String(take!(a)) == Phylo.outputtree(tree, Phylo.StandardOutput())
         @test_nowarn show(IOContext(a, :compact => true), tree)
         @test String(take!(a)) == Phylo.outputtree(tree, Phylo.CompactOutput())
-        @test Phylo.outputnode(tree, first(getnodes(tree)), Phylo.CompactOutput()) isa String
-        @test Phylo.outputnode(tree, first(getnodes(tree)), Phylo.StandardOutput()) isa String
+        @test Phylo.outputnode(tree, first(getroots(tree)), Phylo.CompactOutput()) isa String
+        @test Phylo.outputnode(tree, first(getroots(tree)), Phylo.StandardOutput()) isa String
+        @test Phylo.outputnode(tree, first(getleaves(tree)), Phylo.CompactOutput()) isa String
+        @test Phylo.outputnode(tree, first(getleaves(tree)), Phylo.StandardOutput()) isa String
         @test Phylo.outputbranch(tree, first(getbranches(tree)), Phylo.CompactOutput()) isa String
         @test Phylo.outputbranch(tree, first(getbranches(tree)), Phylo.StandardOutput()) isa String
+        @test Phylo.outputnode(tree, first(getinternalnodes(tree)), Phylo.CompactOutput()) isa String
+        @test Phylo.outputnode(tree, first(getinternalnodes(tree)), Phylo.StandardOutput()) isa String
         if roottype(TreeType) == OneRoot
             @test_nowarn Phylo.write("t1.newick", tree)
             tree2 = open(f -> parsenewick(f, TreeType), "t1.newick")
@@ -67,14 +71,10 @@ using Test
             @test Set(getnodenames(tree)) == Set(getnodenames(tree2))
             @test Set(getleafnames(tree)) == Set(getleafnames(tree2))
             names = getnodenames(tree2)
-            open("t2.newick", "w") do io
-                Phylo.outputtree!(io, tree2, Newick(Dict(names .=> 1:nnodes(tree2))))
-            end
+            Phylo.write("t2.newick", tree2, Newick(Dict(names .=> 1:nnodes(tree2))))
             tree3 = open(f -> parsenewick(f, TreeType), "t2.newick")
             @test Set(getnodenames(tree3)) == Set(string.(1:nnodes(tree3)))
-            open("t3.newick", "w") do io
-                Phylo.outputtree!(io, tree3, Newick(Dict(string.(1:nnodes(tree3)) .=> names)))
-            end
+            Phylo.write("t3.newick", tree3, Newick(Dict(string.(1:nnodes(tree3)) .=> names)))
             tree4 = open(f -> parsenewick(f, TreeType), "t3.newick")
             @test Set(getnodenames(tree)) == Set(getnodenames(tree4))
             @test Set(getleafnames(tree)) == Set(getleafnames(tree4))
