@@ -64,7 +64,7 @@ mutable struct RecursiveTree{RT, NL, NodeData, BranchData, BT <: BranchingType, 
                 Vector{RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits}}}
 
     function RecursiveTree{RT, NL, NodeData, BranchData,
-                           BT, LenUnits, TD}(tipnames::Vector{NL} = NL[];
+                           BT, LenUnits, TD}(tipnames::AbstractVector{NL} = NL[];
                                              name::String = TREENAME,
                                              tipdata::TD = _emptydata(TD),
                                              rootheight::Union{LenUnits, Missing} = missing,
@@ -372,7 +372,7 @@ import Phylo.API: _getoutbounds
 _getoutbounds(::RecursiveTree, node::RecursiveNode{<: Rooted}) = node.conns
 
 import Phylo.API: _getconnections
-_getconnections(::RecursiveTree, node::RecursiveNode{Unrooted}, exclude::Vector) =
+_getconnections(::RecursiveTree, node::RecursiveNode{Unrooted}, exclude::AbstractVector) =
     filter(∉(exclude), node.conns)
 
 import Phylo.API: _addinbound!

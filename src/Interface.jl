@@ -864,13 +864,13 @@ end
 Returns all of the branches connected to a node.
 """
 function getconnections end
-@traitfn function getconnections(tree::T, node::NL, exclude::Vector = []) where
+@traitfn function getconnections(tree::T, node::NL, exclude::AbstractVector = []) where
     {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
     return _getconnections(tree, _getnode(tree, node), exclude)
 end
 
-@traitfn function getconnections(tree::T, node::N, exclude::Vector = []) where
+@traitfn function getconnections(tree::T, node::N, exclude::AbstractVector = []) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
     _hasnode(tree, node) || error("Node $node does not exist")
     return _getconnections(tree, node, exclude)

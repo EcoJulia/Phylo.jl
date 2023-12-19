@@ -263,7 +263,7 @@ function BinaryTree(lt::BinaryTree{RT, LI, ND};
                                   lt.rootheight)
 end
 
-function BinaryTree{RT, LI, ND}(leafnames::Vector{String},
+function BinaryTree{RT, LI, ND}(leafnames::AbstractVector{String},
                                 treetype::Type{BinaryTree{RT, LI, ND}} =
                                 BinaryTree{RT, LI, ND};
                                 rootheight::Union{Float64, Missing} =
@@ -346,7 +346,7 @@ function PolytomousTree(lt::PolytomousTree{RT, LI, ND};
                                       nodedata, lt.rootheight)
 end
 
-function PolytomousTree{RT, LI, ND}(leafnames::Vector{String},
+function PolytomousTree{RT, LI, ND}(leafnames::AbstractVector{String},
                                     treetype::Type{PolytomousTree{RT, LI, ND}} =
                                     PolytomousTree{RT, LI, ND};
                                     rootheight::Union{Float64, Missing} =
