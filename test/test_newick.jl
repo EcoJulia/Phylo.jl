@@ -3,7 +3,7 @@ module TestNewick
 using Phylo
 using Test
 
-@testset "newick and nexus parsing" begin
+@testset "Newick parsing" begin
     @testset "For $TreeType" for TreeType in [NamedBinaryTree]
         @test length(nodeiter(parsenewick("((,),(,));"))) == 7
         @test ["where", "when it's good", "Not mine", "MyLeaf"] ⊆
@@ -30,10 +30,6 @@ using Test
         tree = open(f -> parsenewick(f, TreeType), Phylo.path("H1N1.newick"))
         @test nleaves(tree) == 507
         @test ntrees(tree) == 1
-        treex = open(f -> parsenexus(f, TreeType), Phylo.path("H1N1.trees"))
-        @test nleaves(tree) == nleaves(treex) ==
-            nleaves(treex["TREE1"]) == nleaves(treex["TREE2"])
-        @test ntrees(treex) == 2
     end
     
     @testset "For $TreeType" for TreeType in
@@ -86,12 +82,6 @@ using Test
             @test nleaves(tree) == 507
             @test ntrees(tree) == 1
         end
-    
-        treex = open(f -> parsenexus(f, TreeType), Phylo.path("H1N1.trees"))
-        @test_nowarn show(a, treex)
-        @test nleaves(tree) == nleaves(treex) ==
-            nleaves(treex["TREE1"]) == nleaves(treex["TREE2"])
-        @test ntrees(treex) == 2
     end
 end
 

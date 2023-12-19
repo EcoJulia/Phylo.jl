@@ -2,6 +2,40 @@ struct Nexus <: NewickLike end
 
 treeOutputType(::Type{<: AbstractTree{ManyTrees}}) = Nexus
 
+function outputtree!(io::IO, tree::AbstractTree{TT, OneRoot}, ::Nexus) where TT
+    println(io, "#NEXUS")
+    println(io, "BEGIN TAXA;")
+    println(io, "    DIMENSIONS NTAX=$(nleaves(tree));")
+    println(io, "    TAXLABELS")
+    leaves = getleafnames(tree)
+    for leaf in leaves
+        println(io, "        $(replace(leaf, r"[ \t\n]" => "_"))")
+    end
+    println(io, "    ;")
+    println(io, "END;")
+
+    d = Dict{eltype(leaves), Int}()
+    println(io, "BEGIN TREES;")
+    println(io, "    TRANSLATE")
+    for (i, leaf) in enumerate(leaves)
+        print(io, "        $i $(replace(leaf, r"[ \t\n]" => "_"))")
+        d[leaf] = i
+        if i < nleaves(tree)
+            println(io, ",")
+        else
+            println(io, ";")
+        end
+    end
+
+    for tn in gettreenames(tree)
+        print(io, "TREE $tn")
+        outputmetacomment!(io, gettreeinfo(tree)[tn], Nexus())
+        print(io, " = [&R] ")
+        outputtree!(io, tree[tn], getroot(tree[tn]), Newick(d))
+    end
+    println(io, "END;")
+end
+
 function parsenexus(token, state, tokens, ::Type{TREE}) where
     {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     trees = missing

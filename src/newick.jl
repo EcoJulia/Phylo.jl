@@ -85,6 +85,37 @@ end
 
 Newick() = Newick(nothing)
 
+function outputmetacomment!(io::IO, data::Dict, ::NewickLike)
+    if !isempty(data)
+        print(io, "[&")
+        for (i, key) in enumerate(keys(data))
+            if i > 1
+                print(io, ",")
+            end
+            value = data[key]
+            if value isa String
+                print(io, key, "=\"", value, "\"")
+            elseif value isa Number
+                print(io, key, "=", value)
+            elseif value isa Vector
+                print(io, key, "={")
+                for (j, elt) in enumerate(value)
+                    if j > 1
+                        print(io, ",")
+                    end
+                    if elt isa String
+                        print(io, "\"", elt, "\"")
+                    elseif elt isa Number
+                        print(io, elt)
+                    end
+                end
+                print(io, "}")
+            end
+        end
+        print(io, "]")
+    end
+end
+
 function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick{<: Dict{T, String}},
                      ::Type{Nothing}) where {TT, RT, T}
     nn = getnodename(tree, node)
@@ -117,35 +148,7 @@ end
 
 function outputnode!(io::IO, tree::AbstractTree, node, newick::Newick{NT}, ::Type{<: Dict}) where NT
     outputnode!(io, tree, node, newick, Nothing)
-    nd = getnodedata(tree, node)
-    if !isempty(nd)
-        print(io, "[&")
-        for (i, key) in enumerate(keys(nd))
-            if i > 1
-                print(io, ",")
-            end
-            value = nd[key]
-            if value isa String
-                print(io, key, "=\"", value, "\"")
-            elseif value isa Number
-                print(io, key, "=", value)
-            elseif value isa Vector
-                print(io, key, "={")
-                for (j, elt) in enumerate(value)
-                    if j > 1
-                        print(io, ",")
-                    end
-                    if elt isa String
-                        print(io, "\"", elt, "\"")
-                    elseif elt isa Number
-                        print(io, elt)
-                    end
-                end
-                print(io, "}")
-            end
-        end
-        print(io, "]")
-    end
+    outputmetacomment!(io, getnodedata(tree, node), Newick())
     return nothing
 end
 
@@ -159,35 +162,7 @@ end
 function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{<: Dict})
     if haslength(tree, branch)
         print(io, ":")
-        bd = getbranchdata(tree, branch)
-        if !isempty(bd)
-            print(io, "[&")
-            for (i, key) in enumerate(keys(bd))
-                if i > 1
-                    print(io, ",")
-                end
-                value = nd[key]
-                if value isa String
-                    print(io, key, "=\"", value, "\"")
-                elseif value isa Number
-                    print(io, key, "=", value)
-                elseif value isa Vector
-                    print(io, key, "={")
-                    for (j, elt) in enumerate(value)
-                        if j > 1
-                            print(io, ",")
-                        end
-                        if elt isa String
-                            print(io, "\"", elt, "\"")
-                        elseif elt isa Number
-                            print(io, elt)
-                        end
-                    end
-                    print(io, key, "}")
-                end
-            end
-            print(io, "]")
-        end
+        outputmetacomment!(io, getbranchdata(tree, branch), Newick())
         print(io, getlength(tree, branch))
     end
     return nothing
