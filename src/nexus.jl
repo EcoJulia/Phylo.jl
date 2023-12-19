@@ -4,35 +4,45 @@ treeOutputType(::Type{<: AbstractTree{ManyTrees}}) = Nexus
 
 function outputtree!(io::IO, tree::AbstractTree{TT, OneRoot}, ::Nexus) where TT
     println(io, "#NEXUS")
-    println(io, "BEGIN TAXA;")
-    println(io, "    DIMENSIONS NTAX=$(nleaves(tree));")
-    println(io, "    TAXLABELS")
+    println(io)
     leaves = getleafnames(tree)
-    for leaf in leaves
-        println(io, "        $(replace(leaf, r"[ \t\n]" => "_"))")
-    end
-    println(io, "    ;")
-    println(io, "END;")
+    d = nothing
+    if !any(isnothing.(tryparse.(Int, leaves)))
+        leaves = sort(parse.(Int, leaves))
+    else
+        println(io, "BEGIN TAXA;")
+        println(io, "    DIMENSIONS NTAX=$(nleaves(tree));")
+        println(io, "    TAXLABELS")
+        for leaf in leaves
+            println(io, "        $(replace(leaf, r"[ \t\n]" => "_"))")
+        end
+        println(io, "    ;")
+        println(io, "END;")
 
-    d = Dict{eltype(leaves), Int}()
+        d = Dict{eltype(leaves), Int}()
+        println(io)
+    end
     println(io, "BEGIN TREES;")
-    println(io, "    TRANSLATE")
-    for (i, leaf) in enumerate(leaves)
-        print(io, "        $i $(replace(leaf, r"[ \t\n]" => "_"))")
-        d[leaf] = i
-        if i < nleaves(tree)
-            println(io, ",")
-        else
-            println(io, ";")
+    if eltype(leaves) ≠ Int
+        println(io, "    TRANSLATE")
+        for (i, leaf) in enumerate(leaves)
+            print(io, "        $i $(replace(leaf, r"[ \t\n]" => "_"))")
+            d[leaf] = i
+            if i < nleaves(tree)
+                println(io, ",")
+            else
+                println(io, ";")
+            end
         end
     end
-
+    
     for tn in gettreenames(tree)
         println(io)
         print(io, "TREE $tn")
+        t1 = gettree(tree, tn)
         outputmetacomment!(io, gettreeinfo(tree)[tn], Nexus())
         print(io, " = [&R] ")
-        outputtree!(io, tree[tn], getroot(tree[tn]), Newick(d))
+        outputtree!(io, t1, getroot(t1), Newick(d))
         println(io)
     end
     println(io, "END;")

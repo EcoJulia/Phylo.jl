@@ -4,26 +4,26 @@
 
 Phylo can read newick trees either from strings,
 
-```@example reading
+```@example io
 using Phylo
 simpletree = parsenewick("((,Tip:1.0)Internal,)Root;")
 ```
 
 which will result in the following tree:
 
-```@example reading
+```@example io
 getbranches(simpletree)
 ```
 
 or from files
 
-```@example reading
+```@example io
 tree = open(parsenewick, Phylo.path("H1N1.newick"))
 ```
 
 It can read nexus trees from files too:
 
-```@example reading
+```@example io
 ts = open(parsenexus, Phylo.path("H1N1.trees"))
 ```
 
@@ -36,6 +36,34 @@ gettreeinfo(ts)
 
 ```@example reading
 ts["TREE1"]
+```
+
+## Writing phylogenies to disk
+
+Phylo can write newick trees either to strings,
+
+```@example io
+out = Phylo.outputtree(simpletree, Newick())
+```
+
+or to files
+
+```@example io
+Phylo.write("test.newick", simpletree)
+```
+
+It can write nexus trees to files too:
+
+```@example io
+Phylo.write("h1.trees", ts)
+```
+
+It will use newick as the default format for OneTree trees (e.g. a RecursiveTree),
+and nexus for ManyTrees trees (e.g. a TreeSet). However, you can tell it to use nexus
+for a OneTree:
+
+```@example io
+Phylo.write("test.newick", simpletree, Newick())
 ```
 
 ## Creating random phylogenies

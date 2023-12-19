@@ -68,8 +68,12 @@ using Test
             tree2 = open(f -> parsenewick(f, TreeType), "t1.newick")
             @test nleaves(tree) == nleaves(tree2) == 507
             @test ntrees(tree) == ntrees(tree2) == 1
+            @test_nowarn Phylo.write("t1.trees", tree, Nexus())
+            tree2x = open(f -> parsenexus(f, TreeType), "t1.trees")
+            @test nleaves(tree) == nleaves(tree2x) == 507
+            @test ntrees(tree) == ntrees(tree2x) == 1
             @test Set(getnodenames(tree)) == Set(getnodenames(tree2))
-            @test Set(getleafnames(tree)) == Set(getleafnames(tree2))
+            @test Set(getleafnames(tree)) == Set(getleafnames(tree2)) == Set(getleafnames(tree2x))
             names = getnodenames(tree2)
             Phylo.write("t2.newick", tree2, Newick(Dict(names .=> 1:nnodes(tree2))))
             tree3 = open(f -> parsenewick(f, TreeType), "t2.newick")
