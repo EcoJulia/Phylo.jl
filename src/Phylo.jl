@@ -176,19 +176,23 @@ export nodeiter, nodefilter, nodenameiter, nodenamefilter,
 
 # A set of multiple trees
 include("TreeSet.jl")
-export TreeSet, gettreeinfo
+export TreeSet, gettreeinfo, treesettype
 
 # Random tree generator
 include("rand.jl")
 export Nonultrametric, Ultrametric
 export BrownianTrait, DiscreteTrait, SymmetricDiscreteTrait
 
-# Read Newick Tree
-include("newick.jl")
-export parsenewick, parsenexus
-
 # Display methods expanded
 include("show.jl")
+
+# Read and write Newick Trees
+include("newick.jl")
+export parsenewick, Newick
+
+# Read and write Nexus Trees
+include("nexus.jl")
+export parsenexus, Nexus
 
 # Method for trimming trees
 include("trim.jl")

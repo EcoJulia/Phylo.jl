@@ -2,115 +2,104 @@ using Phylo
 using Phylo.API
 using Printf
 
-function show(io::IO, object::NamedTuple{(:tree, :node), Tuple{T, N}}) where 
-              {RT <: Rooted, NL, T <: AbstractTree{OneTree, RT, NL}, N}
-    node = getnodename(object.tree, object.node)
-    od = outdegree(object.tree, object.node)
-    if !hasinbound(object.tree, object.node)
-        if od > 0
-            blank = repeat(" ", length("[root $node]"))
-            for (i, bn) in enumerate(getbranchname.(Ref(object.tree), getoutbounds(object.tree, object.node)))
-                b = typeof(bn) <: Number ? "branch $bn" : "\"$bn\""
-                if od == 1
-                    print(io, "[root $node] --> (branch $b)")
-                elseif get(io, :compact, false)
-                    if i == 1
-                        print(io, "[root $node] --> (branches $b,")
-                    elseif i < od
-                        print(io, "$b,")
-                    else
-                        print(io, "and $b)")
-                    end
-                else # multiline view
-                    if i == 1
-                        println(io, "[root $node] --> (branch $b)")
-                    elseif i < od
-                        println(io, "$blank --> (branch $b)")
-                    else
-                        print(io, "$blank --> (branch $b)")
-                    end
-                end
-            end
-        else
-            print(io, "[unattached $node]")
-        end
-    else # hasinbound
-        bn = getbranchname(object.tree, getinbound(object.tree, object.node))
-        inb = typeof(bn) <: Number ? "$bn" : "\"bn\""
-        if od == 0
-            print(io, "(branch $inb) --> [leaf $node]")
-        else
-            blank = repeat(" ", length("(branch $inb) --> [internal $node]"))
-            for (i, bn) in enumerate(getbranchname.(Ref(object.tree), getoutbounds(object.tree, object.node)))
-                b = typeof(bn) <: Number ? "$bn" : "\"$bn\""
-                if od == 1
-                    print(io, "(branch $inb) --> [internal $node] --> (branch $b)")
-                elseif get(io, :compact, false)
-                    if i == 1
-                        print(io, "(branch $inb) --> [internal $node] --> (branches $b,")
-                    elseif i < od
-                        print(io, "$b,")
-                    else
-                        print(io, "and $b)")
-                    end
-                else # multiline view
-                    if i == 1
-                        println(io, "(branch $inb) --> [internal $node] --> (branch $b)")
-                    elseif i < od
-                        println(io, "$blank --> (branch $b)")
-                    else
-                        print(io, "$blank --> (branch $b)")
-                    end
-                end
-            end
-        end
-    end
+abstract type OutputType end
+struct CompactOutput <: OutputType end
+struct StandardOutput <: OutputType end
+
+function outputnode!(io::IO, tree::TREE, node, ::CompactOutput,
+                     _ = nodedatatype(TREE)) where {TT, TREE <: AbstractTree{TT, Unrooted, String}}
+    d = degree(tree, node)
+    opening = d == 0 ? "unattached" : (d > 1 ? "node" : "leaf")
+    print(io, "$opening \"$(getnodename(tree, node))\"")
+    return nothing
 end
 
-function show(io::IO, object::NamedTuple{(:tree, :branch), Tuple{T, B}}) where 
-    {RT <: Rooted, NL, T <: AbstractTree{OneTree, RT, NL}, B}
-    source = NL <: Number ? "node $(getnodename(object.tree, src(object.tree, object.branch)))" :
-        "\"$(getnodename(object.tree, src(object.tree, object.branch)))\""
-    destination = NL <: Number ? "node $(getnodename(object.tree, dst(object.tree, object.branch)))" :
-        "\"$(getnodename(object.tree, dst(object.tree, object.branch)))\""
-    if haslength(object.tree, object.branch)
-        print(io, "[$source] --> ($(getlength(object.tree, object.branch)) " *
-              "length branch $(getbranchname(object.tree, object.branch))) --> [$destination]")
-    else
-        print(io, "[$source] --> (branch $(getbranchname(object.tree, object.branch))) --> [$destination]")
-    end
+function outputnode!(io::IO, tree::TREE, node, ::CompactOutput,
+                     _ = nodedatatype(TREE)) where {TT, TREE <: AbstractTree{TT, Unrooted, <: Number}}
+    d = degree(tree, node)
+    opening = d == 0 ? "unattached" : (d > 1 ? "node" : "leaf")
+    print(io, "$opening $(getnodename(tree, node))")
+    return nothing
 end
 
-function showsimple(io::IO, object::TreeSet)
-    @printf(io, "TreeSet with %d trees, each with %d tips.\n",
-            ntrees(object), nleaves(object))
-    tn = collect(gettreenames(object))
-    if length(tn) < 10
-        println(io, "Tree names are " * join(tn, ", ", " and "))
-    else
-        println(io, "Tree names are " * join(tn[1:5], ", ") *
-                " ... $(length(tn) - 6) missing ... $(tn[end])")
-    end
+function outputnode!(io::IO, tree::TREE, node, ::CompactOutput,
+                     _ = nodedatatype(TREE)) where {TT, TREE <: AbstractTree{TT, <: Rooted, String}}
+    od = outdegree(tree, node)
+    opening = hasinbound(tree, node) ?
+        (od > 0 ? "root node" : "unattached node") :
+        (od > 0 ? "internal node" : "leaf node")
+    print(io, "$opening \"$(getnodename(tree, node))\"")
+    return nothing
 end
 
-function show(io::IO, object::TreeSet)
-    showsimple(io, object)
-    tn =  sort(collect(gettreenames(object)))
-    index = 0
-    for name in tn
-        index += 1
-        if index ≤ 5 || index == length(tn)
-            @printf(io, "\n%s: ", name)
-            showsimple(io, object[name])
-        elseif index == 6
-            println("\n[$(length(tn)-6) trees omitted]\n")
-        end
-    end
+function outputnode!(io::IO, tree::TREE, node, ::CompactOutput,
+                     _ = nodedatatype(TREE)) where {TT, TREE <: AbstractTree{TT, <: Rooted, <: Number}}
+    od = outdegree(tree, node)
+    opening = hasinbound(tree, node) ?
+        (od > 0 ? "root node" : "unattached node") :
+        (od > 0 ? "internal node" : "leaf node")
+    print(io, "$opening $(getnodename(tree, node))")
+    return nothing
 end
 
-function showsimple(io::IO, object::TREE) where TREE <: AbstractTree
-    print(io, "$TREE with $(nleaves(object)) tips and $(nroots(object)) roots. ")
-    ln = getleafnames(object)
+function outputnode!(io::IO, tree::AbstractTree, node, ::StandardOutput, ot)
+    ios = IOBuffer()
+    od = outdegree(tree, node)
+    if hasinbound(tree, node)
+        print(ios, "(")
+        outputbranch!(ios, tree, getinbound(tree, node), CompactOutput(), Nothing)
+        print(ios, ") --> ")
+    end
+    print(ios, "[")
+    outputnode!(ios, tree, node, CompactOutput(), ot)
+    print(ios, "]")
+    opening = String(take!(ios))
+
+    blank = repeat(" ", length(opening))
+    for (i, b) in enumerate(getoutbounds(tree, node))
+        print(io, i == 1 ? "$opening --> (" :  "$blank --> (")
+        outputbranch!(io, tree, b, CompactOutput(), Nothing)
+        println(io, ")")
+    end
+    return nothing
+end
+
+function outputnode(tree::TREE, node, ot::OutputType) where TREE <: AbstractTree
+    ios = IOBuffer()
+    outputnode!(ios, tree, node, ot, nodedatatype(TREE))
+    return String(take!(ios))
+end
+
+function outputbranch!(io::IO, tree::TREE, branch, ::CompactOutput,
+                       _ = branchdatatype(TREE)) where TREE <: AbstractTree
+    print(io, "branch $(getbranchname(tree, branch))")
+    if haslength(tree, branch)
+        print(io, ": length $(getlength(tree, branch))")
+    end
+    return nothing
+end
+
+function outputbranch!(io::IO, tree::TREE, branch, ::StandardOutput,
+                       _ = branchdatatype(TREE)) where {TT, TREE <: AbstractTree{TT, <: Rooted}}
+    print(io, "[")
+    outputnode!(io, tree, src(tree, branch), CompactOutput(), Nothing)
+    print(io, "] --> (")
+    outputbranch!(io, tree, branch, CompactOutput(), Nothing)
+    print(io, ") --> [")
+    outputnode!(io, tree, dst(tree, branch), CompactOutput(), Nothing)
+    println(io, "]")
+    return nothing
+end
+
+function outputbranch(tree::AbstractTree, branch, ot::OutputType)
+    ios = IOBuffer()
+    outputbranch!(ios, tree, branch, ot)
+    return String(take!(ios))
+end
+
+function outputtree!(io::IO, tree::TREE, ::CompactOutput) where TREE <: AbstractTree{OneTree}
+    print(io, "$TREE with $(nleaves(tree)) tips and $(nroots(tree)) $(nroots(tree) == 1 ? "root" : "roots"). ")
+    ln = getleafnames(tree)
     if length(ln) < 10
         print(io, "Leaf names are " * join(ln, ", ", " and "))
     else
@@ -119,24 +108,96 @@ function showsimple(io::IO, object::TREE) where TREE <: AbstractTree
     end
 end
 
-function show(io::IO, object::AbstractTree)
-    showsimple(io, object)
-    if get(io, :compact, false)
-        println("$(nnodes(object)) nodes and $(nbranches(object)) branches.")
+function outputtree!(io::IO, tree::TREE, ::StandardOutput) where TREE <: AbstractTree{OneTree}
+    outputtree!(io, tree, CompactOutput())
+    n = nnodes(tree)
+    ns = collect(getnodes(tree))
+    print(io, "\n\n$n nodes: [")
+    if n < 10
+        println(io, join(ns, ", ", " and ") * "]")
     else
-        println(io)
-        println(io, "$(nnodes(object)) nodes:")
-        for node in getnodes(object)
-            println(io, (tree=object, node=node))
+        println(io, join(ns[1:5], ", ") *
+                " ... $(n - 6) missing ... $(ns[end])]")
+    end
+
+    b = nbranches(tree)
+    bs = collect(getbranches(tree))
+    print(io, "\n$b branches: [")
+    if n < 10
+        println(io, join(bs, ", ", " and ") * "]")
+    else
+        println(io, join(bs[1:5], ", ") *
+                " ... $(b - 6) missing ... $(collect(bs)[end])]")
+    end
+
+    if nodedatatype(TREE) ≢ Nothing
+        print(io, "\nNode records: ")
+        nn = getnodenames(tree)
+        if nnodes(tree) == 1
+            println(io, Dict(nn[1] => getnodedata(tree, nn[1])))
+        elseif nnodes(tree) == 2
+            println(io, nn[1] => getnodedata(tree, nn[1]), nn[2] => getnodedata(tree, nn[2]))
+        elseif nnodes(tree) > 2
+            println(io, nn[1] => getnodedata(tree, nn[1]), " ... ", nn[end] => getnodedata(tree, nn[end]))
         end
-        println(io, "$(nbranches(object)) branches:")
-        for branch in getbranches(object)
-            println(io, (tree=object, branch=branch))
+    end
+end
+
+function outputtree!(io::IO, treeset::TREE, ::CompactOutput) where TREE <: AbstractTree{ManyTrees}
+    println(io, "$TREE with $(ntrees(treeset)) tree(s), each with $(nleaves(treeset)) tips.")
+    tn = collect(gettreenames(treeset))
+    if length(tn) == 1
+        print(io, "Tree name is $(tn[1])")
+    elseif length(tn) < 10
+        print(io, "Tree names are " * join(tn, ", ", " and "))
+    else
+        print(io, "Tree names are " * join(tn[1:5], ", ") *
+              " ... $(length(tn) - 6) missing ... $(tn[end])")
+    end
+    println(io, ". $(nnodes(treeset)) nodes and $(nbranches(treeset)) branches.")
+    return nothing
+end
+
+function outputtree!(io::IO, treeset::TREE, ::StandardOutput) where TREE <: AbstractTree{ManyTrees}
+    outputtree!(io, treeset, CompactOutput())
+    nt = ntrees(treeset)
+    if nt < 10
+        for treename in gettreenames(treeset)
+            print(io, "\n$treename: ")
+            outputtree!(io, treeset[treename], CompactOutput())
         end
-        if nodedatatype(typeof(object)) ≢ Nothing
-            println(io, "Node records:")
-            println(io, Dict(name => getnodedata(object, name)
-                             for name in getnodenames(object)))
+    else
+        for (index, treename) in enumerate(gettreenames(treeset))
+            if index ≤ 5 || index == nt
+                print(io, "\n$treename: ")
+                outputtree!(io, treeset[treename], CompactOutput())
+            elseif index == 6
+                println(io, "\n[$(nt - 6) trees omitted]\n")
+            end
         end
+    end
+    return nothing
+end
+
+function outputtree(tree::AbstractTree, ot::OutputType)
+    ios = IOBuffer()
+    outputtree!(ios, tree, ot)
+    return String(take!(ios))
+end
+
+import Base: show
+function show(io::IO, tree::TREE) where TREE <: AbstractTree{OneTree}
+    if get(io, :compact, false)
+        outputtree!(io, tree, CompactOutput())
+    else
+        outputtree!(io, tree, StandardOutput())
+    end
+end
+
+function show(io::IO, treeset::TREE) where TREE <: AbstractTree{ManyTrees}
+    if get(io, :compact, false)
+        outputtree!(io, treeset, CompactOutput())
+    else
+        outputtree!(io, treeset, StandardOutput())
     end
 end

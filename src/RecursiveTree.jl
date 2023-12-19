@@ -372,7 +372,8 @@ import Phylo.API: _getoutbounds
 _getoutbounds(::RecursiveTree, node::RecursiveNode{<: Rooted}) = node.conns
 
 import Phylo.API: _getconnections
-_getconnections(::RecursiveTree, node::RecursiveNode{Unrooted}) = node.conns
+_getconnections(::RecursiveTree, node::RecursiveNode{Unrooted}, exclude::Vector) =
+    filter(∉(exclude), node.conns)
 
 import Phylo.API: _addinbound!
 function _addinbound!(tree::RecursiveTree{RT},
@@ -448,7 +449,7 @@ import Phylo.API: _removeconnection!
 function _removeconnection!(tree::RecursiveTree{Unrooted},
                             node::RecursiveNode{Unrooted},
                             branch::RecursiveBranch{Unrooted})
-    if branch ∉ _getconnections(tree, node)
+    if branch ∉ getconnections(tree, node)
         error("Node $(node.name) does not have connection to branch $(branch.id)")
     end
     filter!(p -> p ≢ branch, node.conns)
@@ -660,11 +661,16 @@ function _deletebranch!(tree::RecursiveTree{Unrooted}, branch::RecursiveBranch{U
 end
 
 import Base.show
+show(io::IO, ::MIME"text/plain", node::RecursiveNode{Unrooted}) =
+    length(node.conns) == 0 ? print(io, "unattached node '$(node.name)'") :
+        length(node.conns) == 1 ? print(io, "leaf node '$(node.name)'") :
+            print(io, "internal node '$(node.name)'")
+
 function show(io::IO, node::RecursiveNode{Unrooted})
     nc = length(node.conns)
-    print(io, "Unrooted RecursiveNode '$(node.name)' ")
+    print(io, "RecursiveNode{Unrooted} '$(node.name)' ")
     if nc == 0
-        print(io, "with no connections.")
+        print(io, "with no connections")
     elseif nc == 1
         print(io, "with 1 connection (branch $(node.conns[1].id))")
     else
@@ -672,40 +678,50 @@ function show(io::IO, node::RecursiveNode{Unrooted})
     end
 end
 
+show(io::IO, ::MIME"text/plain", node::RecursiveNode{<: Rooted}) =
+    isnothing(node.in) ?
+        (length(node.conns) == 0 ? print(io, "unattached node '$(node.name)'") :
+            print(io, "root node '$(node.name)'")) :
+        (length(node.conns) == 0 ? print(io, "internal node '$(node.name)'") :
+            print(io, "leaf node '$(node.name)'"))
+
 function show(io::IO, node::RecursiveNode{RT}) where RT <: Rooted
-    print(io, "$RT RecursiveNode $(node.name), ")
+    print(io, "RecursiveNode{$RT} '$(node.name)', ")
     no = length(node.conns)
     if isnothing(node.in)
         if no == 0
-            print(io, "an isolated node with no connections.")
+            print(io, "an isolated node with no connections")
         elseif no == 1
             print(io, "a root node with 1 outbound connection" *
                   " (branch $(node.conns[1].id))")
         else
-            print(io, "a root node with $nc outbound connections" *
+            print(io, "a root node with $no outbound connections" *
                   " (branches $(getfield.(node.conns, :id)))")
         end
     else
         if no == 0
-            print(io, "a leaf with an incoming connection (branch $(node.in.id)).")
+            print(io, "a leaf with an incoming connection (branch $(node.in.id))")
         elseif no == 1
             print(io, "an internal node with 1 inbound and 1 outbound connection " *
                   "(branches $(node.in.id) and $(node.conns[1].id))")
         else
-            print(io, "an internal node with 1 inbound and $nc outbound connections" *
+            print(io, "an internal node with 1 inbound and $no outbound connections" *
                   " (branches $(node.in.id) and $(getfield.(node.conns, :id)))")
         end
     end
 end
 
+show(io::IO, ::MIME"text/plain", branch::RecursiveBranch) =
+    print(io, "branch '$(branch.id)'")
+
 function show(io::IO, branch::RecursiveBranch{Unrooted})
-    print(io, "Unrooted RecursiveBranch $(branch.id), connecting nodes" *
-          " $(branch.conns[1].name) and $(branch.conns[2].name)" *
-          (ismissing(branch.length) ? "" : " (length $(branch.length))."))
+    print(io, "RecursiveBranch{Unrooted} $(branch.id), connecting nodes" *
+          " '$(branch.conns[1].name)' and '$(branch.conns[2].name)'" *
+          (ismissing(branch.length) ? "" : " (length $(branch.length))"))
 end
 
 function show(io::IO, branch::RecursiveBranch{RT}) where RT <: Rooted
-    print(io, "$RT RecursiveBranch $(branch.id), from node $(branch.in.name)" *
-          " to node $(branch.conns[1].name)" *
-          (ismissing(branch.length) ? "" : " (length $(branch.length))."))
+    print(io, "RecursiveBranch{$RT} $(branch.id), from node '$(branch.in.name)'" *
+          " to node '$(branch.conns[1].name)'" *
+          (ismissing(branch.length) ? "" : " (length $(branch.length))"))
 end

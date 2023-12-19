@@ -5,7 +5,7 @@
 | **Documentation** | **Build Status** | **DOI** |
 |:-----------------:|:--------------------------:|:--------------------------:|
 | [![stable docs][docs-stable-img]][docs-stable-url] | [![build tests][actions-img]][actions-url] [![JuliaNightly][nightly-img]][nightly-url] | [![Zenodo][zenodo-badge]][zenodo-url] |
-| [![dev docs][docs-dev-img]][docs-dev-url] | [![codecov][codecov-img]][codecov-url] [![coveralls][coveralls-img]][coveralls-url] | |
+| [![dev docs][docs-dev-img]][docs-dev-url] | [![codecov][codecov-img]][codecov-url] | |
 
 ## Installation
 
@@ -13,15 +13,13 @@ The package is registered in the `General` registry so can be
 installed with `add`. For example:
 
 ```julia
-(@v1.6) pkg> add Phylo
-    Updating registry at `~/.julia/registries/General`
-    Updating git-repo `https://github.com/JuliaRegistries/General.git`
+(@v1.9) pkg> add Phylo
    Resolving package versions...
-    Updating `~/.julia/environments/v1.6/Project.toml`
-  [aea672f4] + Phylo v0.4.18
-    Updating `~/.julia/environments/v1.6/Manifest.toml`
+    Updating `~/.julia/environments/v1.9/Project.toml`
+  [aea672f4] + Phylo v0.5.0
+    Updating `~/.julia/environments/v1.9/Manifest.toml`
 
-(@v1.6) pkg>
+(@v1.9) pkg>
 ```
 
 ## Project Status
@@ -138,7 +136,10 @@ required (though they are currently working together reasonably successfully).
 
 ### Reading from a file
 
-It can also read newick trees either from strings or files:
+It can also read newick and nexus trees either from strings or files.
+`parsenewick()` will read to the default tree type – currently the rooted,
+polytomous, `RootedTree`, and the multiple tree version of it (`RootedTree`s
+nested inside a `TreeSet`):
 
 ```julia
 julia> using Phylo
@@ -193,6 +194,47 @@ Dict{String, Dict{String, Any}} with 2 entries:
 julia> gettreeinfo(ts, "TREE1")
 Dict{String, Any} with 1 entry:
   "lnP" => 1.0
+```
+
+Extensions to `Base.parse()` will allow you to be more precise in the tree type:
+
+```julia
+julia> tree = open(parse(RootedTree), Phylo.path("H1N1.newick"))
+RootedTree with 507 tips and 1 root. Leaf names are 227, 294, 295, 110, 390, ... [501 omitted] ... and 418
+
+1013 nodes: [RecursiveNode{OneRoot} 'Node 1013', a root node with 2 outbound connections (branches [1011, 1012]), RecursiveNode{OneRoot} 'Node 1011', an internal node with 1 inbound and 2 outbound connections (branches 1011 and [1009, 1010]), RecursiveNode{OneRoot} 'Node 1009', an internal node with 1 inbound and 2 outbound connections (branches 1009 and [1007, 1008]), RecursiveNode{OneRoot} 'Node 1008', an internal node with 1 inbound and 2 outbound connections (branches 1007 and [1005, 1006]), RecursiveNode{OneRoot} 'Node 1004', an internal node with 1 inbound and 2 outbound connections (branches 1005 and [1001, 1002]) ... 1007 missing ... RecursiveNode{OneRoot} '418', a leaf with an incoming connection (branch 1012)]
+
+1012 branches: [RecursiveBranch{OneRoot} 1, from node 'Node 5' to node '294' (length 0.2559376385188), RecursiveBranch{OneRoot} 2, from node 'Node 5' to node '295' (length 1.255937638519), RecursiveBranch{OneRoot} 3, from node 'Node 7' to node '227' (length 3.093983613629), RecursiveBranch{OneRoot} 4, from node 'Node 7' to node 'Node 5' (length 4.83804597511), RecursiveBranch{OneRoot} 5, from node 'Node 11' to node '104' (length 0.4902870119746) ... 1006 missing ... RecursiveBranch{OneRoot} 1012, from node 'Node 1013' to node '418' (length 13.87884773144)]
+
+Node records: "Node 1013" => Dict{String, Any}("length" => 0.0, "height" => 84.94613266277547, "height/95%/HPD" => [75.00016004016078, 100.9885305644122], "height/median" => 82.87499084796832, "posterior" => 1.0, "height/range" => [75.00016004016078, 151.06404614035887]) ... "418" => Dict{String, Any}("length/range" => [0.000160040160921, 76.06404614036], "height/median" => 75.00000000000021, "rate" => 0.00287656620693594, "rate/95%/HPD" => [0.00032906282418212297, 0.00668807772865533], "rate/median" => 0.002350371083836891, "length/median" => 7.87499084797, "length" => 9.946132662775383, "height" => 74.99999999999999, "height/95%/HPD" => [74.99999999999359, 75.0000000000068], "length/95%/HPD" => [0.000160040160921, 25.98853056441]…)
+
+julia> open(parse(treesettype(RootedTree)), Phylo.path("H1N1.trees"))
+[ Info: Created a tree called 'TREE1'
+[ Info: Created a tree called 'TREE2'
+TreeSet{String, OneRoot, String, RecursiveNode{OneRoot, String, Dict{String, Any}, Dict{String, Any}, PolytomousBranching, Float64}, RecursiveBranch{OneRoot, String, Dict{String, Any}, Dict{String, Any}, PolytomousBranching, Float64}, RootedTree} with 2 tree(s), each with 507 tips.
+Tree names are TREE2 and TREE1. Dict("TREE2" => 1013, "TREE1" => 1013) nodes and Dict("TREE2" => 1012, "TREE1" => 1012) branches.
+
+TREE2: RootedTree with 507 tips and 1 root. Leaf names are H1N1_A_BRAZIL_11_1978, H1N1_A_TAHITI_8_1998, H1N1_A_TAIWAN_1_1986, H1N1_A_BAYERN_7_1995, H1N1_A_ENGLAND_45_1998, ... [501 omitted] ... and H1N1_A_PUERTORICO_8_1934
+TREE1: RootedTree with 507 tips and 1 root. Leaf names are H1N1_A_BRAZIL_11_1978, H1N1_A_TAHITI_8_1998, H1N1_A_TAIWAN_1_1986, H1N1_A_BAYERN_7_1995, H1N1_A_ENGLAND_45_1998, ... [501 omitted] ... and H1N1_A_PUERTORICO_8_1934
+```
+
+### Writing to a file
+
+Trees can be written out either individually (using newick or nexus format), or
+multiply using nexus format, all using `Base.write()`. By default single trees
+will be written as newick and treesets will be written using nexus format:
+
+```julia
+julia> write("test.newick", tree)
+
+julia> open(parsenewick, "test.newick")
+RootedTree with 507 tips and 1 root. Leaf names are 227, 294, 295, 110, 390, ... [501 omitted] ... and 418
+
+1013 nodes: [RecursiveNode{OneRoot} 'Node 1013', a root node with 2 outbound connections (branches [1011, 1012]), RecursiveNode{OneRoot} 'Node 1011', an internal node with 1 inbound and 2 outbound connections (branches 1011 and [1009, 1010]), RecursiveNode{OneRoot} 'Node 1009', an internal node with 1 inbound and 2 outbound connections (branches 1009 and [1007, 1008]), RecursiveNode{OneRoot} 'Node 1008', an internal node with 1 inbound and 2 outbound connections (branches 1007 and [1005, 1006]), RecursiveNode{OneRoot} 'Node 1004', an internal node with 1 inbound and 2 outbound connections (branches 1005 and [1001, 1002]) ... 1007 missing ... RecursiveNode{OneRoot} '418', a leaf with an incoming connection (branch 1012)]
+
+1012 branches: [RecursiveBranch{OneRoot} 1, from node 'Node 5' to node '294' (length 0.2559376385188), RecursiveBranch{OneRoot} 2, from node 'Node 5' to node '295' (length 1.255937638519), RecursiveBranch{OneRoot} 3, from node 'Node 7' to node '227' (length 3.093983613629), RecursiveBranch{OneRoot} 4, from node 'Node 7' to node 'Node 5' (length 4.83804597511), RecursiveBranch{OneRoot} 5, from node 'Node 18' to node '390' (length 0.2307062432264) ... 1006 missing ... RecursiveBranch{OneRoot} 1012, from node 'Node 1013' to node '418' (length 13.87884773144)]
+
+Node records: "Node 1013" => Dict{String, Any}("length" => 0.0, "height" => 84.94613266277547, "height/95%/HPD" => [75.00016004016078, 100.9885305644122], "height/median" => 82.87499084796832, "posterior" => 1.0, "height/range" => [75.00016004016078, 151.06404614035887]) ... "418" => Dict{String, Any}("length/range" => [0.000160040160921, 76.06404614036], "height/median" => 75.00000000000021, "rate" => 0.00287656620693594, "rate/95%/HPD" => [0.00032906282418212297, 0.00668807772865533], "rate/median" => 0.002350371083836891, "length/median" => 7.87499084797, "length" => 9.946132662775383, "height" => 74.99999999999999, "height/95%/HPD" => [74.99999999999359, 75.0000000000068], "length/95%/HPD" => [0.000160040160921, 25.98853056441]…)
 ```
 
 ### Calculating metrics
@@ -351,9 +393,6 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 
 [nightly-img]: https://github.com/EcoJulia/Phylo.jl/actions/workflows/nightly.yaml/badge.svg
 [nightly-url]: https://github.com/EcoJulia/Phylo.jl/actions/workflows/nightly.yaml
-
-[coveralls-img]: https://img.shields.io/coveralls/EcoJulia/Phylo.jl.svg
-[coveralls-url]: https://coveralls.io/r/EcoJulia/Phylo.jl?branch=dev
 
 [codecov-img]: https://codecov.io/gh/EcoJulia/Phylo.jl/branch/dev/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/EcoJulia/Phylo.jl
