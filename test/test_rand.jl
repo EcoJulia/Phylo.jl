@@ -9,7 +9,7 @@ using Test
 @testset "Nonultrametric()" begin
     # Create a 10 tip tree
     nu = Nonultrametric(10)
-    @test eltype(nu) == Phylo.LTD{OneRoot, Float64}
+    @test eltype(nu) == Phylo.ReTD{OneRoot, PolytomousBranching, Float64}
     @test validate!(rand(nu))
     @test Set(getleafnames(rand(nu))) == Set(getleafnames(rand(nu)))
     # Create a tree with named tips

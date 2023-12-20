@@ -88,7 +88,7 @@ function Nonultrametric{T}(leafinfo,
 end
 
 Nonultrametric(info::LI, height::U = 1.0) where {LI, U} =
-    Nonultrametric{Phylo.ReT{OneRoot, PolytomousBranching, LI, U}}(info)
+    Nonultrametric{Phylo.ReT{OneRoot, LI, PolytomousBranching, U}}(info)
 
 Nonultrametric(n::Int, height::U = 1.0) where U =
     Nonultrametric{Phylo.ReTD{OneRoot, PolytomousBranching, U}}(n, height)
@@ -187,7 +187,7 @@ function Ultrametric{T}(leafinfo, height = 1.0) where T <: AbstractTree
 end
 
 Ultrametric(info::LI, height::U = 1.0) where {LI, U} =
-    Ultrametric{Phylo.ReT{OneRoot, PolytomousBranching, LI, U}}(info)
+    Ultrametric{Phylo.ReT{OneRoot, LI, PolytomousBranching, U}}(info)
 Ultrametric(n::Int, height::U = 1.0) where U =
     Ultrametric{Phylo.ReTD{OneRoot, PolytomousBranching, U}}(n, height)
 Ultrametric(tiplabels::Vector{String}, height::U = 1.0) where U =

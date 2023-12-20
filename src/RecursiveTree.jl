@@ -117,13 +117,13 @@ function _validate!(tree::RecursiveTree{RT, NL, NodeData, BranchData,
 
     tree.isvalid = true
 
-    if !_matchlabels(NL, _tiplabeltype(TD))
+    if !_matchlabels(NL, _tiplabeltype(tree))
         tree.isvalid = false
-        error("Tree $(_gettreename(tree)) has inconsistent node and tip label types $NL and $(_tiplabeltype(TD))")
+        error("Tree $(_gettreename(tree)) has inconsistent node and tip label types $NL and $(_tiplabeltype(tree))")
     end
 
     if !isnothing(tree.tipdata) && !isempty(tree.tipdata)
-        tree.isvalid &= (Set(keys(tree.tipdata)) == Set(getleafnames(tree)))
+        tree.isvalid &= (Set(_gettdlabels(tree)) == Set(getleafnames(tree)))
     end
 
     nr = nroots(tree)
@@ -239,14 +239,21 @@ _emptydata(::Type{RecursiveNode{RT, NL, NodeData, BranchData}}) where
 _emptydata(::Type{RecursiveBranch{RT, NL, NodeData, BranchData}}) where
     {RT, NL, NodeData, BranchData} = _newdata(BranchData)
 
-_tiplabeltype(::Type{Nothing}) = Nothing
-_tiplabeltype(::Type{<: Dict{NL}}) where NL = NL
-_tiplabeltype(::Type{RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD}}) where
-    {RT, NL, NodeData, BranchData, BT, LenUnits, TD} = _tiplabeltype(TD)
+_tiplabeltype(::Nothing) = Nothing
+_tiplabeltype(::Dict{NL}) where NL = NL
+_tiplabeltype(df::DataFrame) = eltype(df[:, 1])
+_tiplabeltype(t::AbstractTree)  = _tiplabeltype(getleafinfo(t))
 
 _matchlabels(::Type{S}, ::Type{T}) where {S, T} = false
 _matchlabels(::Type{S}, ::Type{S}) where S = true
 _matchlabels(::Type{S}, ::Type{Nothing}) where S = true
+
+_gettdlabels(t::RecursiveTree{RT, NL, NodeData, BranchData,
+                              BT, LenUnits, TD}) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits, TD} = collect(keys(getleafinfo(t)))
+_gettdlabels(t::RecursiveTree{RT, NL, NodeData, BranchData,
+                              BT, LenUnits, DataFrame}) where
+    {RT, NL, NodeData, BranchData, BT, LenUnits} = unique(getleafinfo(t)[:, 1])
 
 # Retrieving trees
 
