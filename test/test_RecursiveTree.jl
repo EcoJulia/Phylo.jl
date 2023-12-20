@@ -65,6 +65,7 @@ end
     @test createbranch!(urtsp, name, species[2]) ∈ getbranches(urtsp)
     @test createbranch!(urtsp, name, species[3]) ∈ getbranches(urtsp)
     @test createbranch!(urtsp, name, species[4]) ∈ getbranches(urtsp)
+    @test nroots(urtsp) == 0
 
     LB = RecursiveBranch{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}
     LN = RecursiveNode{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}
@@ -77,7 +78,8 @@ end
     @test b ∈ getbranches(rtjdb)
     @test deletebranch!(rtjdb, b)
     @test createbranch!(rtjdb, name, observations[1], data = nothing) ∈ getbranches(rtjdb)
-
+    @test_nowarn Phylo.outputnode!(IOBuffer(), rtjdb, name, Phylo.CompactOutput(), Nothing)
+    @test_nowarn Phylo.outputbranch!(IOBuffer(), rtjdb, first(getbranches(rtjdb)), Phylo.CompactOutput(), Nothing)
 end
 
 end

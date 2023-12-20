@@ -110,7 +110,7 @@ function gettree end
 gettree(tree::AbstractTree{OneTree}) = tree
 function gettree(trees::AbstractTree{ManyTrees})
     @assert _ntrees(trees) == 1 "Must be only one tree, found $(_ntrees(trees))"
-    return first(_gettrees(tree))
+    return first(_gettrees(trees))
 end
 gettree(tree::AbstractTree, label) = _gettree(tree, label)
 
@@ -140,7 +140,7 @@ Returns the name of the single tree.
 """
 gettreename(tree::AbstractTree{OneTree}) = _gettreename(tree)
 function gettreename(trees::AbstractTree{ManyTrees})
-    @assert _ntrees(trees) == 1 "Must be only one tree. found $(_ntrees(tree))"
+    @assert _ntrees(trees) == 1 "Must be only one tree. found $(_ntrees(trees))"
     return first(_gettreenames(trees))
 end
 
@@ -609,7 +609,7 @@ function setrootheight!(tree::AbstractTree{OneTree, <: Rooted}, height)
     return _setrootheight!(tree, height)
 end
 function setrootheight!(trees::AbstractTree{ManyTrees},
-                        heights::AbstractVector)
+                        heights)
     for (tree, height) in zip(gettrees(tree), heights)
         setrootheight!(tree, height)
     end
@@ -859,20 +859,21 @@ end
 end
 
 """
-    getconnections(tree::AbstractTree, nodee)
+    getconnections(tree::AbstractTree, node, exclude = [])
 
 Returns all of the branches connected to a node.
 """
 function getconnections end
-@traitfn function getconnections(tree::T, node::NL) where
+@traitfn function getconnections(tree::T, node::NL, exclude::AbstractVector = []) where
     {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
     hasnode(tree, node) || error("Node $node does not exist")
-    return _getconnections(tree, _getnode(tree, node))
+    return _getconnections(tree, _getnode(tree, node), exclude)
 end
-@traitfn function getconnections(tree::T, node::N) where
+
+@traitfn function getconnections(tree::T, node::N, exclude::AbstractVector = []) where
     {T <: AbstractTree{OneTree}, N; MatchNodeType{T, N}}
     _hasnode(tree, node) || error("Node $node does not exist")
-    return _getconnections(tree, node)
+    return _getconnections(tree, node, exclude)
 end
 
 """
@@ -988,6 +989,7 @@ function conns end
     hasbranch(tree, branch) || error("Branch $branch does not exist")
     return _conns(tree, getbranch(tree, branch))
 end
+
 @traitfn function conns(tree::T, branch::B) where
     {T <: AbstractTree{OneTree}, B; MatchBranchType{T, B}}
     _hasbranch(tree, branch) || error("Branch $branch does not exist")

@@ -55,7 +55,7 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
     cache::Dict{TraversalOrder, Vector{N}}
     
     function LinkTree{RT, NL, N,
-                      B, TD}(tipnames::Vector{NL} = NL[];
+                      B, TD}(tipnames::AbstractVector{NL} = NL[];
                              treename::Union{String, Missing} = missing,
                              tipdata::TD = newempty(TD),
                              rootheight = missing) where {RT, NL, N, B, TD}
@@ -200,7 +200,8 @@ function _removeoutbound!(tree::LinkTree,
 end
 
 import Phylo.API: _getconnections
-_getconnections(::AbstractTree, node::LinkNode{Unrooted}) = node.other
+_getconnections(::LinkTree, node::LinkNode{Unrooted}, exclude) =
+    filter(∉(exclude), node.other)
 
 import Phylo.API: _addconnection!
 function _addconnection!(::AbstractTree, node::LinkNode{Unrooted, NL, Data, B},
@@ -274,7 +275,6 @@ end
 
 import Phylo.API: _getroots
 _getroots(tree::LinkTree{<: Rooted}) = tree.roots
-_getroots(tree::LinkTree{Unrooted}) = error("Unrooted trees do not have roots")
 
 import Phylo.API: _getnodes
 _getnodes(tree::LinkTree) = skipmissing(tree.nodes)

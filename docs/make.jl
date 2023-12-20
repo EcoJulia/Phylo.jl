@@ -7,7 +7,7 @@ makedocs(modules = [Phylo, Phylo.API],
                   "Tutorial / Quick start" => "tutorial.md",
                   "Manual" => Any[
                     "Phylogeny data types" => "man/treetypes.md",
-                    "Creating phylogenies" => "man/input.md",
+                    "Creating and writing phylogenies" => "man/io.md",
                     "Manipulating and building phylogenies" => "man/manipulating.md",
                     "Traversal and iterators" => "man/traversal.md",
                     "Getting phylogeny attributes" => "man/attributes.md",
@@ -17,7 +17,7 @@ makedocs(modules = [Phylo, Phylo.API],
                   "List of functions" => "functionlist.md",
                   "API" => "api.md"];
          format = Documenter.HTML(size_threshold_ignore = ["man/plotting.md",
-                                                           "man/input.md"]))
+                                                           "man/io.md"]))
 
 deploydocs(repo = "github.com/EcoJulia/Phylo.jl.git",
            devbranch = "dev",

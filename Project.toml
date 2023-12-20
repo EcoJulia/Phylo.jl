@@ -3,7 +3,7 @@ uuid = "aea672f4-3940-5932-aa44-993d1c3ff149"
 author = ["Richard Reeve <Richard.Reeve@glasgow.ac.uk>",
           "Emily Jane Davison <e.davison.1@research.gla.ac.uk>",
           "Michael Krabbe Borregaard <mkborregaard@sund.ku.dk>",
-          "Claire Harris <claire.harris@glasgow.ac.uk>"]
+          "Claire Harris <Claire.Harris@defra.gov.uk>"]
 version = "0.6.0"
 
 [deps]
