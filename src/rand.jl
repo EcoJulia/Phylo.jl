@@ -24,7 +24,7 @@ Random.rand!(s::Sampleable, t::AbstractTree) = rand!(Random.GLOBAL_RNG, s, t)
                    SAMP <: Sampleable}(n::Int,
                                        sampleable::SAMP = Exponential())
     Nonultrametric{T <: AbstractTree,
-                   SAMP <: Sampleable}(tiplabels::AbstractVector{String},
+                   SAMP <: Sampleable}(tiplabels::Vector{String},
                                        sampleable::SAMP = Exponential())
 
 The sampler for non-ultrametric phylogenetic trees of size `n` or with
@@ -35,13 +35,13 @@ struct Nonultrametric{T <: AbstractTree,
                       LenUnits <: Number} <:
                           Sampleable{Univariate, Phylogenetics{T}}
     n::Int
-    tiplabels::AbstractVector{String}
+    tiplabels::Vector{String}
     sampleable::SAMP
     leafinfo::Any
     height::LenUnits
 
     function Nonultrametric{T, SAMP,
-                            LenUnits}(n::Int, tiplabels::AbstractVector{String},
+                            LenUnits}(n::Int, tiplabels::Vector{String},
                                       sampleable::SAMP, leafinfo,
                                       height::LenUnits) where {T, SAMP,
                                                                LenUnits}
@@ -58,7 +58,7 @@ struct Nonultrametric{T <: AbstractTree,
     end
 
     function Nonultrametric{T, SAMP,
-                            LenUnits}(tiplabels::AbstractVector{String},
+                            LenUnits}(tiplabels::Vector{String},
                                       sampleable::SAMP,
                                       height::LenUnits) where {T, SAMP,
                                                                LenUnits}
@@ -72,7 +72,7 @@ function Nonultrametric{T}(n::Int, height = 1.0) where T <: AbstractTree
                                                           height)
 end
 
-function Nonultrametric{T}(tiplabels::AbstractVector{String},
+function Nonultrametric{T}(tiplabels::Vector{String},
                            height = 1.0) where T <: AbstractTree
     return Nonultrametric{T, Exponential, typeof(height)}(tiplabels,
                                                           Exponential(),
@@ -92,7 +92,7 @@ Nonultrametric(info::LI, height::U = 1.0) where {LI, U} =
 
 Nonultrametric(n::Int, height::U = 1.0) where U =
     Nonultrametric{Phylo.LTD{OneRoot, U}}(n, height)
-Nonultrametric(tiplabels::AbstractVector{String}, height::U = 1.0) where U =
+Nonultrametric(tiplabels::Vector{String}, height::U = 1.0) where U =
     Nonultrametric{Phylo.LTD{OneRoot, U}}(tiplabels, height)
 
 function rand(rng::AbstractRNG, t::Nonultrametric{T, SAMP, U}) where
@@ -130,7 +130,7 @@ end
                                     sampleable::SAMP = Exponential())
     Ultrametric{T <: AbstractTree,
                 SAMP <: Sampleable,
-                LenUnits <: Number}(tiplabels::AbstractVector{String},
+                LenUnits <: Number}(tiplabels::Vector{String},
                                     sampleable::SAMP = Exponential())
 
 The sampler for ultrametric phylogenetic trees of size `n` or with
@@ -141,12 +141,12 @@ struct Ultrametric{T <: AbstractTree,
                    LenUnits <: Number} <:
                        Sampleable{Univariate, Phylogenetics{T}}
     n::Int
-    tiplabels::AbstractVector{String}
+    tiplabels::Vector{String}
     sampleable::SAMP
     leafinfo::Any
     height::LenUnits
 
-    function Ultrametric{T, SAMP, U}(n::Int, tiplabels::AbstractVector{String},
+    function Ultrametric{T, SAMP, U}(n::Int, tiplabels::Vector{String},
                                      sampleable::SAMP, leafinfo,
                                      height::U = 1.0) where {T, SAMP, U}
         return new{T, SAMP, U}(n, tiplabels, sampler(sampleable),
@@ -159,7 +159,7 @@ struct Ultrametric{T <: AbstractTree,
                                sampler(sampleable), missing, height)
     end
 
-    function Ultrametric{T, SAMP, U}(tiplabels::AbstractVector{String},
+    function Ultrametric{T, SAMP, U}(tiplabels::Vector{String},
                                      sampleable::SAMP,
                                      height::U = 1.0) where
         {T, SAMP, U}
@@ -172,7 +172,7 @@ function Ultrametric{T}(n::Int, height = 1.0) where T <: AbstractTree
     return Ultrametric{T, Exponential, typeof(height)}(n, Exponential(), height)
 end
 
-function Ultrametric{T}(tiplabels::AbstractVector{String},
+function Ultrametric{T}(tiplabels::Vector{String},
                         height = 1.0) where T <: AbstractTree
     return Ultrametric{T, Exponential, typeof(height)}(tiplabels, Exponential(),
                                                        height)
@@ -190,7 +190,7 @@ Ultrametric(info::LI, height::U = 1.0) where {LI, U} =
     Ultrametric{Phylo.LT{OneRoot, LI, U}}(info)
 Ultrametric(n::Int, height::U = 1.0) where U =
     Ultrametric{Phylo.LTD{OneRoot, U}}(n, height)
-Ultrametric(tiplabels::AbstractVector{String}, height::U = 1.0) where U =
+Ultrametric(tiplabels::Vector{String}, height::U = 1.0) where U =
     Ultrametric{Phylo.LTD{OneRoot, U}}(tiplabels, height)
 
 function rand(rng::AbstractRNG, t::Ultrametric{T, SAMP}) where {T, SAMP}
