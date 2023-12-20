@@ -2,6 +2,9 @@
 
 - v0.5.1
   - Allow export of trees to nexus and newick format
+    - Overload Base.write() and Base.parse()
+  - Generalise use of collections where possible
+  - Improve testing
 - v0.5.0
   - Add recursive tree, node and branch types
   - Improve testing

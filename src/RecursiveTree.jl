@@ -273,7 +273,6 @@ _setleafinfo!(tree::RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD
 
 import Phylo.API: _getroots
 _getroots(tree::RecursiveTree{<: Rooted}) = tree.roots
-_getroots(::RecursiveTree{Unrooted}) = error("Unrooted trees do not have roots")
 
 import Phylo.API: _nnodes
 _nnodes(tree::RecursiveTree) = count((!)∘ismissing, tree.nodes)

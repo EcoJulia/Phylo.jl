@@ -140,7 +140,7 @@ Returns the name of the single tree.
 """
 gettreename(tree::AbstractTree{OneTree}) = _gettreename(tree)
 function gettreename(trees::AbstractTree{ManyTrees})
-    @assert _ntrees(trees) == 1 "Must be only one tree. found $(_ntrees(tree))"
+    @assert _ntrees(trees) == 1 "Must be only one tree. found $(_ntrees(trees))"
     return first(_gettreenames(trees))
 end
 

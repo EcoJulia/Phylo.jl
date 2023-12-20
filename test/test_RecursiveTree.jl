@@ -65,6 +65,7 @@ end
     @test createbranch!(urtsp, name, species[2]) ∈ getbranches(urtsp)
     @test createbranch!(urtsp, name, species[3]) ∈ getbranches(urtsp)
     @test createbranch!(urtsp, name, species[4]) ∈ getbranches(urtsp)
+    @test nroots(urtsp) == 0
 
     LB = RecursiveBranch{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}
     LN = RecursiveNode{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}

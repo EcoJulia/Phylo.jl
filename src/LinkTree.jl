@@ -275,7 +275,6 @@ end
 
 import Phylo.API: _getroots
 _getroots(tree::LinkTree{<: Rooted}) = tree.roots
-_getroots(tree::LinkTree{Unrooted}) = error("Unrooted trees do not have roots")
 
 import Phylo.API: _getnodes
 _getnodes(tree::LinkTree) = skipmissing(tree.nodes)
