@@ -96,18 +96,18 @@ _matchtreenametype(::Type{T}, ::Type{TN}) where {T <: AbstractTree, TN} =
     (TN ≡ _treenametype(T))
                                                    
 # Need to be able to create new node and branch labels
-function _newlabel(ids::Vector{Label}) where Label <: Integer
+function _newlabel(ids::AbstractVector{Label}) where Label <: Integer
     return isempty(ids) ? 1 : maximum(ids) + 1
 end
-function _newlabel(ids::Vector{Vector{Label}}) where Label <: Integer
+function _newlabel(ids::AbstractVector{<:AbstractVector{Label}}) where Label <: Integer
     return mapreduce(_newlabel, max, 1, ids)
 end
-_newlabel(names::Vector{String}, prefix::String) =
+_newlabel(names::AbstractVector{String}, prefix::String) =
     prefix * "$(_newlabelfree(names, prefix))"
-_newlabel(names::Vector{Vector{String}}, prefix::String) =
+_newlabel(names::AbstractVector{<:AbstractVector{String}}, prefix::String) =
     prefix * "$(mapreduce(_newlabelfree, max, 1, names))"
 
-function _newlabelfree(names::Vector{String}, prefix)
+function _newlabelfree(names::AbstractVector{String}, prefix)
     num = length(names) + 1
     if "$prefix$num" ∉ names
         return num
@@ -512,8 +512,8 @@ function _traversal(tree::T, order::TraversalOrder) where {T <: AbstractTree{One
     end
 end
 function _traversal(tree::AbstractTree{OneTree, <: Rooted},
-                    order::TraversalOrder, todo::Vector,
-                    sofar::Vector = eltype(todo)[])
+                    order::TraversalOrder, todo,
+                    sofar::AbstractVector = eltype(todo)[])
     while !isempty(todo)
         if order == Phylo.breadthfirst
             append!(sofar, todo)
