@@ -39,7 +39,11 @@ using Test
         @test nleaves(tree) == nleaves(treex) ==
             nleaves(treex["TREE1"]) == nleaves(treex["TREE2"])
         @test nnodes(treex, "TREE1") == nnodes(treex)["TREE1"]
+        @test nbranches(treex, "TREE1") == nbranches(treex)["TREE1"]
         @test getnodes(treex, "TREE1") == getnodes(treex)["TREE1"]
+        @test getnodenames(treex, "TREE1") == getnodenames(treex)["TREE1"]
+        @test getbranches(treex, "TREE1") == getbranches(treex)["TREE1"]
+        @test getbranchnames(treex, "TREE1") == getbranchnames(treex)["TREE1"]
         @test Set(getleafnames(treex)) ==
             Set(getleafnames(treex["TREE1"])) == Set(getleafnames(treex["TREE2"]))
         if roottype(TreeType) == OneRoot
