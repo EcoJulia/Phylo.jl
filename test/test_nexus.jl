@@ -25,6 +25,7 @@ using Test
         @test getnodenames(tree) == getnodenames(tree_pf)
         treeset = TreeSet([tree])
         @test gettreename(treeset) == 1
+        @test gettree(treeset) ≡ treeset[1]
         treex = open(f -> parsenexus(f, TreeType), Phylo.path("H1N1.trees"))
         @test_throws AssertionError gettreename(treex)
         @test Set(getleafnames(treex)) == Set(getleafnames(treex["TREE1"]))
@@ -37,6 +38,8 @@ using Test
         @test ntrees(treex) == 2
         @test nleaves(tree) == nleaves(treex) ==
             nleaves(treex["TREE1"]) == nleaves(treex["TREE2"])
+        @test nnodes(treex, "TREE1") == nnodes(treex)["TREE1"]
+        @test getnodes(treex, "TREE1") == getnodes(treex)["TREE1"]
         @test Set(getleafnames(treex)) ==
             Set(getleafnames(treex["TREE1"])) == Set(getleafnames(treex["TREE2"]))
         if roottype(TreeType) == OneRoot

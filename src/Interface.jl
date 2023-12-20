@@ -110,7 +110,7 @@ function gettree end
 gettree(tree::AbstractTree{OneTree}) = tree
 function gettree(trees::AbstractTree{ManyTrees})
     @assert _ntrees(trees) == 1 "Must be only one tree, found $(_ntrees(trees))"
-    return first(_gettrees(tree))
+    return first(_gettrees(trees))
 end
 gettree(tree::AbstractTree, label) = _gettree(tree, label)
 
