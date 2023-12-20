@@ -200,7 +200,7 @@ function _removeoutbound!(tree::LinkTree,
 end
 
 import Phylo.API: _getconnections
-_getconnections(::LinkTree, node::LinkNode{Unrooted}, exclude::AbstractVector) =
+_getconnections(::LinkTree, node::LinkNode{Unrooted}, exclude) =
     filter(∉(exclude), node.other)
 
 import Phylo.API: _addconnection!

@@ -512,7 +512,7 @@ function _traversal(tree::T, order::TraversalOrder) where {T <: AbstractTree{One
     end
 end
 function _traversal(tree::AbstractTree{OneTree, <: Rooted},
-                    order::TraversalOrder, todo::AbstractVector,
+                    order::TraversalOrder, todo,
                     sofar::AbstractVector = eltype(todo)[])
     while !isempty(todo)
         if order == Phylo.breadthfirst

@@ -609,7 +609,7 @@ function setrootheight!(tree::AbstractTree{OneTree, <: Rooted}, height)
     return _setrootheight!(tree, height)
 end
 function setrootheight!(trees::AbstractTree{ManyTrees},
-                        heights::AbstractVector)
+                        heights)
     for (tree, height) in zip(gettrees(tree), heights)
         setrootheight!(tree, height)
     end

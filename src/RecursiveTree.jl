@@ -372,7 +372,7 @@ import Phylo.API: _getoutbounds
 _getoutbounds(::RecursiveTree, node::RecursiveNode{<: Rooted}) = node.conns
 
 import Phylo.API: _getconnections
-_getconnections(::RecursiveTree, node::RecursiveNode{Unrooted}, exclude::AbstractVector) =
+_getconnections(::RecursiveTree, node::RecursiveNode{Unrooted}, exclude) =
     filter(∉(exclude), node.conns)
 
 import Phylo.API: _addinbound!
