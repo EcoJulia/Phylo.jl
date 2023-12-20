@@ -88,12 +88,12 @@ function Nonultrametric{T}(leafinfo,
 end
 
 Nonultrametric(info::LI, height::U = 1.0) where {LI, U} =
-    Nonultrametric{Phylo.LT{OneRoot, LI, U}}(info)
+    Nonultrametric{Phylo.ReT{OneRoot, PolytomousBranching, LI, U}}(info)
 
 Nonultrametric(n::Int, height::U = 1.0) where U =
-    Nonultrametric{Phylo.LTD{OneRoot, U}}(n, height)
+    Nonultrametric{Phylo.ReTD{OneRoot, PolytomousBranching, U}}(n, height)
 Nonultrametric(tiplabels::Vector{String}, height::U = 1.0) where U =
-    Nonultrametric{Phylo.LTD{OneRoot, U}}(tiplabels, height)
+    Nonultrametric{Phylo.ReTD{OneRoot, PolytomousBranching, U}}(tiplabels, height)
 
 function rand(rng::AbstractRNG, t::Nonultrametric{T, SAMP, U}) where
     {T, SAMP, U}
@@ -187,11 +187,11 @@ function Ultrametric{T}(leafinfo, height = 1.0) where T <: AbstractTree
 end
 
 Ultrametric(info::LI, height::U = 1.0) where {LI, U} =
-    Ultrametric{Phylo.LT{OneRoot, LI, U}}(info)
+    Ultrametric{Phylo.ReT{OneRoot, PolytomousBranching, LI, U}}(info)
 Ultrametric(n::Int, height::U = 1.0) where U =
-    Ultrametric{Phylo.LTD{OneRoot, U}}(n, height)
+    Ultrametric{Phylo.ReTD{OneRoot, PolytomousBranching, U}}(n, height)
 Ultrametric(tiplabels::Vector{String}, height::U = 1.0) where U =
-    Ultrametric{Phylo.LTD{OneRoot, U}}(tiplabels, height)
+    Ultrametric{Phylo.ReTD{OneRoot, PolytomousBranching, U}}(tiplabels, height)
 
 function rand(rng::AbstractRNG, t::Ultrametric{T, SAMP}) where {T, SAMP}
     t.n >= 2 || error("A tree must have at least 2 tips")
