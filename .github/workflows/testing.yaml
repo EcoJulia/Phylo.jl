@@ -41,7 +41,6 @@ jobs:
             r-testing: ${{ true }}
           - os: macOS-latest
             r-testing: ${{ false }}
-          arch: x64
       fail-fast: false
     steps:
     - name: Checkout code
