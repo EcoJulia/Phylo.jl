@@ -18,10 +18,13 @@ end
     tn = TestNode();
     tb = TestBranch();
     
-    @test_throws ErrorException _getnodes(tt)
+    @test_throws MethodError _getnodes(tt, preorder)
     @test_throws ErrorException _getnodenames(tt)
-    @test_throws ErrorException _getbranches(tb)
-    @test_throws ErrorException _getnodes(tt)
+    @test_throws MethodError _nnodes(tt)
+    @test_throws ErrorException _getbranches(tt)
+    @test_throws ErrorException _nbranches(tt)
+    @test_throws MethodError _hasnode(tt, tn)
+    @test_throws MethodError _hasbranch(tt, tb)
     @test_throws ErrorException _hasinbound(tt, tn)
     @test_throws ErrorException _getinbound(tt, tn)
     @test_throws ErrorException _getoutbounds(tt, tn)
