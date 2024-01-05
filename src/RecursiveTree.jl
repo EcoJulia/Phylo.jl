@@ -724,3 +724,37 @@ function show(io::IO, branch::RecursiveBranch{RT}) where RT <: Rooted
           " to node '$(branch.conns[1].name)'" *
           (ismissing(branch.length) ? "" : " (length $(branch.length))"))
 end
+
+import Phylo.API: _renamenode!
+# Only currently implemented where there is no tip data, as tip data
+# references will have to be relabelled
+function _renamenode!(tree::RecursiveTree{RT, NL, ND, BD, BT, LU, TD},
+                      oldnode::RecursiveNode{RT, NL}, newname::NL) where
+    {RT, NL, ND, BD, BT, LU, TD}
+    _renametipdata!(tree, oldnode.name, newname) || return false
+    oldname = oldnode.name
+    id = tree.nodedict[oldname]
+    oldnode.name = newname
+    delete!(tree.nodedict, oldname)
+    tree.nodedict[newname] = id
+    return true
+end
+
+_renametipdata!(tree::RecursiveTree{RT, NL, ND, BD, BT, LU, Nothing},
+                oldname, newname) where {RT, NL, ND, BD, BT, LU} = true
+
+function _renametipdata!(tree::RecursiveTree{RT, NL, ND, BD, BT, LU, <: Dict},
+                         oldname, newname) where {RT, NL, ND, BD, BT, LU}
+    li = _getleafinfo(tree)
+    # Fine if there's no name change or no data
+    oldname == newname && return true
+    haskey(li, oldname) || return true
+    # Fails if there's already data for the new name
+    haskey(li, newname) && return false
+    # Otherwise just go ahead
+    nli = li[oldname]
+    delete!(li, oldname)
+    li[newname] = nli
+    return true
+end
+

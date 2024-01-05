@@ -12,9 +12,9 @@ using Test
         tree = TreeType(species)
         nr = createnode!(tree)
         n2 = createnode!(tree)
-        createbranch!(tree, nr, n2)
+        createbranch!(tree, getnodename(tree, nr), getnodename(tree, n2))
         n3 = createnode!(tree)
-        createbranch!(tree, n2, n3)
+        createbranch!(tree, getnode(tree, n2), getnode(tree, n3))
         nh = nodehistory(tree, n2)
         @test nr ∈ nh
         @test Set(nh) == Set(push!(getancestors(tree, n2), n2))
@@ -44,7 +44,7 @@ using Test
                                              getnodename(tree, root))[1])) ⊆
               Set(getdescendants(tree, getnodename(tree, root))) ⊆
               Set(getnodename.(tree, traversal(tree)))
-        @test length(traversal(tree)) == nnodes(tree)
+        @test length(collect(traversal(tree))) == nnodes(tree)
         @test length(getdescendants(tree, root)) ==
             length(branchfuture(tree, root))
         nn = first(nodenamefilter(isleaf, tree))

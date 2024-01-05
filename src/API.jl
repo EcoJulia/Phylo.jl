@@ -194,18 +194,17 @@ Returns a tree - either itself if it is a single tree, or the single tree
 in a set with label id. Must be implemented for any ManyTrees type.
 """
 function _gettree end
-@traitfn function _gettree(tree::T,
-                           id::TN) where {T <: AbstractTree{OneTree}, TN;
-                                          MatchTreeNameType{T, TN}}
+function _gettree(tree::T, id) where {T <: AbstractTree{OneTree}}
     id == _gettreename(tree) || throw(BoundsError(tree, id))
     return tree
 end
 
 """
-    _getnodes(tree::AbstractTree{OneTree})
+    _getnodes(tree::AbstractTree{OneTree}[, order::TraversalOrder])
 
-Returns a vector of nodes for a OneTree tree. Either _getnodes() must be
-implemented for any OneTree tree type.
+Returns an interable collection of nodes for a OneTree tree. _getnodes(tree) must be
+implemented for a OneTree tree type as a base mechanisms for extracting the
+node list.
 """
 function _getnodes end
 _getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder) =
@@ -214,16 +213,16 @@ _getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder) =
 """
     _getnodenames(tree::AbstractTree{OneTree})
 
-Returns a vector of node names for a OneTree tree. Can
+Returns an iterable collection of node names for a OneTree tree. Can
 be implemented for any OneTree tree type, especially PreferNodeObjects trees.
 """
 function _getnodenames end
 _getnodenames(::T) where T <: AbstractTree = error("No _getnodes() method for tree type $T")
 @traitfn _getnodenames(tree::T, order::TraversalOrder) where
-{T <: AbstractTree{OneTree}; !PreferNodeObjects{T}} = _getnodes(tree, order)
+    {T <: AbstractTree{OneTree}; !PreferNodeObjects{T}} = _getnodes(tree, order)
 @traitfn _getnodenames(tree::T, order::TraversalOrder) where
-{T <: AbstractTree{OneTree}; PreferNodeObjects{T}} =
-    _getnodename.(tree, _getnodes(tree, order))
+    {T <: AbstractTree{OneTree}; PreferNodeObjects{T}} =
+    _getnodename.(Ref(tree), _getnodes(tree, order))
 
 """
     _nnodes(::AbstractTree)
@@ -234,7 +233,7 @@ be implemented for any OneTree tree type (otherwise infers from _getnodes()).
 _nnodes(tree::AbstractTree{OneTree}) = length(_getnodes(tree, anyorder))
 
 """
-    _getleafnames(::AbstractTree)
+    _getleafnames(::AbstractTree, ::TraversalOrder)
 
 Returns the leaf names of a tree. May be implemented for any
 tree type (otherwise determined from _getnodenames() and _isleaf() functions).
@@ -336,6 +335,14 @@ _hasnode(tree::AbstractTree{OneTree, RT, NL, N},
          node::N) where {RT, NL, N} = node ∈ _getnodes(tree)
 
 """
+    _renamenode!(tree::AbstractTree, oldnode[name], newname)
+     
+Renames a node in a tree. Optional - not implemented for most tree types.
+"""
+function _renamenode! end
+_renamenode!(_::AbstractTree, _, _) = false
+     
+"""
     _createnode!(tree::AbstractTree, nodename[, data])
 
 Must be implemented for any AbstractTree subtype.
@@ -411,8 +418,7 @@ function _getbranchnames end
                                              _getbranches(tree)
 @traitfn _getbranchnames(tree::T) where {T <: AbstractTree{OneTree};
                                          PreferBranchObjects{T}} =
-                                             [_getbranchname(tree, branch)
-                                              for branch in _getbranches(tree)]
+    _getbranchname.(Ref(tree), _getbranches(tree))
 
 """
     _hasbranch(tree::AbstractTree, node[name])

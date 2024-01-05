@@ -199,12 +199,12 @@ Returns the vector of nodes of a single tree, or a Dict of vectors of nodes
 for multiple trees.
 """
 function getnodes end
-getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder = preorder) =
-    _getnodes(tree, order)
+getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder = anyorder) =
+    collect(_getnodes(tree, order))
 getnodes(trees::AbstractTree{ManyTrees}, name,
-         order::TraversalOrder = preorder) =
+         order::TraversalOrder = anyorder) =
              getnodes(gettree(trees, name), order)
-getnodes(trees::AbstractTree{ManyTrees}, order::TraversalOrder = preorder) =
+getnodes(trees::AbstractTree{ManyTrees}, order::TraversalOrder = anyorder) =
     Dict(name => getnodes(gettree(trees, name), order)
          for name in _gettreenames(trees))
 
@@ -250,11 +250,11 @@ Return a vector of node names of a single tree (identified by id for a
 ManyTrees tree), or a Dict of vectors of node names for multiple trees.
 """
 function getnodenames end
-getnodenames(tree::AbstractTree{OneTree}, order::TraversalOrder = preorder) =
-    _getnodenames(tree, order)
-getnodenames(trees::AbstractTree{ManyTrees}, name, order::TraversalOrder = preorder) =
+getnodenames(tree::AbstractTree{OneTree}, order::TraversalOrder = anyorder) =
+    collect(_getnodenames(tree, order))
+getnodenames(trees::AbstractTree{ManyTrees}, name, order::TraversalOrder = anyorder) =
     getnodenames(gettree(trees, name), order)
-getnodenames(trees::AbstractTree{ManyTrees}, order::TraversalOrder = preorder) =
+getnodenames(trees::AbstractTree{ManyTrees}, order::TraversalOrder = anyorder) =
     Dict(name => getnodenames(gettree(trees, name), order)
          for name in _gettreenames(trees))
 
@@ -477,7 +477,7 @@ Returns whether a tree has a given node (or node name) or not.
 hasnode(tree::AbstractTree{OneTree}, node) = _hasnode(tree, node)
 
 """
-    getnode(tree::AbstractTree, nodename)
+    getnode(tree::AbstractTree, node[name])
 
 Returns a node from a tree.
 """
@@ -487,11 +487,20 @@ function getnode(tree::AbstractTree{OneTree}, node)
 end
 
 """
+    renamenode!(tree::AbstractTree, oldnode[name], newname)
+
+Renames a node in a tree. Optional - not implemented for most tree types and returns false.
+"""
+function renamenode!(tree::AbstractTree{OneTree}, oldnode, newname)
+    _hasnode(tree, oldnode) || error("Node $oldnode does not exist")
+    _hasnode(tree, newname) || return _renamenode!(tree, _getnode(tree, oldnode), newname)
+    return newname == getnodename(tree, oldnode)
+end
+
+"""
     getnodename(::AbstractTree, node)
 
-Returns the node name associated with a node from a tree. For some
-node types, it will be able to extract the node name without reference to
-the tree.
+Returns the node name associated with a node from a tree.
 """
 function getnodename end
 @traitfn function getnodename(tree::T, node::N) where
@@ -1053,7 +1062,7 @@ end
 
 Retrieve the leaf names from the tree (in some specific order).
 """
-getleafnames(tree::AbstractTree, order::TraversalOrder = preorder) =
+getleafnames(tree::AbstractTree, order::TraversalOrder = anyorder) =
     _getleafnames(tree, order)
 
 """
@@ -1061,12 +1070,12 @@ getleafnames(tree::AbstractTree, order::TraversalOrder = preorder) =
 
 Retrieve the leaves from the tree.
 """
-getleaves(tree::AbstractTree{OneTree}, order::TraversalOrder = preorder) =
+getleaves(tree::AbstractTree{OneTree}, order::TraversalOrder = anyorder) =
     _getleaves(tree, order)
 getleaves(trees::AbstractTree{ManyTrees}, name,
-          order::TraversalOrder = preorder) =
+          order::TraversalOrder = anyorder) =
     _getleaves(gettree(trees, name), order)
-getleaves(trees::AbstractTree{ManyTrees}, order::TraversalOrder = preorder) =
+getleaves(trees::AbstractTree{ManyTrees}, order::TraversalOrder = anyorder) =
     Dict(name => _getleaves(gettree(trees, name), order)
          for name in _gettreenames(trees))
 
@@ -1241,10 +1250,10 @@ invalidate!(tree::AbstractTree, state = missing) = _invalidate!(tree, state)
     traversal(::AbstractTree, ::TraversalOrder, init)
 
 Return an iterable object for a tree containing nodes in given order -
-preorder, inorder, postorder or breadthfirst - optionally starting from init.
+anyorder, preorder, inorder, postorder or breadthfirst - optionally starting from init.
 """
 function traversal end
-traversal(tree::AbstractTree{OneTree}, order::TraversalOrder = preorder) =
+traversal(tree::AbstractTree{OneTree}, order::TraversalOrder = anyorder) =
     _traversal(tree, order)
 @traitfn function traversal(tree::T, order::TraversalOrder, init::NL) where
     {NL, RT, T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
