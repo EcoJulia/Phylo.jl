@@ -13,8 +13,9 @@ jdb = DataFrame(species = observations, count = [1, 2, 3, 4])
 
 @testset "TreeSet" begin
     @test length(rand(Ultrametric(ntips), 10)) ==
-          length(rand(Nonultrametric(ntips), 10))
+          length(rand(Nonultrametric(ntips), 10)) == 10
     ts = rand(Ultrametric(ntips), 1:10)
+    @test ts isa TreeSet
     @test length(gettrees(ts)) == length(gettreenames(ts)) == ntrees(ts) == 10
     @test length(getleafnames(ts)) == ntips
     for name in gettreenames(ts)

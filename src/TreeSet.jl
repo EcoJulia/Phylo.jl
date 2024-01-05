@@ -85,21 +85,6 @@ length(ts::TreeSet) = length(ts.trees)
 import Base.getindex
 getindex(ts::TreeSet{LABEL}, idx::LABEL) where {LABEL} = ts.trees[idx]
 
-import Phylo.API: _getleafnames
-function _getleafnames(ts::TREESET) where {LABEL, RT, NL, N, B,
-                                           TREE <:
-                                           AbstractTree{OneTree, RT, NL, N, B},
-                                           TREESET <:
-                                           TreeSet{LABEL, RT, NL, N, B, TREE}}
-    lns = unique(_getleafnames(t) for t in values(ts.trees))
-    if length(lns) > 1
-        error("Inconsistent leaf names in TreeSet")
-    elseif isempty(lns)
-        return NL[]
-    end
-    return first(lns)
-end
-
 import Phylo.API: _nleaves
 function _nleaves(ts::TREESET) where {LABEL, RT, NL, N, B,
                                       TREE <:
