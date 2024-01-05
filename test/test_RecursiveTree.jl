@@ -14,7 +14,21 @@ jdb = DataFrame(species = observations, count = 1:4)
 
 @testset "RootedTree()" begin
     name = "internal"
+    nts = RecursiveTree{OneRoot, String, Vector{Int}, Nothing, BinaryBranching, Float64, Nothing}(species)
+    @test !renamenode!(nts, species[1], species[2])
+    @test hasnode(nts, species[1])
+    @test renamenode!(nts, species[1], "new " * species[1])
+    @test_throws ErrorException renamenode!(nts, species[1], "new " * species[1])
+    @test hasnode(nts, "new " * species[1])
+    @test renamenode!(nts, "new " * species[1], species[1])
+    @test Set(species) == Set(getleafnames(nts))
+
     rts = RootedTree(species)
+    @test !renamenode!(rts, species[1], species[2])
+    @test renamenode!(rts, species[1], "new " * species[1])
+    @test_throws ErrorException renamenode!(rts, species[1], "new " * species[1])
+    @test renamenode!(rts, "new " * species[1], species[1])
+    @test Set(species) == Set(getleafnames(rts))
     @test nodedatatype(typeof(rts)) ≡ Dict{String, Any}
     @test branchdatatype(typeof(rts)) ≡ Dict{String, Any}
     @test leafinfotype(typeof(rts)) ≡ Dict{String, Any}
@@ -70,6 +84,7 @@ end
     LB = RecursiveBranch{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}
     LN = RecursiveNode{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}
     rtjdb = RecursiveTree{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64, typeof(jdb)}(jdb)
+    @test_throws MethodError renamenode!(rtjdb, observations[1], "new " * observations[1])
     @test nodedatatype(typeof(rtjdb)) ≡ Vector{Int}
     @test branchdatatype(typeof(rtjdb)) ≡ Nothing
     @test leafinfotype(typeof(rtjdb)) ≡ typeof(jdb)

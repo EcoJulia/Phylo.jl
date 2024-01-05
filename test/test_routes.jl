@@ -44,7 +44,7 @@ using Test
                                              getnodename(tree, root))[1])) ⊆
               Set(getdescendants(tree, getnodename(tree, root))) ⊆
               Set(getnodename.(tree, traversal(tree)))
-        @test length(traversal(tree)) == nnodes(tree)
+        @test length(collect(traversal(tree))) == nnodes(tree)
         @test length(getdescendants(tree, root)) ==
             length(branchfuture(tree, root))
         nn = first(nodenamefilter(isleaf, tree))

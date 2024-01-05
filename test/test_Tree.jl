@@ -67,6 +67,8 @@ end
 
 @testset "BinaryTree()" begin
     btn = BinaryTree{OneRoot, DataFrame, Vector{Float64}}(ntips)
+    io = IOBuffer()
+    show(io, btn)
     @test length(nodefilter(isroot, btn)) == ntips
     @test length(nodefilter(isleaf, btn)) == ntips
     @test length(nodefilter(isinternal, btn)) == 0
