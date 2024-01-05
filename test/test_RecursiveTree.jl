@@ -24,10 +24,18 @@ jdb = DataFrame(species = observations, count = 1:4)
     @test Set(species) == Set(getleafnames(nts))
 
     rts = RootedTree(species)
+    li = getleafinfo(rts)
+    data = [1, 2]
+    li[species[1]] = data
     @test !renamenode!(rts, species[1], species[2])
     @test renamenode!(rts, species[1], "new " * species[1])
+    @test !haskey(li, species[1])
+    @test haskey(li, "new " * species[1])
+    @test li["new " * species[1]] == data
     @test_throws ErrorException renamenode!(rts, species[1], "new " * species[1])
     @test renamenode!(rts, "new " * species[1], species[1])
+    @test haskey(li, species[1])
+    @test li[species[1]] == data
     @test Set(species) == Set(getleafnames(rts))
     @test nodedatatype(typeof(rts)) ≡ Dict{String, Any}
     @test branchdatatype(typeof(rts)) ≡ Dict{String, Any}
