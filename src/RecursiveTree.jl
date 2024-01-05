@@ -221,7 +221,7 @@ function _validate!(tree::RecursiveTree{RT, NL, NodeData, BranchData,
                 end
                 if RT <: Rooted
                     node = branch.in
-                    if branch ≢ node.in && branch ∉ node.conns
+                    if isnothing(node) || (branch ≢ node.in && branch ∉ node.conns)
                         tree.isvalid = false
                         @warn "Mismatch between branch id $(branch.id) and its connections"
                     end

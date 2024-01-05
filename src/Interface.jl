@@ -1427,6 +1427,8 @@ Validate the tree by making sure that it is connected up correctly.
 function validate!(tree::T) where
          {TT, RT, NL, N, B, T <: AbstractTree{TT, RT, NL, N, B}}
     _resetleaves!(tree)
+    _validate!(tree) || return false
+
     nodes = _getnodes(tree)
     nodenames = _getnodenames(tree)
     branches = _getbranches(tree)
@@ -1458,7 +1460,7 @@ function validate!(tree::T) where
         end
     end
 
-    return _validate!(tree)
+    return true
 end
 
 """

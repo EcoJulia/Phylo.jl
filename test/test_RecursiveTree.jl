@@ -2,6 +2,7 @@ module TestRecursiveTree
 
 using Phylo
 using DataFrames
+using Random
 
 using Test
 using IterableTables: getiterator
@@ -12,7 +13,7 @@ df = DataFrame(species = species, count = [10, 20, 3, 31])
 observations = ["Dog", "Cat", "Dog", "Dog"]
 jdb = DataFrame(species = observations, count = 1:4)
 
-@testset "RootedTree()" begin
+@testset "Rooted Trees" begin
     name = "internal"
     nts = RecursiveTree{OneRoot, String, Vector{Int}, Nothing, BinaryBranching,
                         Float64, Nothing}(species)
@@ -117,6 +118,33 @@ end
     @test_nowarn Phylo.outputbranch!(IOBuffer(), rtjdb,
                                      first(getbranches(rtjdb)),
                                      Phylo.CompactOutput(), Nothing)
+end
+
+@testset "Random validation" begin
+    tree = rand(Nonultrametric(species))
+    @test validate!(tree)
+
+    # Missing node input
+    tree = rand(Nonultrametric(species))
+    getnode(tree, species[1]).in = nothing
+    @test !validate!(tree)
+
+    # Missing node exit
+    tree = rand(Nonultrametric(species))
+    empty!(getnode(tree, species[1]).in.in.conns)
+    @test !validate!(tree)
+
+    # Missing branch input
+    tree = rand(Nonultrametric(species))
+    b = getinbound(tree, species[1])
+    b.in = nothing
+    @test !validate!(tree)
+
+    # Missing branch exit
+    tree = rand(Nonultrametric(species))
+    b = getinbound(tree, species[1])
+    empty!(b.conns)
+    @test !validate!(tree)
 end
 
 end
