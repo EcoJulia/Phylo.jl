@@ -84,6 +84,7 @@ getancestors
 getchildren
 getdescendants
 getsiblings
+renamenode!
 ```
 
 ## Methods on Branches

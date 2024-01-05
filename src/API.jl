@@ -335,6 +335,14 @@ _hasnode(tree::AbstractTree{OneTree, RT, NL, N},
          node::N) where {RT, NL, N} = node ∈ _getnodes(tree)
 
 """
+    _renamenode!(tree::AbstractTree, oldnode[name], newname)
+     
+Renames a node in a tree. Optional - not implemented for most tree types.
+"""
+function _renamenode! end
+_renamenode!(_::AbstractTree, _, _) = false
+     
+"""
     _createnode!(tree::AbstractTree, nodename[, data])
 
 Must be implemented for any AbstractTree subtype.

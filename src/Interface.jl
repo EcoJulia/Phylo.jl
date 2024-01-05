@@ -477,7 +477,7 @@ Returns whether a tree has a given node (or node name) or not.
 hasnode(tree::AbstractTree{OneTree}, node) = _hasnode(tree, node)
 
 """
-    getnode(tree::AbstractTree, nodename)
+    getnode(tree::AbstractTree, node[name])
 
 Returns a node from a tree.
 """
@@ -487,11 +487,20 @@ function getnode(tree::AbstractTree{OneTree}, node)
 end
 
 """
+    renamenode!(tree::AbstractTree, oldnode[name], newname)
+
+Renames a node in a tree. Optional - not implemented for most tree types and returns false.
+"""
+function renamenode!(tree::AbstractTree{OneTree}, oldnode, newname)
+    _hasnode(tree, oldnode) || error("Node $oldnode does not exist")
+    _hasnode(tree, newname) || return _renamenode!(tree, _getnode(tree, oldnode), newname)
+    return newname == getnodename(tree, oldnode)
+end
+
+"""
     getnodename(::AbstractTree, node)
 
-Returns the node name associated with a node from a tree. For some
-node types, it will be able to extract the node name without reference to
-the tree.
+Returns the node name associated with a node from a tree.
 """
 function getnodename end
 @traitfn function getnodename(tree::T, node::N) where

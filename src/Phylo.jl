@@ -86,7 +86,7 @@ export _isleaf, _isroot, _isinternal, _isunattached
 export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _hasspace, _degree
 export _hasinbound, _getinbound, _addinbound!, _removeinbound!
 export _getoutbounds, _addoutbound!, _removeoutbound!
-export _getconnections, _addconnection!, _removeconnection!
+export _getconnections, _addconnection!, _removeconnection!, _renamenode!
 export MatchNodeType, MatchNodeTypes, PreferNodeObjects, _prefernodeobjects
 
 # AbstractBranch methods
@@ -127,7 +127,7 @@ export isleaf, isroot, isinternal, isunattached
 export degree, indegree, outdegree, hasinbound, getconnections, getinbound, getoutbounds
 export hasoutboundspace, hasinboundspace
 export getleafinfo, setleafinfo!, leafinfotype
-export getnodedata, setnodedata!
+export getnodedata, setnodedata!, renamenode!
 export getparent, getancestors #, hasparent # unimplemented
 export getchildren, getdescendants #, haschildren # unimplemented
 export getsiblings
