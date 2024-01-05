@@ -202,7 +202,7 @@ end
 """
     _getnodes(tree::AbstractTree{OneTree}[, order::TraversalOrder])
 
-Returns a vector of nodes for a OneTree tree. _getnodes(tree) must be
+Returns an interable collection of nodes for a OneTree tree. _getnodes(tree) must be
 implemented for a OneTree tree type as a base mechanisms for extracting the
 node list.
 """
@@ -213,7 +213,7 @@ _getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder) =
 """
     _getnodenames(tree::AbstractTree{OneTree})
 
-Returns a vector of node names for a OneTree tree. Can
+Returns an iterable collection of node names for a OneTree tree. Can
 be implemented for any OneTree tree type, especially PreferNodeObjects trees.
 """
 function _getnodenames end
@@ -233,7 +233,7 @@ be implemented for any OneTree tree type (otherwise infers from _getnodes()).
 _nnodes(tree::AbstractTree{OneTree}) = length(_getnodes(tree, anyorder))
 
 """
-    _getleafnames(::AbstractTree)
+    _getleafnames(::AbstractTree, ::TraversalOrder)
 
 Returns the leaf names of a tree. May be implemented for any
 tree type (otherwise determined from _getnodenames() and _isleaf() functions).
