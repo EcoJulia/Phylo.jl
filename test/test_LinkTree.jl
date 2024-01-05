@@ -31,8 +31,11 @@ end
     @test branchdatatype(typeof(ltjdb)) ≡ Nothing
     @test leafinfotype(typeof(ltjdb)) ≡ typeof(jdb)
     @test_nowarn createnode!(ltjdb, name)
-    @test createbranch!(ltjdb, name, observations[1], data = nothing) ∈ getbranches(ltjdb)
-    @test createbranch!(ltjdb, getnode(ltjdb, name), getnode(ltjdb, observations[2]), data = nothing) ∈ getbranches(ltjdb)
+    @test createbranch!(ltjdb, name, observations[1], data = nothing) ∈
+          getbranches(ltjdb)
+    @test createbranch!(ltjdb, getnode(ltjdb, name),
+                        getnode(ltjdb, observations[2]), data = nothing) ∈
+          getbranches(ltjdb)
 end
 
 end

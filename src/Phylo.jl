@@ -41,14 +41,16 @@ struct PolytomousBranching <: BranchingType end
 export BinaryBranching, PolytomousBranching
 
 abstract type AbstractElt{RootType <: Rootedness, NodeLabel} end
-abstract type AbstractNode{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
-abstract type AbstractBranch{RootType, NodeLabel} <: AbstractElt{RootType, NodeLabel} end
+abstract type AbstractNode{RootType, NodeLabel} <:
+              AbstractElt{RootType, NodeLabel} end
+abstract type AbstractBranch{RootType, NodeLabel} <:
+              AbstractElt{RootType, NodeLabel} end
 
 using Distances
 abstract type AbstractTree{TT <: TreeType, RT <: Rootedness, NL,
                            Node <: AbstractElt{RT, NL},
-                           Branch <: AbstractElt{RT, NL}} <: Distances.UnionMetric
-end
+                           Branch <: AbstractElt{RT, NL}} <:
+              Distances.UnionMetric end
 
 export AbstractTree
 
@@ -83,7 +85,8 @@ export HoldsNodeData, MatchTreeNameType
 
 # AbstractNode methods
 export _isleaf, _isroot, _isinternal, _isunattached
-export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _hasspace, _degree
+export _indegree, _hasinboundspace, _outdegree, _hasoutboundspace, _hasspace,
+       _degree
 export _hasinbound, _getinbound, _addinbound!, _removeinbound!
 export _getoutbounds, _addoutbound!, _removeoutbound!
 export _getconnections, _addconnection!, _removeconnection!, _renamenode!
@@ -109,7 +112,8 @@ export createbranch!, deletebranch!
 export createnode!, createnodes!, deletenode!
 export getnodenames, getnodename, hasnode, getnode, getnodes, nnodes
 export getleafnames, getleaves, nleaves, getinternalnodes, ninternal
-export getbranchnames, getbranchname, hasbranch, getbranch, getbranches, nbranches
+export getbranchnames, getbranchname, hasbranch, getbranch, getbranches,
+       nbranches
 export hasrootheight, getrootheight, setrootheight!
 export validate!, invalidate!, traversal, branchdims
 
@@ -124,7 +128,8 @@ export validate!, invalidate!, traversal, branchdims
 
 # AbstractTree / AbstractNode methods
 export isleaf, isroot, isinternal, isunattached
-export degree, indegree, outdegree, hasinbound, getconnections, getinbound, getoutbounds
+export degree, indegree, outdegree, hasinbound, getconnections, getinbound,
+       getoutbounds
 export hasoutboundspace, hasinboundspace
 export getleafinfo, setleafinfo!, leafinfotype
 export getnodedata, setnodedata!, renamenode!
@@ -170,7 +175,7 @@ export nodehistory, nodefuture, noderoute
 # Iterator methods expanded
 include("Iterators.jl")
 export nodeiter, nodefilter, nodenameiter, nodenamefilter,
-    branchiter, branchfilter, branchnameiter, branchnamefilter
+       branchiter, branchfilter, branchnameiter, branchnamefilter
 @deprecate treeiter gettrees
 @deprecate treenameiter gettreenames
 
@@ -216,9 +221,9 @@ if !isdefined(Base, :get_extension)
 end
 
 @static if !isdefined(Base, :get_extension)
-function __init__()
-    @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" include("../ext/PhyloRCallExt.jl")
-end
+    function __init__()
+        @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" include("../ext/PhyloRCallExt.jl")
+    end
 end
 
 end # module

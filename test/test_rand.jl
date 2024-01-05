@@ -23,7 +23,7 @@ using Test
     @test length(getnodedata(t2, species[1])) == 0
     t3 = rand(Nonultrametric{BinaryTree{OneRoot, DataFrame, Vector{String}}}(species))
     map(nodenameiter(t3)) do name
-        setnodedata!(t3, name, nodehistory(t3, name))
+        return setnodedata!(t3, name, nodehistory(t3, name))
     end
     for name in nodenameiter(t3)
         @test all(getnodedata(t3, name) .== nodehistory(t3, name))

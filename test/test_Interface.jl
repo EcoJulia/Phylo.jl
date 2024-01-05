@@ -16,12 +16,10 @@ matchbranch = true
 end
 
 @testset "Build and tear down trees" begin
-    @testset "For $TreeType" for TreeType in
-        [NamedTree, NamedBinaryTree,
-         BinaryTree{ManyRoots, DataFrame, Vector{Float64}},
-         Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64},
-         RootedTree, ManyRootTree]
-
+    @testset "For $TreeType" for TreeType in [NamedTree, NamedBinaryTree,
+        BinaryTree{ManyRoots, DataFrame, Vector{Float64}},
+        Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64},
+        RootedTree, ManyRootTree]
         @test treetype(TreeType) == OneTree
         species = ["Dog", "Cat", "Human", "Potato", "Apple"]
         tree = TreeType(species)
@@ -47,14 +45,20 @@ end
         @test_throws Exception getroot(tree)
         branches = map(innodes) do node
             itr = Iterators.filter(name -> hasoutboundspace(tree, name) &&
-                                   name != node &&
-                                   name ∉ getdescendants(tree, node) &&
-                                   name ∉ species, allnodes)
+                                               name != node &&
+                                               name ∉
+                                               getdescendants(tree, node) &&
+                                               name ∉ species,
+                                   allnodes)
             global matchbranch = !matchbranch
             if matchbranch
-                getbranch(tree, createbranch!(tree, getnode(tree, first(itr)), getnode(tree, node)))
+                getbranch(tree,
+                          createbranch!(tree, getnode(tree, first(itr)),
+                                        getnode(tree, node)))
             else
-                getbranch(tree, createbranch!(tree, getnodename(tree, first(itr)), getnodename(tree, node)))
+                getbranch(tree,
+                          createbranch!(tree, getnodename(tree, first(itr)),
+                                        getnodename(tree, node)))
             end
         end
         @test_nowarn getroot(tree)
@@ -67,8 +71,9 @@ end
         bn = getbranchname(tree, b)
         node1 = getnode(tree, species[1])
         @test !isunattached(tree, node1) &&
-            hasoutboundspace(tree, node1) && !hasinboundspace(tree, node1) &&
-            outdegree(tree, node1) == 0 && indegree(tree, node1) == 1 && degree(tree, node1) == 1
+              hasoutboundspace(tree, node1) && !hasinboundspace(tree, node1) &&
+              outdegree(tree, node1) == 0 && indegree(tree, node1) == 1 &&
+              degree(tree, node1) == 1
         @test hasbranch(tree, b)
         @test hasbranch(tree, bn)
         @test getnodename(tree, dst(tree, getbranch(tree, b))) == species[1]
@@ -76,11 +81,11 @@ end
         @test deletebranch!(tree, b)
         @test !hasbranch(tree, b)
         @test isunattached(tree, species[1]) &&
-            hasoutboundspace(tree, species[1]) &&
-            hasinboundspace(tree, species[1]) &&
-            outdegree(tree, species[1]) == 0 &&
-            indegree(tree, species[1]) == 0 &&
-            degree(tree, node1) == 0
+              hasoutboundspace(tree, species[1]) &&
+              hasinboundspace(tree, species[1]) &&
+              outdegree(tree, species[1]) == 0 &&
+              indegree(tree, species[1]) == 0 &&
+              degree(tree, node1) == 0
         @test_throws Exception getbranch(tree, b)
         branches = [branch for branch in branches if branch != b]
         @test Set(branches) == Set(getbranches(tree))
@@ -93,11 +98,11 @@ end
         createbranch!(tree, who, species[1])
         deletebranch!(tree, who, species[1])
         @test isunattached(tree, species[1]) &&
-            hasoutboundspace(tree, species[1]) &&
-            hasinboundspace(tree, species[1]) &&
-            outdegree(tree, species[1]) == 0 &&
-            indegree(tree, species[1]) == 0 &&
-            degree(tree, node1) == 0
+              hasoutboundspace(tree, species[1]) &&
+              hasinboundspace(tree, species[1]) &&
+              outdegree(tree, species[1]) == 0 &&
+              indegree(tree, species[1]) == 0 &&
+              degree(tree, node1) == 0
         b3 = createbranch!(tree, who, species[1])
         @test who == getnodename(tree, src(tree, b3))
         spparent = getparent(tree, getnode(tree, species[1]))
@@ -126,10 +131,11 @@ end
                    !isinternal(tree, node)) for node in species)
         @test Set(getnodename(tree, src(tree, branch))
                   for branch in getbranches(tree)) ∪
-            Set(getnodename(tree, dst(tree, branch))
-                for branch in getbranches(tree)) == Set(getnodenames(tree))
+              Set(getnodename(tree, dst(tree, branch))
+                  for branch in getbranches(tree)) == Set(getnodenames(tree))
         createnode!(tree)
-        @test treenametype(TreeType) ≡ Int ? gettreename(tree) == 1 : gettreename(tree) == "Tree"
+        @test treenametype(TreeType) ≡ Int ? gettreename(tree) == 1 :
+              gettreename(tree) == "Tree"
         @test (roottype(TreeType) ≡ OneRoot) ⊻ validate!(tree)
         @test gettree(tree) ≡ tree
         @test length(getnodes(tree)) == nnodes(tree)

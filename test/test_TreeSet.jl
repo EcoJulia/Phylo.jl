@@ -7,13 +7,13 @@ using Test
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10
-df = DataFrame(species = species, count=[10, 20, 3])
+df = DataFrame(species = species, count = [10, 20, 3])
 observations = ["Dog", "Cat", "Dog", "Dog"]
 jdb = DataFrame(species = observations, count = [1, 2, 3, 4])
 
 @testset "TreeSet" begin
     @test length(rand(Ultrametric(ntips), 10)) ==
-        length(rand(Nonultrametric(ntips), 10))
+          length(rand(Nonultrametric(ntips), 10))
     ts = rand(Ultrametric(ntips), 1:10)
     @test length(gettrees(ts)) == length(gettreenames(ts)) == ntrees(ts) == 10
     @test length(getleafnames(ts)) == ntips
@@ -30,16 +30,17 @@ jdb = DataFrame(species = observations, count = [1, 2, 3, 4])
     end
     @test nleaves(ts) == ntips
     @test_throws ArgumentError getleafnames(TreeSet(Dict{String, NamedTree}(),
-                                                    Dict{String, Dict{String,
-                                                                      Any}}()))
+                                                    Dict{String,
+                                                         Dict{String,
+                                                              Any}}()))
     @test nleaves(rand(Ultrametric(df), 20)) == length(species)
     @test nleaves(rand(Ultrametric(jdb), 10)) ==
-        length(unique(observations))
+          length(unique(observations))
     @test getleafinfo(rand(Ultrametric(df))) == df
     @test getleafinfo(rand(Ultrametric(jdb), 2)) == jdb
     @test nleaves(rand(Nonultrametric(df), 20)) == length(species)
     @test nleaves(rand(Nonultrametric(jdb), 10)) ==
-        length(unique(observations))
+          length(unique(observations))
     @test getleafinfo(rand(Nonultrametric(df))) == df
     @test getleafinfo(rand(Nonultrametric(jdb), 2)) == jdb
 

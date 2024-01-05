@@ -14,11 +14,13 @@ jdb = DataFrame(species = observations, count = 1:4)
 
 @testset "RootedTree()" begin
     name = "internal"
-    nts = RecursiveTree{OneRoot, String, Vector{Int}, Nothing, BinaryBranching, Float64, Nothing}(species)
+    nts = RecursiveTree{OneRoot, String, Vector{Int}, Nothing, BinaryBranching,
+                        Float64, Nothing}(species)
     @test !renamenode!(nts, species[1], species[2])
     @test hasnode(nts, species[1])
     @test renamenode!(nts, species[1], "new " * species[1])
-    @test_throws ErrorException renamenode!(nts, species[1], "new " * species[1])
+    @test_throws ErrorException renamenode!(nts, species[1],
+                                            "new " * species[1])
     @test hasnode(nts, "new " * species[1])
     @test renamenode!(nts, "new " * species[1], species[1])
     @test Set(species) == Set(getleafnames(nts))
@@ -32,7 +34,8 @@ jdb = DataFrame(species = observations, count = 1:4)
     @test !haskey(li, species[1])
     @test haskey(li, "new " * species[1])
     @test li["new " * species[1]] == data
-    @test_throws ErrorException renamenode!(rts, species[1], "new " * species[1])
+    @test_throws ErrorException renamenode!(rts, species[1],
+                                            "new " * species[1])
     @test renamenode!(rts, "new " * species[1], species[1])
     @test haskey(li, species[1])
     @test li[species[1]] == data
@@ -42,7 +45,7 @@ jdb = DataFrame(species = observations, count = 1:4)
     @test leafinfotype(typeof(rts)) ≡ Dict{String, Any}
     @test_nowarn createnode!(rts, name)
     @test createbranch!(rts, name, species[1]) ∈ getbranches(rts)
-    
+
     rtdf = Phylo.ReT{OneRoot, DataFrame, BinaryBranching, Float64}(df)
     @test nodedatatype(typeof(rtdf)) ≡ Dict{String, Any}
     @test branchdatatype(typeof(rtdf)) ≡ Dict{String, Any}
@@ -84,15 +87,22 @@ end
     @test leafinfotype(typeof(urtsp)) ≡ Dict{String, Any}
     @test_nowarn createnode!(urtsp, name)
     @test createbranch!(urtsp, name, species[1]) ∈ getbranches(urtsp)
-    @test createbranch!(urtsp, getnode(urtsp, name), getnode(urtsp, species[2])) ∈ getbranches(urtsp)
-    @test createbranch!(urtsp, getnode(urtsp, name), species[3]) ∈ getbranches(urtsp)
-    @test createbranch!(urtsp, name, getnode(urtsp, species[4])) ∈ getbranches(urtsp)
+    @test createbranch!(urtsp, getnode(urtsp, name),
+                        getnode(urtsp, species[2])) ∈ getbranches(urtsp)
+    @test createbranch!(urtsp, getnode(urtsp, name), species[3]) ∈
+          getbranches(urtsp)
+    @test createbranch!(urtsp, name, getnode(urtsp, species[4])) ∈
+          getbranches(urtsp)
     @test nroots(urtsp) == 0
 
-    LB = RecursiveBranch{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}
-    LN = RecursiveNode{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}
-    rtjdb = RecursiveTree{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64, typeof(jdb)}(jdb)
-    @test_throws MethodError renamenode!(rtjdb, observations[1], "new " * observations[1])
+    LB = RecursiveBranch{Unrooted, String, Vector{Int}, Nothing,
+                         BinaryBranching, Float64}
+    LN = RecursiveNode{Unrooted, String, Vector{Int}, Nothing, BinaryBranching,
+                       Float64}
+    rtjdb = RecursiveTree{Unrooted, String, Vector{Int}, Nothing,
+                          BinaryBranching, Float64, typeof(jdb)}(jdb)
+    @test_throws MethodError renamenode!(rtjdb, observations[1],
+                                         "new " * observations[1])
     @test nodedatatype(typeof(rtjdb)) ≡ Vector{Int}
     @test branchdatatype(typeof(rtjdb)) ≡ Nothing
     @test leafinfotype(typeof(rtjdb)) ≡ typeof(jdb)
@@ -100,9 +110,13 @@ end
     b = createbranch!(rtjdb, name, observations[1], data = nothing)
     @test b ∈ getbranches(rtjdb)
     @test deletebranch!(rtjdb, b)
-    @test createbranch!(rtjdb, name, observations[1], data = nothing) ∈ getbranches(rtjdb)
-    @test_nowarn Phylo.outputnode!(IOBuffer(), rtjdb, name, Phylo.CompactOutput(), Nothing)
-    @test_nowarn Phylo.outputbranch!(IOBuffer(), rtjdb, first(getbranches(rtjdb)), Phylo.CompactOutput(), Nothing)
+    @test createbranch!(rtjdb, name, observations[1], data = nothing) ∈
+          getbranches(rtjdb)
+    @test_nowarn Phylo.outputnode!(IOBuffer(), rtjdb, name,
+                                   Phylo.CompactOutput(), Nothing)
+    @test_nowarn Phylo.outputbranch!(IOBuffer(), rtjdb,
+                                     first(getbranches(rtjdb)),
+                                     Phylo.CompactOutput(), Nothing)
 end
 
 end

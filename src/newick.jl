@@ -128,7 +128,8 @@ function outputmetacomment!(io::IO, data::Dict, ::NewickLike)
     end
 end
 
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick{<: Dict{T, String}},
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node,
+                     newick::Newick{<:Dict{T, String}},
                      ::Type{Nothing}) where {TT, RT, T}
     nn = getnodename(tree, node)
     if haskey(newick.translate, nn)
@@ -137,8 +138,9 @@ function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick
     return nothing
 end
 
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick{<: Dict{T, W}},
-    ::Type{Nothing}) where {TT, RT, T, W}
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node,
+                     newick::Newick{<:Dict{T, W}},
+                     ::Type{Nothing}) where {TT, RT, T, W}
     nn = getnodename(tree, node)
     if haskey(newick.translate, nn)
         print(io, newick.translate[nn])
@@ -146,32 +148,37 @@ function outputnode!(io::IO, tree::AbstractTree{TT, RT, T}, node, newick::Newick
     return nothing
 end
 
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, String}, node, ::Newick{Nothing},
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, String}, node,
+                     ::Newick{Nothing},
                      ::Type{Nothing}) where {TT, RT}
     print(io, "\"", getnodename(tree, node), "\"")
     return nothing
 end
 
-function outputnode!(io::IO, tree::AbstractTree{TT, RT, <: Number}, node, ::Newick{Nothing},
+function outputnode!(io::IO, tree::AbstractTree{TT, RT, <:Number}, node,
+                     ::Newick{Nothing},
                      ::Type{Nothing}) where {TT, RT}
     print(io, getnodename(tree, node))
     return nothing
 end
 
-function outputnode!(io::IO, tree::AbstractTree, node, newick::Newick{NT}, ::Type{<: Dict}) where NT
+function outputnode!(io::IO, tree::AbstractTree, node, newick::Newick{NT},
+                     ::Type{<:Dict}) where {NT}
     outputnode!(io, tree, node, newick, Nothing)
     outputmetacomment!(io, getnodedata(tree, node), Newick())
     return nothing
 end
 
-function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{Nothing})
+function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike,
+                       ::Type{Nothing})
     if haslength(tree, branch)
         print(io, ":", getlength(tree, branch))
     end
     return nothing
 end
 
-function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{<: Dict})
+function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike,
+                       ::Type{<:Dict})
     if haslength(tree, branch)
         print(io, ":")
         outputmetacomment!(io, getbranchdata(tree, branch), Newick())
@@ -180,8 +187,9 @@ function outputbranch!(io::IO, tree::AbstractTree, branch, ::NewickLike, ::Type{
     return nothing
 end
 
-function outputsubtree!(io::IO, tree::T, node, ot::Newick{NT}) where
-    {T <: AbstractTree{OneTree, OneRoot}, NT}
+function outputsubtree!(io::IO, tree::T, node,
+                        ot::Newick{NT}) where
+         {T <: AbstractTree{OneTree, OneRoot}, NT}
     if !isleaf(tree, node)
         print(io, "(")
         for (i, branch) in enumerate(getoutbounds(tree, node))
@@ -197,8 +205,9 @@ function outputsubtree!(io::IO, tree::T, node, ot::Newick{NT}) where
     return nothing
 end
 
-function outputsubtree!(io::IO, tree::T, node, ot::Newick{NT}, exclude = []) where
-    {T <: AbstractTree{OneTree, Unrooted}, NT}
+function outputsubtree!(io::IO, tree::T, node, ot::Newick{NT},
+                        exclude = []) where
+         {T <: AbstractTree{OneTree, Unrooted}, NT}
     cs = getconnections(tree, node, exclude)
     if !isempty(cs)
         print(io, "(")
@@ -215,26 +224,32 @@ function outputsubtree!(io::IO, tree::T, node, ot::Newick{NT}, exclude = []) whe
     return nothing
 end
 
-function outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, node, ot::Newick{NT}) where NT
+function outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, node,
+                     ot::Newick{NT}) where {NT}
     outputsubtree!(io, tree, node, ot)
     print(io, ";")
     return nothing
 end
 
-outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot}, ot::Newick{NT}) where NT =
-    outputtree!(io, tree, getroot(tree), ot)
+function outputtree!(io::IO, tree::AbstractTree{OneTree, OneRoot},
+                     ot::Newick{NT}) where {NT}
+    return outputtree!(io, tree, getroot(tree), ot)
+end
 
-treeOutputType(::Type{<: AbstractTree{OneTree}}) = Newick
+treeOutputType(::Type{<:AbstractTree{OneTree}}) = Newick
 
 import Base: write
-write(io::IO, tree::T; format::OT = treeOutputType(T)()) where
-    {T <: AbstractTree, OT <: NewickLike} =
-    outputtree!(io, tree, format)
+function write(io::IO, tree::T;
+               format::OT = treeOutputType(T)()) where
+         {T <: AbstractTree, OT <: NewickLike}
+    return outputtree!(io, tree, format)
+end
 
-function write(file::String, tree::T; format::OT = treeOutputType(T)()) where
-    {T <: AbstractTree, OT <: NewickLike}
+function write(file::String, tree::T;
+               format::OT = treeOutputType(T)()) where
+         {T <: AbstractTree, OT <: NewickLike}
     open(file, "w") do io
-        write(io, tree, format = format)
+        return write(io, tree, format = format)
     end
 end
 
@@ -245,22 +260,28 @@ const T = Tokenize.Tokens
 
 noname(name::String) = name == ""
 
-tokenerror(token, str) = error("Unexpected $(token.kind) token " *
-                               "'$(untokenize(token))' instead of '$str'")
+function tokenerror(token, str)
+    return error("Unexpected $(token.kind) token " *
+                 "'$(untokenize(token))' instead of '$str'")
+end
 
 isWHITESPACE(token) = token.kind == T.WHITESPACE
 isEQ(token) = token.kind == T.EQ
 isEQorRSQUARE(token) = token.kind ∈ [T.EQ, T.RSQUARE]
-isIDENTIFIER(token, text) =
-    (token.kind == T.IDENTIFIER) & (lowercase(untokenize(token)) == text)
-    isBEGIN(token) = (token.kind == T.BEGIN) | isIDENTIFIER(token, "begin")
+function isIDENTIFIER(token, text)
+    return (token.kind == T.IDENTIFIER) & (lowercase(untokenize(token)) == text)
+end
+isBEGIN(token) = (token.kind == T.BEGIN) | isIDENTIFIER(token, "begin")
 isTAXA(token) = isIDENTIFIER(token, "taxa")
 isTREE(token) = isIDENTIFIER(token, "tree")
 isTREES(token) = isIDENTIFIER(token, "trees")
 isDIMENSIONS(token) = isIDENTIFIER(token, "dimensions")
 isTAXLABELS(token) = isIDENTIFIER(token, "taxlabels")
 isTRANSLATE(token) = isIDENTIFIER(token, "translate")
-isEND(token) = (token.kind == T.END) | isIDENTIFIER(token, "end") | isIDENTIFIER(token, "endblock")
+function isEND(token)
+    return (token.kind == T.END) | isIDENTIFIER(token, "end") |
+           isIDENTIFIER(token, "endblock")
+end
 
 function iterateskip(tokens, state = nothing)
     result = isnothing(state) ? iterate(tokens) : iterate(tokens, state)
@@ -276,7 +297,7 @@ function iterateskip(tokens, state = nothing)
         if ut[length(ut)] == '\r'
             token = T.Token(token.kind, token.startpos, token.endpos,
                             token.startbyte, token.endbyte,
-                            token.val[1:(length(token.val)-1)],
+                            token.val[1:(length(token.val) - 1)],
                             token.token_error, token.dotop, token.suffix)
         end
     end
@@ -287,7 +308,7 @@ function tokensgetkey(token, state, tokens, finished::Function = isEQ)
     sofar = String[]
     while !finished(token) && token.kind != T.ENDMARKER
         if token.kind ∈ [T.STRING, T.CHAR]
-            push!(sofar, untokenize(token)[2:end-1])
+            push!(sofar, untokenize(token)[2:(end - 1)])
         else
             push!(sofar, untokenize(token))
         end
@@ -311,16 +332,16 @@ function checktosemi(test::Function, token, state, tokens)
     return true
 end
 
-function parsevector(token, state, tokens, ::Type{TY}, sgn) where TY <: Real
+function parsevector(token, state, tokens, ::Type{TY}, sgn) where {TY <: Real}
     vec = TY[]
     while token.kind != T.RBRACE && token.kind != T.ENDMARKER
         if token.kind == T.PLUS
-            sgn = +;
+            sgn = +
             result = iterateskip(tokens, state)
             isnothing(result) && return nothing
             token, state = result
         elseif token.kind == T.MINUS
-            sgn = -;
+            sgn = -
             result = iterateskip(tokens, state)
             isnothing(result) && return nothing
             token, state = result
@@ -346,9 +367,9 @@ function parsevector(token, state, tokens)
     isnothing(result) && return nothing
     token, state = result
 
-    sgn = +;
+    sgn = +
     if token.kind == T.MINUS
-        sgn = -;
+        sgn = -
         result = iterateskip(tokens, state)
         isnothing(result) && return nothing
         token, state = result
@@ -367,7 +388,7 @@ function parsevector(token, state, tokens)
     vec = String[]
     while token.kind != T.RBRACE && token.kind != T.ENDMARKER
         if token.kind ∈ [T.STRING, T.CHAR]
-            push!(vec, untokenize(token)[2:end-1])
+            push!(vec, untokenize(token)[2:(end - 1)])
         else
             push!(vec, untokenize(token))
         end
@@ -408,14 +429,14 @@ function parsedict(token, state, tokens)
             if token.kind == T.LBRACE
                 token, state, value = parsevector(token, state, tokens)
             else
-                sgn = +;
+                sgn = +
                 if token.kind == T.PLUS
-                    sgn = +;
+                    sgn = +
                     result = iterateskip(tokens, state)
                     isnothing(result) && return nothing
                     token, state = result
                 elseif token.kind == T.MINUS
-                    sgn = -;
+                    sgn = -
                     result = iterateskip(tokens, state)
                     isnothing(result) && return nothing
                     token, state = result
@@ -426,7 +447,7 @@ function parsedict(token, state, tokens)
                 elseif token.kind == T.FLOAT
                     value = sgn(parse(Float64, untokenize(token)))
                 elseif token.kind ∈ [T.STRING, T.CHAR]
-                    value = untokenize(token)[2:end-1]
+                    value = untokenize(token)[2:(end - 1)]
                 else
                     value = untokenize(token)
                 end
@@ -456,8 +477,9 @@ function parsedict(token, state, tokens)
 end
 
 function parsenode(token, state, tokens, tree::TREE,
-                   lookup, siblings, istip) where
-    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+                   lookup, siblings,
+                   istip) where
+         {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     myname = missing
     endkinds = [T.SEMICOLON, T.COLON, T.COMMA, T.RPAREN, T.LSQUARE]
     if token.kind ∉ endkinds # We got a nodename
@@ -471,7 +493,7 @@ function parsenode(token, state, tokens, tree::TREE,
                     myname = lookup[name]
                 else
                     @warn "Wrongly named tip '$name' found in tree " *
-                        "with named tips, adding"
+                          "with named tips, adding"
                     myname = createnode!(tree, name)
                 end
             else
@@ -510,21 +532,21 @@ function parsenode(token, state, tokens, tree::TREE,
             isnothing(result) && return nothing
             token, state = result
         end
-        sgn = +;
+        sgn = +
         if token.kind == T.PLUS
-            sgn = +;
+            sgn = +
             result = iterateskip(tokens, state)
             isnothing(result) && return nothing
             token, state = result
         elseif token.kind == T.MINUS
-            sgn = -;
+            sgn = -
             result = iterateskip(tokens, state)
             isnothing(result) && return nothing
             token, state = result
         end
         if token.kind ∈ [T.INTEGER, T.FLOAT]
-            siblings[getnodename(tree, myname)]["length"] =
-                sgn(parse(Float64, untokenize(token)))
+            siblings[getnodename(tree, myname)]["length"] = sgn(parse(Float64,
+                                                                      untokenize(token)))
         else
             tokenerror(token, "a length")
         end
@@ -537,9 +559,9 @@ function parsenode(token, state, tokens, tree::TREE,
 end
 
 function parsenewick!(token, state, tokens, tree::TREE,
-                     lookup = Dict(), depth = 0,
-                     children = Dict{NL, Dict{String, Any}}()) where
-    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+                      lookup = Dict(), depth = 0,
+                      children = Dict{NL, Dict{String, Any}}()) where
+         {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     mychildren = Dict{NL, Dict{String, Any}}()
     while (token.kind != T.RPAREN) & (token.kind != T.ENDMARKER)
         result = iterateskip(tokens, state)
@@ -564,8 +586,8 @@ function parsenewick!(token, state, tokens, tree::TREE,
     for child in keys(mychildren)
         dict = mychildren[child]
         haskey(dict, "length") ?
-            createbranch!(tree, nodename, child, dict["length"]) :
-            createbranch!(tree, nodename, child)
+        createbranch!(tree, nodename, child, dict["length"]) :
+        createbranch!(tree, nodename, child)
     end
 
     if depth == 0
@@ -586,8 +608,9 @@ function parsenewick!(token, state, tokens, tree::TREE,
     return token, state
 end
 
-function parsenewick(tokens::Tokenize.Lexers.Lexer, ::Type{TREE}) where
-    {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
+function parsenewick(tokens::Tokenize.Lexers.Lexer,
+                     ::Type{TREE}) where
+         {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
     result = iterateskip(tokens)
     if isnothing(result)
         error("Unexpected end of file at start of newick file")
@@ -612,8 +635,8 @@ end
 Parse an IOBuffer containing a newick tree and convert into a phylogenetic
 tree of type TREE <: AbstractTree
 """
-parsenewick(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree =
-    parsenewick(tokenize(io), TREE)
+parsenewick(io::IOBuffer, ::Type{TREE}) where {TREE <: AbstractTree} = parsenewick(tokenize(io),
+                                                                                   TREE)
 
 """
     parsenewick(io::String, ::Type{TREE}) where TREE <: AbstractTree
@@ -621,8 +644,8 @@ parsenewick(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree =
 Parse a String containing a newick tree and convert into a phylogenetic
 tree of type TREE <: AbstractTree
 """
-parsenewick(s::String, ::Type{TREE}) where TREE <: AbstractTree =
-    parsenewick(IOBuffer(s), TREE)
+parsenewick(s::String, ::Type{TREE}) where {TREE <: AbstractTree} = parsenewick(IOBuffer(s),
+                                                                                TREE)
 
 """
     parsenewick(io::IOStream, ::Type{TREE}) where TREE <: AbstractTree
@@ -630,7 +653,7 @@ parsenewick(s::String, ::Type{TREE}) where TREE <: AbstractTree =
 Parse an IOStream containing a newick tree and convert into a phylogenetic
 tree of type TREE <: AbstractTree
 """
-function parsenewick(ios::IOStream, ::Type{TREE}) where TREE <: AbstractTree
+function parsenewick(ios::IOStream, ::Type{TREE}) where {TREE <: AbstractTree}
     buf = IOBuffer()
     print(buf, read(ios, String))
     seek(buf, 0)
@@ -645,11 +668,18 @@ tree of type RootedTree
 """
 parsenewick(inp) = parsenewick(inp, RootedTree)
 
-parsenewicklike(::Type{T}, str, format::Newick) where T <: AbstractTree =
-    parsenewick(str, T)
+function parsenewicklike(::Type{T}, str,
+                         format::Newick) where {T <: AbstractTree}
+    return parsenewick(str, T)
+end
 
 import Base: parse
-parse(::Type{T}, str; format::OT = treeOutputType(T)()) where
-    {T <: AbstractTree, OT <: NewickLike} = parsenewicklike(T, str, format)
+function parse(::Type{T}, str;
+               format::OT = treeOutputType(T)()) where
+         {T <: AbstractTree, OT <: NewickLike}
+    return parsenewicklike(T, str, format)
+end
 
-parse(::Type{T}; kwargs...) where T <: AbstractTree = str -> parse(T, str; kwargs...)
+function parse(::Type{T}; kwargs...) where {T <: AbstractTree}
+    return str -> parse(T, str; kwargs...)
+end

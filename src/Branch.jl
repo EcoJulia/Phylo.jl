@@ -13,7 +13,7 @@ mutable struct Branch{RT, NL} <: AbstractBranch{RT, NL}
                         len::Union{Float64, Missing} = missing) where {RT, NL}
         ismissing(len) || len >= 0.0 ||
             error("Branch length must be positive or missing (no recorded length), not $len")
-        new{RT, NL}(name, source, destination, len)
+        return new{RT, NL}(name, source, destination, len)
     end
 end
 
@@ -31,13 +31,13 @@ _getbranchname(::AbstractTree, branch::Branch) = branch.name
 import Phylo.API: _getbranchdata
 _getbranchdata(::AbstractTree, ::Branch) = nothing
 
-function checkbranch(id::Int, branch::Branch{<: Rooted}, tree::AbstractTree)
+function checkbranch(id::Int, branch::Branch{<:Rooted}, tree::AbstractTree)
     return id > 0 &&
-        hasbranch(tree, id) &&
-        src(tree, branch) != dst(tree, branch) &&
-        hasnode(tree, src(tree, branch)) &&
-        hasnode(tree, dst(tree, branch)) &&
-        indegree(tree, getnode(tree, dst(tree, branch))) > 0 &&
-        outdegree(tree, src(tree, branch)) > 0 &&
-        getbranch(tree, getinbound(tree, dst(tree, branch))) === branch
+           hasbranch(tree, id) &&
+           src(tree, branch) != dst(tree, branch) &&
+           hasnode(tree, src(tree, branch)) &&
+           hasnode(tree, dst(tree, branch)) &&
+           indegree(tree, getnode(tree, dst(tree, branch))) > 0 &&
+           outdegree(tree, src(tree, branch)) > 0 &&
+           getbranch(tree, getinbound(tree, dst(tree, branch))) === branch
 end

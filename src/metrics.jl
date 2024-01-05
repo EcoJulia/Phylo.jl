@@ -28,7 +28,7 @@ LinkNode Node 1003, an internal node with 1 inbound and 2 outbound connections (
 """
 function mrca(tree::AbstractTree, target)
     ancestors = getancestors(tree, first(target))
-    ranks = Dict(j => i for (i,j) in enumerate(ancestors))
+    ranks = Dict(j => i for (i, j) in enumerate(ancestors))
     checked = Set(ancestors)
     oldest = 1
     for species in target
@@ -38,7 +38,7 @@ function mrca(tree::AbstractTree, target)
         end
         oldest = max(oldest, get(ranks, species, 0))
     end
-    ancestors[oldest]
+    return ancestors[oldest]
 end
 
 """
@@ -48,26 +48,26 @@ Returns an AxisArray of the height of all nodes in `tree` over the root node.
 `onlyleaves` and `noleaves` filter the nodes for leaves and internal nodes,
 respectively
 """
-function nodeheights(tree::Phylo.AbstractTree; onlyleaves = false, noleaves = false)
+function nodeheights(tree::Phylo.AbstractTree; onlyleaves = false,
+                     noleaves = false)
     function findheights!(clade::String, parentheight::Float64 = 0.0)
         myheight = parentheight
         if hasinbound(tree, clade)
-             myheight += getlength(tree, getinbound(tree, clade))
+            myheight += getlength(tree, getinbound(tree, clade))
         end
         height[clade] = myheight
         for ch in getchildren(tree, clade)
             findheights!(ch, myheight)
         end
     end
-    names = getnodename.((tree, ), traversal(tree, preorder))
+    names = getnodename.((tree,), traversal(tree, preorder))
     height = AxisArray(Vector{Float64}(undef, nnodes(tree)), x = names)
     root = getnodename(tree, getroot(tree))
     findheights!(root)
-    onlyleaves && return height[filter(t->isleaf(tree, t), names)]
-    noleaves && return height[filter(t->!isleaf(tree, t), names)]
-    height
+    onlyleaves && return height[filter(t -> isleaf(tree, t), names)]
+    noleaves && return height[filter(t -> !isleaf(tree, t), names)]
+    return height
 end
-
 
 """
     distance(tree::AbstractTree, node1, node2)

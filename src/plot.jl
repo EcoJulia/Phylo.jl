@@ -1,7 +1,8 @@
 using RecipesBase
 
-@recipe function f(tree::Phylo.AbstractTree; treetype = :dendrogram, marker_group = nothing, line_group = nothing, showtips = true, tipfont = (7,))
-
+@recipe function f(tree::Phylo.AbstractTree; treetype = :dendrogram,
+                   marker_group = nothing, line_group = nothing,
+                   showtips = true, tipfont = (7,))
     linecolor --> :black
     grid --> false
     framestyle --> :none
@@ -11,7 +12,7 @@ using RecipesBase
 
     d, h, n = _findxy(tree)
     adj = 0.03maximum(values(d))
-    tipannotations = map(x->(d[x] + adj, h[x], x), getleafnames(tree))
+    tipannotations = map(x -> (d[x] + adj, h[x], x), getleafnames(tree))
 
     lz = get(plotattributes, :line_z, nothing)
     mz = get(plotattributes, :marker_z, nothing)
@@ -21,9 +22,10 @@ using RecipesBase
     lg = _handlez(line_group, tree, n)
 
     x, y = Float64[], Float64[]
-    for node ∈ n
+    for node in n
         if hasinbound(tree, node)
-            push!(x, d[getparent(tree, node)], d[getparent(tree, node)], d[node], NaN)
+            push!(x, d[getparent(tree, node)], d[getparent(tree, node)],
+                  d[node], NaN)
             push!(y, h[getparent(tree, node)], h[node], h[node], NaN)
         end
     end
@@ -31,7 +33,8 @@ using RecipesBase
     marker_x, marker_y = _handlemarkers(plotattributes, mg, tree, d, h, n)
 
     if treetype == :dendrogram
-        Dendrogram(x, y, tipannotations, marker_x, marker_y, showtips, tipfont, mg, lg)
+        Dendrogram(x, y, tipannotations, marker_x, marker_y, showtips, tipfont,
+                   mg, lg)
     elseif treetype == :fan
         Fan(x, y, tipannotations, marker_x, marker_y, showtips, tipfont, mg, lg)
     else
@@ -39,15 +42,37 @@ using RecipesBase
     end
 end
 
-struct Dendrogram; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_group; line_group; end
-struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_group; line_group; end
+struct Dendrogram
+    x::Any
+    y::Any
+    tipannotations::Any
+    marker_x::Any
+    marker_y::Any
+    showtips::Any
+    tipfont::Any
+    marker_group::Any
+    line_group::Any
+end
+struct Fan
+    x::Any
+    y::Any
+    tipannotations::Any
+    marker_x::Any
+    marker_y::Any
+    showtips::Any
+    tipfont::Any
+    marker_group::Any
+    line_group::Any
+end
 
 @recipe function f(dend::Dendrogram)
     ex = extrema(filter(isfinite, dend.x))
     xlims --> (ex[1] - 0.05 * ex[2], ex[2] * 1.15)
 
     # tip annotations
-    dend.showtips && (annotations := map(x -> (x[1], x[2], (x[3], :left, dend.tipfont...)), dend.tipannotations))
+    dend.showtips &&
+        (annotations := map(x -> (x[1], x[2], (x[3], :left, dend.tipfont...)),
+                            dend.tipannotations))
 
     sa = get(plotattributes, :series_annotations, nothing)
     @series begin
@@ -56,7 +81,7 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_
         markershape := :none
         series_annotations := nothing
         label --> ""
-    #    primary := false
+        #    primary := false
 
         lc = _extend(get(plotattributes, :linecolor, nothing), dend.x)
         lc !== nothing && (linecolor := lc)
@@ -90,11 +115,11 @@ struct Fan; x; y; tipannotations; marker_x; marker_y; showtips; tipfont; marker_
     end
     primary := false
     label := ""
-    nothing
+    return nothing
 end
 
 @recipe function f(fan::Fan)
-    adjust(y) = 2pi*y / (length(fan.tipannotations) + 1)
+    adjust(y) = 2pi * y / (length(fan.tipannotations) + 1)
 
     aspect_ratio := 1
 
@@ -103,8 +128,10 @@ end
     if fan.showtips
         xlims --> (1.5 .* (-mx, mx))
         ylims --> (1.5 .* (-mx, mx))
-        annotations := map(x -> (_tocirc(x[1], adjust(x[2]))..., (x[3], :left,
-            rad2deg(adjust(x[2])), fan.tipfont...)), fan.tipannotations)
+        annotations := map(x -> (_tocirc(x[1], adjust(x[2]))...,
+                                 (x[3], :left,
+                                  rad2deg(adjust(x[2])), fan.tipfont...)),
+                           fan.tipannotations)
     end
 
     sa = get(plotattributes, :series_annotations, nothing)
@@ -130,7 +157,8 @@ end
                 seriestype := :scatter
                 sa !== nothing && (series_annotations := sa)
                 label --> ""
-                _xcirc.(adjust(fan.marker_y), fan.marker_x), _ycirc.(adjust(fan.marker_y), fan.marker_x)
+                _xcirc.(adjust(fan.marker_y), fan.marker_x),
+                _ycirc.(adjust(fan.marker_y), fan.marker_x)
             end
         else
             groups = sort(unique(fan.marker_group))
@@ -140,18 +168,21 @@ end
                     seriestype := :scatter
                     sa !== nothing && (series_annotations := sa[idxs])
                     label --> string(group)
-                    _xcirc.(adjust(fan.marker_y[idxs]), fan.marker_x[idxs]), _ycirc.(adjust(fan.marker_y[idxs]), fan.marker_x[idxs])
+                    _xcirc.(adjust(fan.marker_y[idxs]), fan.marker_x[idxs]),
+                    _ycirc.(adjust(fan.marker_y[idxs]), fan.marker_x[idxs])
                 end
             end
         end
     end
     primary := false
     label := ""
-    nothing
+    return nothing
 end
 
 _handlez(x, tree, names) = x
-_handlez(x::Union{String, Symbol}, tree, names) = [getnodedata(tree, name, x) for name in names]
+function _handlez(x::Union{String, Symbol}, tree, names)
+    return [getnodedata(tree, name, x) for name in names]
+end
 function _handlez(x::Dict, tree, names)
     ret = fill(NaN, length(names))
     for (i, n) in enumerate(names)
@@ -160,25 +191,26 @@ function _handlez(x::Dict, tree, names)
             ret[i] = x[name]
         end
     end
-    ret
+    return ret
 end
-
 
 _mylength(x) = 1
 _mylength(x::AbstractVector) = length(x)
 function _handlemarkers(plotattributes, marker_group, tree, d, h, names)
     isnothing(marker_group) || (plotattributes[:marker_group] = marker_group)
-    markerfields = filter(x->occursin(r"marker", String(x)), keys(plotattributes))
+    markerfields = filter(x -> occursin(r"marker", String(x)),
+                          keys(plotattributes))
     isempty(markerfields) && return (Float64[], Float64[])
-    maxlength =  maximum([_mylength(plotattributes[k]) for k in markerfields])
+    maxlength = maximum([_mylength(plotattributes[k]) for k in markerfields])
     if maxlength ∈ (1, ninternal(tree))
         names = filter(node -> !isleaf(tree, node), names)
     end
-    [d[node] for node in names], [h[node] for node in names]
+    return [d[node] for node in names], [h[node] for node in names]
 end
 
 function _extend(tmp, x)
-    tmp isa AbstractVector && abs(length(tmp) - count(isnan, x)) < 2 || return nothing
+    tmp isa AbstractVector && abs(length(tmp) - count(isnan, x)) < 2 ||
+        return nothing
     ret = similar(x, eltype(tmp))
     j = 1 + length(tmp) - count(isnan, x)
     for i in eachindex(x)
@@ -196,7 +228,7 @@ descendants. This creates a clearer tree for plotting. The
 process is also called "ladderizing" the tree. Use `rev=true` to
 reverse the sorting order.
 """
-function Base.sort!(tree::T; rev = false) where T <: AbstractTree
+function Base.sort!(tree::T; rev = false) where {T <: AbstractTree}
     function loc!(clade::String)
         if isleaf(tree, clade)
             return 1
@@ -209,11 +241,11 @@ function Base.sort!(tree::T; rev = false) where T <: AbstractTree
         elseif T <: RecursiveTree
             node.conns .= node.conns[sortperm(sizes, rev = rev)]
         end
-        sum(sizes) + 1
+        return sum(sizes) + 1
     end
 
     loc!(first(nodenamefilter(isroot, tree)))
-    tree
+    return tree
 end
 
 """
@@ -232,21 +264,24 @@ function _nodedepths(tree::Phylo.AbstractTree)
         end
         if !isleaf(tree, clade)
             ch_depths = [depth[child] for child in getchildren(tree, clade)]
-            depth[clade] = (maximum(ch_depths) + minimum(ch_depths)) / 2.
+            depth[clade] = (maximum(ch_depths) + minimum(ch_depths)) / 2.0
         end
     end
 
-    depth = Dict(tip => float(i) for (i, tip) in enumerate(getnodename(tree, x) for x in traversal(tree, preorder) if isleaf(tree, x)))
+    depth = Dict(tip => float(i)
+                 for (i, tip) in enumerate(getnodename(tree, x)
+                                           for x in traversal(tree, preorder)
+                                           if isleaf(tree, x)))
     sizehint!(depth, nnodes(tree))
     root = getnodename(tree, getroot(tree))
     finddepths!(root)
-    depth
+    return depth
 end
 
 function _findxy(tree::Phylo.AbstractTree)
     height = nodeheights(tree)
     depth = _nodedepths(tree)
-    height, depth, AxisArrays.axes(height, 1).val
+    return height, depth, AxisArrays.axes(height, 1).val
 end
 
 function _find_tips(height, depth, tree)
@@ -258,22 +293,23 @@ function _find_tips(height, depth, tree)
             push!(l, k)
         end
     end
-    x, y, l
+    return x, y, l
 end
 
-function _p_circ(start_θ, end_θ, r=1)
-    steps = range(start_θ, stop=end_θ, length = 1+ceil(Int, 60abs(end_θ - start_θ)))
+function _p_circ(start_θ, end_θ, r = 1)
+    steps = range(start_θ, stop = end_θ,
+                  length = 1 + ceil(Int, 60abs(end_θ - start_θ)))
     retx = Array{Float64}(undef, length(steps))
     rety = similar(retx)
     for u in eachindex(steps)
         retx[u] = _xcirc(steps[u], r)
         rety[u] = _ycirc(steps[u], r)
     end
-    retx, rety
+    return retx, rety
 end
 
-_xcirc(x, r) = r*cos(x)
-_ycirc(y, r) = r*sin(y)
+_xcirc(x, r) = r * cos(x)
+_ycirc(y, r) = r * sin(y)
 _tocirc(x, y) = _xcirc(y, x), _ycirc(y, x)
 
 function _circle_transform_segments(xs, ys)
@@ -283,15 +319,15 @@ function _circle_transform_segments(xs, ys)
         append!(retx, tmpx)
         append!(rety, tmpy)
         push!(retx, _xcirc(_y[3], _x[3]), NaN)
-        push!(rety, _ycirc(_y[3], _x[3]), NaN)
+        return push!(rety, _ycirc(_y[3], _x[3]), NaN)
     end
     i = 1
     while !isnothing(i) && i < length(xs)
         j = findnext(isnan, xs, i) - 1
-        _transform_seg(view(xs,i:j), view(ys, i:j))
+        _transform_seg(view(xs, i:j), view(ys, i:j))
         i = j + 2
     end
-    retx, rety
+    return retx, rety
 end
 
 """
@@ -320,5 +356,5 @@ function map_depthfirst(FUN, start, tree, eltype = nothing)
         end
     end
     local!(start, root)
-    ret
+    return ret
 end

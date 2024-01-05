@@ -2,9 +2,11 @@ using SimpleTraits
 using Phylo.API
 using AxisArrays
 
-@traitfn function _treehistory(tree::T, node::N1) where
-    {N1, NL, N, B, T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
-     PreferBranchObjects{T}}
+@traitfn function _treehistory(tree::T,
+                               node::N1) where
+                  {N1, NL, N, B,
+                   T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
+                   PreferBranchObjects{T}}
     branches = B[]
     nodestoprocess = N1[node]
     nodesprocessed = N1[]
@@ -19,9 +21,11 @@ using AxisArrays
     return branches, nodesprocessed
 end
 
-@traitfn function _treehistory(tree::T, node::N1) where
-    {N1, NL, N, B, T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
-     !PreferBranchObjects{T}}
+@traitfn function _treehistory(tree::T,
+                               node::N1) where
+                  {N1, NL, N, B,
+                   T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
+                   !PreferBranchObjects{T}}
     branches = Int[]
     nodestoprocess = N1[node]
     nodesprocessed = N1[]
@@ -36,9 +40,11 @@ end
     return branches, nodesprocessed
 end
 
-@traitfn function _treefuture(tree::T, node::N1) where
-    {N1, NL, N, B, T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
-     PreferBranchObjects{T}}
+@traitfn function _treefuture(tree::T,
+                              node::N1) where
+                  {N1, NL, N, B,
+                   T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
+                   PreferBranchObjects{T}}
     branches = B[]
     nodestoprocess = N1[node]
     nodesprocessed = N1[]
@@ -51,9 +57,11 @@ end
     return branches, nodesprocessed
 end
 
-@traitfn function _treefuture(tree::T, node::N1) where
-    {N1, NL, N, B, T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
-     !PreferBranchObjects{T}}
+@traitfn function _treefuture(tree::T,
+                              node::N1) where
+                  {N1, NL, N, B,
+                   T <: AbstractTree{OneTree, <:Rooted, NL, N, B};
+                   !PreferBranchObjects{T}}
     branches = Int[]
     nodestoprocess = N1[node]
     nodesprocessed = N1[]
@@ -72,12 +80,16 @@ end
 Find the branch route between a node on a tree and its root
 """
 function branchhistory end
-@traitfn function branchhistory(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
+@traitfn function branchhistory(tree::T,
+                                node::N) where
+                  {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
     return _treehistory(tree, node)[1]
 end
-@traitfn function branchhistory(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T, N}}
+@traitfn function branchhistory(tree::T,
+                                node::N) where
+                  {N,
+                   T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T,
+                                                                           N}}
     return _treehistory(tree, getnode(tree, node))[1]
 end
 
@@ -87,12 +99,16 @@ end
 Find the node route between a node on a tree and its root
 """
 function nodehistory end
-@traitfn function nodehistory(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
+@traitfn function nodehistory(tree::T,
+                              node::N) where
+                  {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
     return _treehistory(tree, node)[2]
 end
-@traitfn function nodehistory(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T, N}}
+@traitfn function nodehistory(tree::T,
+                              node::N) where
+                  {N,
+                   T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T,
+                                                                           N}}
     return getnodename.(tree, _treehistory(tree, getnode(tree, node))[2])
 end
 
@@ -102,12 +118,16 @@ end
 Find the branches between a node on a tree and its leaves
 """
 function branchfuture end
-@traitfn function branchfuture(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
+@traitfn function branchfuture(tree::T,
+                               node::N) where
+                  {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
     return _treefuture(tree, node)[1]
 end
-@traitfn function branchfuture(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T, N}}
+@traitfn function branchfuture(tree::T,
+                               node::N) where
+                  {N,
+                   T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T,
+                                                                           N}}
     return _treefuture(tree, getnode(tree, node))[1]
 end
 
@@ -117,12 +137,16 @@ end
 Find the nodes between a node on a tree and its leaves
 """
 function nodefuture end
-@traitfn function nodefuture(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
+@traitfn function nodefuture(tree::T,
+                             node::N) where
+                  {N, T <: AbstractTree{OneTree, <:Rooted}; MatchNodeType{T, N}}
     return _treefuture(tree, node)[2]
 end
-@traitfn function nodefuture(tree::T, node::N) where
-    {N, T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T, N}}
+@traitfn function nodefuture(tree::T,
+                             node::N) where
+                  {N,
+                   T <: AbstractTree{OneTree, <:Rooted, N}; !MatchNodeType{T,
+                                                                           N}}
     return getnodename.(tree, _treefuture(tree, getnode(tree, node))[2])
 end
 
@@ -132,12 +156,14 @@ end
 Find the branch route between two nodes on a tree
 """
 function branchroute end
-@traitfn function branchroute(tree::T, node1::N, node2::N) where
-    {RT, N, T <: AbstractTree{OneTree, RT}; !MatchNodeType{T, N}}
+@traitfn function branchroute(tree::T, node1::N,
+                              node2::N) where
+                  {RT, N, T <: AbstractTree{OneTree, RT}; !MatchNodeType{T, N}}
     return branchroute(tree, getnode(tree, node1), getnode(tree, node2))
 end
-@traitfn function branchroute(tree::T, node1::N, node2::N) where
-    {RT, N, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
+@traitfn function branchroute(tree::T, node1::N,
+                              node2::N) where
+                  {RT, N, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
     branches1, nodes1 = _treehistory(tree, node1)
     branches2, nodes2 = _treehistory(tree, node2)
     nodes1[end] == nodes2[end] ||
@@ -154,13 +180,16 @@ end
 Find the node route between two nodes on a tree
 """
 function noderoute end
-@traitfn function noderoute(tree::T, node1::N, node2::N) where
-    {RT, N, T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
+@traitfn function noderoute(tree::T, node1::N,
+                            node2::N) where
+                  {RT, N,
+                   T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
     route = noderoute(tree, getnode(tree, node1), getnode(tree, node2))
     return [getnodename(tree, n) for n in route]
 end
-@traitfn function noderoute(tree::T, node1::N, node2::N) where
-    {N, T <: AbstractTree{OneTree}; MatchNodeType{T, N}}
+@traitfn function noderoute(tree::T, node1::N,
+                            node2::N) where
+                  {N, T <: AbstractTree{OneTree}; MatchNodeType{T, N}}
     branches1, nodes1 = _treehistory(tree, node1)
     branches2, nodes2 = _treehistory(tree, node2)
     nodes1[end] == nodes2[end] || error("No route between nodes in tree")
