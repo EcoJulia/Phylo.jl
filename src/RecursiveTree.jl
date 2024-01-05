@@ -39,10 +39,10 @@ RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits}(name::NL, data::NodeDa
                                 data, missing)
 
 """
-    struct RecoursiveTree <: AbstractTree
+    struct RecursiveTree <: AbstractTree
 
 A phylogenetic tree type containing RecursiveElts as both nodes and branches,
-allowing navigation of the tree  using only the node and branch elements.
+allowing navigation of the tree using only the node and branch elements.
 """
 mutable struct RecursiveTree{RT, NL, NodeData, BranchData, BT <: BranchingType, LenUnits, TD} <:
     AbstractTree{OneTree, RT, NL,
@@ -67,8 +67,7 @@ mutable struct RecursiveTree{RT, NL, NodeData, BranchData, BT <: BranchingType, 
                            BT, LenUnits, TD}(tipnames::AbstractVector{NL} = NL[];
                                              name::String = TREENAME,
                                              tipdata::TD = _emptydata(TD),
-                                             rootheight::Union{LenUnits, Missing} = missing,
-                                             validate::Bool = false) where
+                                             rootheight::Union{LenUnits, Missing} = missing) where
         {RT, NL, NodeData, BranchData, BT, LenUnits, TD}
         NT = RecursiveNode{RT, NL, NodeData, BranchData, BT, LenUnits}
         BrT = RecursiveBranch{RT, NL, NodeData, BranchData, BT, LenUnits}
@@ -81,15 +80,9 @@ mutable struct RecursiveTree{RT, NL, NodeData, BranchData, BT <: BranchingType, 
         
         if !isempty(tipnames)
             createnodes!(tree, tipnames)
-        elseif !isnothing(tree.tipdata) && !isempty(tree.tipdata)
-            createnodes!(tree, unique(keys(tree.tipdata)))
         end
 
-        if validate
-            validate!(tree)
-        else
-            tree.isvalid = missing
-        end
+        tree.isvalid = missing
 
         return tree
     end

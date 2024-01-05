@@ -208,7 +208,6 @@ Returns a vector of nodes for a OneTree tree. Either _getnodes() must be
 implemented for any OneTree tree type.
 """
 function _getnodes end
-_getnodes(::T) where T <: AbstractTree = error("No _getnodes() method for tree type $T")
 _getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder) =
     _traversal(tree, order)
 

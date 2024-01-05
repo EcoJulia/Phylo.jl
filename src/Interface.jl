@@ -160,8 +160,7 @@ subtrees) will return the number of subtrees. ManyTrees types will return a
 Dict of counts of the number of roots for each tree in the set.
 """
 function nroots end
-nroots(::AbstractTree{OneTree, Unrooted}) = 0
-nroots(tree::AbstractTree{OneTree, <: Rooted}) = _nroots(tree)
+nroots(tree::AbstractTree{OneTree}) = _nroots(tree)
 nroots(trees::AbstractTree{ManyTrees}, name) = nroots(gettree(trees, name))
 nroots(trees::AbstractTree{ManyTrees}) =
     Dict(name => nroots(gettree(trees, name)) for name in _gettreenames(trees))
