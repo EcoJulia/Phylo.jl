@@ -14,7 +14,7 @@ struct TestTree <: Phylo.AbstractTree{OneTree, OneRoot, String, TestNode, TestBr
 end
 
 import Phylo.API: _preferbranchobjects
-_preferbranchobjects(::Type{<: TestTree}) = false
+_preferbranchobjects(::Type{<: TestBranch}) = false
 
 @testset "Check errors" begin
     tt = TestTree();

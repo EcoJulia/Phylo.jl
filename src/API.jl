@@ -194,18 +194,17 @@ Returns a tree - either itself if it is a single tree, or the single tree
 in a set with label id. Must be implemented for any ManyTrees type.
 """
 function _gettree end
-@traitfn function _gettree(tree::T,
-                           id::TN) where {T <: AbstractTree{OneTree}, TN;
-                                          MatchTreeNameType{T, TN}}
+function _gettree(tree::T, id) where {T <: AbstractTree{OneTree}}
     id == _gettreename(tree) || throw(BoundsError(tree, id))
     return tree
 end
 
 """
-    _getnodes(tree::AbstractTree{OneTree})
+    _getnodes(tree::AbstractTree{OneTree}[, order::TraversalOrder])
 
-Returns a vector of nodes for a OneTree tree. Either _getnodes() must be
-implemented for any OneTree tree type.
+Returns a vector of nodes for a OneTree tree. _getnodes(tree) must be
+implemented for a OneTree tree type as a base mechanisms for extracting the
+node list.
 """
 function _getnodes end
 _getnodes(tree::AbstractTree{OneTree}, order::TraversalOrder) =
@@ -220,10 +219,10 @@ be implemented for any OneTree tree type, especially PreferNodeObjects trees.
 function _getnodenames end
 _getnodenames(::T) where T <: AbstractTree = error("No _getnodes() method for tree type $T")
 @traitfn _getnodenames(tree::T, order::TraversalOrder) where
-{T <: AbstractTree{OneTree}; !PreferNodeObjects{T}} = _getnodes(tree, order)
+    {T <: AbstractTree{OneTree}; !PreferNodeObjects{T}} = _getnodes(tree, order)
 @traitfn _getnodenames(tree::T, order::TraversalOrder) where
-{T <: AbstractTree{OneTree}; PreferNodeObjects{T}} =
-    _getnodename.(tree, _getnodes(tree, order))
+    {T <: AbstractTree{OneTree}; PreferNodeObjects{T}} =
+    _getnodename.(Ref(tree), _getnodes(tree, order))
 
 """
     _nnodes(::AbstractTree)
@@ -411,8 +410,7 @@ function _getbranchnames end
                                              _getbranches(tree)
 @traitfn _getbranchnames(tree::T) where {T <: AbstractTree{OneTree};
                                          PreferBranchObjects{T}} =
-                                             [_getbranchname(tree, branch)
-                                              for branch in _getbranches(tree)]
+    _getbranchname.(Ref(tree), _getbranches(tree))
 
 """
     _hasbranch(tree::AbstractTree, node[name])
