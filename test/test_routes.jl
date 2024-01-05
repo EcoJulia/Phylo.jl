@@ -12,9 +12,9 @@ using Test
         tree = TreeType(species)
         nr = createnode!(tree)
         n2 = createnode!(tree)
-        createbranch!(tree, nr, n2)
+        createbranch!(tree, getnodename(tree, nr), getnodename(tree, n2))
         n3 = createnode!(tree)
-        createbranch!(tree, n2, n3)
+        createbranch!(tree, getnode(tree, n2), getnode(tree, n3))
         nh = nodehistory(tree, n2)
         @test nr ∈ nh
         @test Set(nh) == Set(push!(getancestors(tree, n2), n2))

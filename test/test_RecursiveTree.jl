@@ -66,7 +66,7 @@ jdb = DataFrame(species = observations, count = 1:4)
     @test_throws ErrorException createbranch!(rtdfp, name, species[2])
 end
 
-@testset "UnrootedTree()" begin
+@testset "Unrooted Trees" begin
     name = "internal"
     urts = Phylo.ReTD{Unrooted, BinaryBranching, Float64}(species)
     @test nodedatatype(typeof(urts)) ≡ Dict{String, Any}
@@ -84,9 +84,9 @@ end
     @test leafinfotype(typeof(urtsp)) ≡ Dict{String, Any}
     @test_nowarn createnode!(urtsp, name)
     @test createbranch!(urtsp, name, species[1]) ∈ getbranches(urtsp)
-    @test createbranch!(urtsp, name, species[2]) ∈ getbranches(urtsp)
-    @test createbranch!(urtsp, name, species[3]) ∈ getbranches(urtsp)
-    @test createbranch!(urtsp, name, species[4]) ∈ getbranches(urtsp)
+    @test createbranch!(urtsp, getnode(urtsp, name), getnode(urtsp, species[2])) ∈ getbranches(urtsp)
+    @test createbranch!(urtsp, getnode(urtsp, name), species[3]) ∈ getbranches(urtsp)
+    @test createbranch!(urtsp, name, getnode(urtsp, species[4])) ∈ getbranches(urtsp)
     @test nroots(urtsp) == 0
 
     LB = RecursiveBranch{Unrooted, String, Vector{Int}, Nothing, BinaryBranching, Float64}
