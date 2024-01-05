@@ -123,7 +123,7 @@ function outputtree!(io::IO, tree::TREE, ::StandardOutput) where TREE <: Abstrac
     b = nbranches(tree)
     bs = collect(getbranches(tree))
     print(io, "\n$b branches: [")
-    if n < 10
+    if b < 10
         println(io, join(bs, ", ", " and ") * "]")
     else
         println(io, join(bs[1:5], ", ") *

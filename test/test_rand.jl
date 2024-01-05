@@ -38,6 +38,10 @@ using Test
     t5 = rand!(BrownianTrait(t, "trait32", 0.0f0, σ² = 1.0f0), t)
     @test typeof(getnodedata(t5, species[1])["trait32"]) ≡ typeof(1.0f0)
     @test t5 ≡ t
+
+    @test !renamenode!(t, species[1], species[2])
+    @test all(renamenode!.(Ref(t), species, "new " .* species))
+    @test Set(getleafnames(t)) == Set("new " .* species)
 end
 
 @testset "Ultrametric()" begin

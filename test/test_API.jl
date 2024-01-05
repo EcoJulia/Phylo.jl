@@ -40,6 +40,7 @@ _preferbranchobjects(::Type{<: TestBranch}) = false
     @test_throws ErrorException _dst(tt, tb)
     @test_throws ErrorException _getnodedata(tt, tn)
     @test_throws ErrorException _getbranchdata(tt, tb)
+    @test !_renamenode!(tt, tn, "New")
 end
 
 end
