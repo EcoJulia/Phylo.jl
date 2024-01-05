@@ -775,7 +775,7 @@ function show(io::IO, ::MIME"text/plain", node::RecursiveNode{<:Rooted})
            (length(node.conns) == 0 ?
             print(io, "unattached node '$(node.name)'") :
             print(io, "root node '$(node.name)'")) :
-           (length(node.conns) == 0 ?
+           (length(node.conns) > 0 ?
             print(io, "internal node '$(node.name)'") :
             print(io, "leaf node '$(node.name)'"))
 end

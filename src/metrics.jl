@@ -1,30 +1,27 @@
 """
     mrca(tree::AbstractTree, target)
 
-Returns the node within `tree` that is the Most Recent Common Ancestor of the 
+Returns the node within `tree` that is the Most Recent Common Ancestor of the
 leaves (or internal nodes) defined by `target`. `target` can be an iterator
 over nodes or an AbstractArray of nodes. The return value has the same node
 type as the elements of `target`.
 
 ### Examples
+
 ≡≡≡≡≡≡≡≡≡≡≡
 
 julia> tree = open(parsenewick, Phylo.path("H1N1.newick"))
 RootedTree with 507 tips, 1013 nodes and 1012 branches.
 Leaf names are 227, 294, 295, 110, 390, ... [501 omitted] ... and 418
 
-
 julia> tips = rand(collect(nodefilter(isleaf, tree)), 3)
-3-element Vector{LinkNode{OneRoot, String, Dict{String, Any}, LinkBranch{OneRoot, String, Dict{String, Any}, Float64}}}:
- LinkNode 153, a tip of the tree with an incoming connection (branch 888).
-
- LinkNode 120, a tip of the tree with an incoming connection (branch 195).
-
- LinkNode 504, a tip of the tree with an incoming connection (branch 44).
-
+3-element Vector{RecursiveNode{OneRoot, String, Dict{String, Any}, Dict{String, Any}, PolytomousBranching, Float64}}:
+ leaf node '414'
+ leaf node '232'
+ leaf node '216'
 
 julia> mrca(tree, tips)
-LinkNode Node 1003, an internal node with 1 inbound and 2 outbound connections (branches 1001 and 999, 1000)
+internal node 'Node 980'
 """
 function mrca(tree::AbstractTree, target)
     ancestors = getancestors(tree, first(target))

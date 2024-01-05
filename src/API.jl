@@ -387,7 +387,7 @@ end
 
 """
     _renamenode!(tree::AbstractTree, oldnode[name], newname)
-     
+
 Renames a node in a tree. Optional - not implemented for most tree types.
 """
 function _renamenode! end
@@ -536,8 +536,6 @@ function _deletebranch! end
 
 """
     _hasrootheight(::AbstractTree)
-
-
 """
 function _hasrootheight(::AbstractTree)
     return false
@@ -545,22 +543,16 @@ end
 
 """
     _getrootheight(::AbstractTree)
-
-
 """
 function _getrootheight end
 
 """
     _setrootheight!(::AbstractTree, value)
-
-
 """
 function _setrootheight! end
 
 """
     _clearrootheight!(::AbstractTree)
-
-
 """
 function _clearrootheight! end
 
@@ -896,8 +888,6 @@ end
 
 """
     _hasheight(tree::AbstractTree, nodename)
-
-
 """
 function _hasheight(::AbstractTree, _)
     return false
@@ -905,8 +895,6 @@ end
 
 """
     _getheight(tree::AbstractTree, nodename)
-
-
 """
 function _getheight(::AbstractTree, _)
     return missing
@@ -914,8 +902,6 @@ end
 
 """
     _setheight!(::AbstractTree, nodename, value)
-
-
 """
 function _setheight!(::AbstractTree, _, value)
     throw(NullException())

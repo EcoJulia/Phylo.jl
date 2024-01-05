@@ -340,6 +340,7 @@ specifies the initial value of `val`, and `eltype` specifies the type of the
 return value of `FUN`.
 
 ### Examples
+
 ≡≡≡≡≡≡≡≡≡≡≡
 Define a function to evolve a trait on the tree according to Brownian motion
 
