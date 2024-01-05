@@ -13,6 +13,9 @@ end
 struct TestTree <: Phylo.AbstractTree{OneTree, OneRoot, String, TestNode, TestBranch}
 end
 
+import Phylo.API: _preferbranchobjects
+_preferbranchobjects(::Type{<: TestTree}) = false
+
 @testset "Check errors" begin
     tt = TestTree();
     tn = TestNode();
@@ -22,9 +25,12 @@ end
     @test_throws ErrorException _getnodenames(tt)
     @test_throws MethodError _nnodes(tt)
     @test_throws ErrorException _getbranches(tt)
+    @test_throws ErrorException _getbranchnames(tt)
     @test_throws ErrorException _nbranches(tt)
     @test_throws MethodError _hasnode(tt, tn)
+    @test_throws ErrorException _hasnode(tt, "test")
     @test_throws MethodError _hasbranch(tt, tb)
+    @test_throws ErrorException _hasbranch(tt, 1)
     @test_throws ErrorException _hasinbound(tt, tn)
     @test_throws ErrorException _getinbound(tt, tn)
     @test_throws ErrorException _getoutbounds(tt, tn)
