@@ -7,7 +7,7 @@ using Test
 
 species = ["Dog", "Cat", "Human"]
 ntips = 10
-df = DataFrame(species = species, count=[10, 20, 3])
+df = DataFrame(species = species, count = [10, 20, 3])
 @testset "getinternalnodes()" begin
     # Create a 10 tip tree
     test_tree = rand(Ultrametric(10))

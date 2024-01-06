@@ -6,7 +6,7 @@ using Test
 @testset "Metrics" begin
     trees = open(parsenexus, Phylo.path("H1N1.trees"))
     tree1, tree2 = trees["TREE1"], trees["TREE2"]
-    species = ["H1N1_A_PUERTORICO_8_1934", "H1N1_A_BRAZIL_11_1978"];
+    species = ["H1N1_A_PUERTORICO_8_1934", "H1N1_A_BRAZIL_11_1978"]
     mrca1 = mrca(tree1, species)
 
     # MRCA should be the root
@@ -28,11 +28,10 @@ using Test
     @test all(leaves1 .== leaves2)
 
     # MRCA for Sendai strains has 8 descendants, including Fukuoka
-    desendais =
-        getdescendants(tree1,
-                       mrca(tree1,
-                                       filter(x -> occursin("SENDAI", x),
-                                       leaves)))
+    desendais = getdescendants(tree1,
+                               mrca(tree1,
+                                    filter(x -> occursin("SENDAI", x),
+                                           leaves)))
     @test length(desendais) == 8
     @test length(filter(x -> occursin("FUKUOKA", x), desendais)) == 1
 end

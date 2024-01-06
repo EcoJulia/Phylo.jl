@@ -22,7 +22,7 @@ jdb = DataFrame(species = observations, count = 1:4)
     @test createbranch!(ltdf, name, species[1]) ∈ getbranches(ltdf)
 end
 
-@testset "UnrootedTree()" begin
+@testset "Unrooted Trees" begin
     name = "internal"
     LB = LinkBranch{Unrooted, String, Nothing, Float64}
     LN = LinkNode{Unrooted, String, Vector{Int}, LB}
@@ -31,7 +31,11 @@ end
     @test branchdatatype(typeof(ltjdb)) ≡ Nothing
     @test leafinfotype(typeof(ltjdb)) ≡ typeof(jdb)
     @test_nowarn createnode!(ltjdb, name)
-    @test createbranch!(ltjdb, name, observations[1], data = nothing) ∈ getbranches(ltjdb)
+    @test createbranch!(ltjdb, name, observations[1], data = nothing) ∈
+          getbranches(ltjdb)
+    @test createbranch!(ltjdb, getnode(ltjdb, name),
+                        getnode(ltjdb, observations[2]), data = nothing) ∈
+          getbranches(ltjdb)
 end
 
 end

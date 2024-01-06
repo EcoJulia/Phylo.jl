@@ -5,9 +5,10 @@ Type to specify nexus format for input or output.
 """
 struct Nexus <: NewickLike end
 
-treeOutputType(::Type{<: AbstractTree{ManyTrees}}) = Nexus
+treeOutputType(::Type{<:AbstractTree{ManyTrees}}) = Nexus
 
-function outputtree!(io::IO, tree::AbstractTree{TT, OneRoot}, ::Nexus) where TT
+function outputtree!(io::IO, tree::AbstractTree{TT, OneRoot},
+                     ::Nexus) where {TT}
     println(io, "#NEXUS")
     println(io)
     leaves = getleafnames(tree)
@@ -50,7 +51,7 @@ function outputtree!(io::IO, tree::AbstractTree{TT, OneRoot}, ::Nexus) where TT
         outputtree!(io, t1, getroot(t1), Newick(d))
         println(io)
     end
-    println(io, "END;")
+    return println(io, "END;")
 end
 
 function parsetaxa(token, state, tokens, taxa)
@@ -86,7 +87,7 @@ function parsetaxa(token, state, tokens, taxa)
     while token.kind != T.SEMICOLON && token.kind != T.ENDMARKER
         name = untokenize(token)
         if token.kind ∈ [T.STRING, T.CHAR]
-            name = name[2:end-1]
+            name = name[2:(end - 1)]
         end
         result = iterateskip(tokens, state)
         isnothing(result) && return nothing
@@ -116,8 +117,9 @@ function parsetaxa(token, state, tokens, taxa)
     return iterateskip(tokens, state)
 end
 
-function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
-    {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
+function parsetrees(token, state, tokens, ::Type{TREE},
+                    taxa) where
+         {RT, N, B, TREE <: AbstractTree{OneTree, RT, String, N, B}}
     notaxa = isempty(taxa)
     if isTRANSLATE(token)
         result = iterateskip(tokens, state)
@@ -200,8 +202,9 @@ function parsetrees(token, state, tokens, ::Type{TREE}, taxa) where
     return token, state, trees, treedata
 end
 
-function parsenexus(token, state, tokens, ::Type{TREE}) where
-    {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+function parsenexus(token, state, tokens,
+                    ::Type{TREE}) where
+         {RT, NL, N, B, TREE <: AbstractTree{OneTree, RT, NL, N, B}}
     trees = missing
     treedata = missing
     taxa = Dict{NL, NL}()
@@ -228,13 +231,15 @@ function parsenexus(token, state, tokens, ::Type{TREE}) where
                 result = iterateskip(tokens, state)
                 isnothing(result) && return nothing
                 token, state = result
-                token, state, trees, treedata = parsetrees(token, state, tokens, TREE, taxa)
+                token, state, trees, treedata = parsetrees(token, state, tokens,
+                                                           TREE, taxa)
             else
                 @warn "Unexpected nexus block '$(untokenize(token))', skipping..."
                 result = iterateskip(tokens, state)
                 isnothing(result) && return nothing
                 token, state = result
-                while !checktosemi(isEND, token, state, tokens) && token.kind != T.ENDMARKER
+                while !checktosemi(isEND, token, state, tokens) &&
+                    token.kind != T.ENDMARKER
                     result = iterateskip(tokens, state)
                     isnothing(result) && return nothing
                     token, state = result
@@ -254,7 +259,8 @@ end
 
 function parsenexus(tokens::Tokenize.Lexers.Lexer,
                     ::Type{TREE}) where {RT, NL, N, B,
-                                         TREE <: AbstractTree{OneTree, RT, NL, N, B}}
+                                         TREE <:
+                                         AbstractTree{OneTree, RT, NL, N, B}}
     result = iterateskip(tokens)
     isnothing(result) && return nothing
     token, state = result
@@ -275,8 +281,8 @@ end
 Parse an IOBuffer containing a nexus tree and convert into a phylogenetic
 tree of type TREE <: AbstractTree
 """
-parsenexus(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree =
-    parsenexus(tokenize(io), TREE)
+parsenexus(io::IOBuffer, ::Type{TREE}) where {TREE <: AbstractTree} = parsenexus(tokenize(io),
+                                                                                 TREE)
 
 """
     parsenexus(io::IOStream, ::Type{TREE}) where TREE <: AbstractTree
@@ -284,7 +290,7 @@ parsenexus(io::IOBuffer, ::Type{TREE}) where TREE <: AbstractTree =
 Parse an IOStream containing a nexus tree and convert into a phylogenetic
 tree of type TREE <: AbstractTree
 """
-function parsenexus(ios::IOStream, ::Type{TREE}) where TREE <: AbstractTree
+function parsenexus(ios::IOStream, ::Type{TREE}) where {TREE <: AbstractTree}
     buf = IOBuffer()
     print(buf, read(ios, String))
     seek(buf, 0)
@@ -299,5 +305,7 @@ tree of type RootedTree
 """
 parsenexus(inp) = parsenexus(inp, RootedTree)
 
-parsenewicklike(::Type{T}, str, format::Nexus) where T <: AbstractTree =
-    parsenexus(str, eltype(T))
+function parsenewicklike(::Type{T}, str,
+                         format::Nexus) where {T <: AbstractTree}
+    return parsenexus(str, eltype(T))
+end

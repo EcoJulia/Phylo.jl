@@ -12,16 +12,16 @@ mutable struct BinaryNode{RT <: Rooted, NL,
     function BinaryNode{RT, NL, B}(name::NL,
                                    inbound::AbstractVector{B} = B[],
                                    outbounds::AbstractVector{B} = B[]) where
-        {RT, NL, B <: AbstractBranch{RT, NL}}
+             {RT, NL, B <: AbstractBranch{RT, NL}}
         length(inbound) <= 1 ||
             error("At most one inbound connection to BinaryNode")
         n_in = length(inbound) == 0 ? nothing : inbound[1]
         length(outbounds) <= 2 ||
             error("At most two outbound connections from BinaryNode")
         n_out = length(outbounds) == 0 ? (nothing, nothing) :
-            (length(outbounds) == 1 ? (outbounds[1], nothing) :
-             (outbounds[1], outbounds[2]))
-        new{RT, NL, B}(name, n_in, n_out)
+                (length(outbounds) == 1 ? (outbounds[1], nothing) :
+                 (outbounds[1], outbounds[2]))
+        return new{RT, NL, B}(name, n_in, n_out)
     end
 end
 
@@ -34,7 +34,7 @@ _prefernodeobjects(::Type{<:BinaryNode}) = false
 A node of potentially polytomous phylogenetic tree
 """
 mutable struct Node{RT <: Rooted, NL, B <: AbstractBranch{RT, NL}} <:
-    AbstractNode{RT, NL}
+               AbstractNode{RT, NL}
     name::NL
     inbound::Union{B, Nothing}
     outbounds::Vector{B}
@@ -42,12 +42,12 @@ mutable struct Node{RT <: Rooted, NL, B <: AbstractBranch{RT, NL}} <:
     function Node{RT, NL, B}(name::NL,
                              inbound::AbstractVector{B} = B[],
                              outbounds::AbstractVector{B} = B[]) where
-        {RT, NL, B <: AbstractBranch{RT, NL}}
+             {RT, NL, B <: AbstractBranch{RT, NL}}
         length(inbound) <= 1 ||
             error("At most one inbound connection to Node")
         n_in = length(inbound) == 0 ? nothing : inbound[1]
         n_out = outbounds
-        new{RT, NL, B}(name, n_in, n_out)
+        return new{RT, NL, B}(name, n_in, n_out)
     end
 end
 
