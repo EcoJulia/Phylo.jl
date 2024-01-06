@@ -1,0 +1,19 @@
+#NEXUS
+
+BEGIN TAXA;
+    DIMENSIONS NTAX=3;
+    TAXLABELS
+        Tip
+        Node_1
+        Node_4
+    ;
+END;
+
+BEGIN TREES;
+    TRANSLATE
+        1 Tip,
+        2 Node_1,
+        3 Node_4;
+
+TREE Tree = [&R] ((1:1.0,2),3);
+END;
