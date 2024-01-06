@@ -2,6 +2,7 @@ module TestPhylo
 using Test
 
 using Phylo
+using Random
 
 @testset "Deprecations" begin
     t = NamedTree()
@@ -14,6 +15,19 @@ using Phylo
     @test nbranches(t) == 2
     @test_deprecated treeiter(t)
     @test_deprecated treenameiter(t)
+end
+
+@testset "Sort" begin
+    tree = rand(Nonultrametric(100))
+    t2 = sort(tree)
+    leaves = getleaves(t2, inorder)
+    @test maximum(getheight.(Ref(t2), leaves)) == getheight(t2, leaves[end])
+    t3 = sort(tree, uselength = false, rev = true)
+    leaves = getleaves(t3, inorder)
+    for b in getbranches(t3)
+        b.length = one(b.length)
+    end
+    @test maximum(getheight.(Ref(t3), leaves)) == getheight(t3, first(leaves))
 end
 
 end
