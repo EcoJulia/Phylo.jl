@@ -17,8 +17,8 @@ using Random
     @test_deprecated treenameiter(t)
 end
 
-@testset "Sort" begin
-    tree = rand(Nonultrametric(100))
+@testset "Sort $TreeType" for TreeType in [RootedTree, Phylo.LTD{OneRoot, Float64}]
+    tree = rand(Nonultrametric{TreeType}(100))
     t2 = sort(tree)
     leaves = getleaves(t2, inorder)
     @test maximum(getheight.(Ref(t2), leaves)) == getheight(t2, leaves[end])
