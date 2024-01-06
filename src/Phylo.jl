@@ -79,6 +79,7 @@ export _getbranchdata, _setbranchdata!, _branchdatatype
 export _hasheight, _getheight, _setheight!
 export _hasparent, _getparent, _getancestors
 export _haschildren, _getchildren, _getdescendants
+export _getsiblings
 export _validate!, _invalidate!, _traversal, _branchdims
 export _getleafnames, _getleaves, _resetleaves!, _nleaves, _nnodes, _nbranches
 export HoldsNodeData, MatchTreeNameType

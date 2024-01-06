@@ -1026,9 +1026,7 @@ function getsiblings end
                               node::NL) where
                   {NL, RT,
                    T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, NL}}
-    return _getsiblings(tree,
-                        getnode(tree,
-                                node))
+    return getnodename.(Ref(tree), _getsiblings(tree, getnode(tree, node)))
 end
 @traitfn function getsiblings(tree::T,
                               node::N) where
@@ -1048,9 +1046,7 @@ function hasheight end
                   {NL,
                    T <: AbstractTree{OneTree, <:Rooted, NL}; !MatchNodeType{T,
                                                                             NL}}
-    return hasheight(tree,
-                     getnode(tree,
-                             node))
+    return hasheight(tree, getnode(tree, node))
 end
 @traitfn function hasheight(tree::T,
                             node::N) where
@@ -1073,9 +1069,7 @@ function getheight end
                   {NL,
                    T <: AbstractTree{OneTree, <:Rooted, NL}; !MatchNodeType{T,
                                                                             NL}}
-    return getheight(tree,
-                     getnode(tree,
-                             node))
+    return getheight(tree, getnode(tree, node))
 end
 @traitfn function getheight(tree::T,
                             node::N) where

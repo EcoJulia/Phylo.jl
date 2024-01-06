@@ -22,7 +22,8 @@ end
         RootedTree, ManyRootTree]
         @test treetype(TreeType) == OneTree
         species = ["Dog", "Cat", "Human", "Potato", "Apple"]
-        data = Dict(name => Phylo._emptydata(nodedatatype(TreeType)) for name in species)
+        data = Dict(name => Phylo._emptydata(nodedatatype(TreeType))
+                    for name in species)
         tree = TreeType()
         @test createnodes!(tree, data) isa Vector
         @test_throws ErrorException createnodes!(tree, data)

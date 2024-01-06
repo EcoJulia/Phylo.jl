@@ -849,9 +849,10 @@ end
 """
     _getsiblings(tree::AbstractTree, node::AbstractNode)
 
-Returns all of the siblings of a node. May be implemented for any
-AbstractNode subtype, can be inferred from _getparent and _getchildren for
-a rooted node or _getconnections for an unrooted node.
+Returns all of the siblings (actually immediate connections) of a node.
+May be implemented for any AbstractNode subtype, can be inferred from
+_getparent and _getchildren for a rooted node or _getconnections for an
+unrooted node.
 """
 function _getsiblings end
 function _getsiblings(tree::AbstractTree{OneTree, <:Rooted}, node)
