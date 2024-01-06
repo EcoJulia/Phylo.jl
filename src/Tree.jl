@@ -3,48 +3,57 @@ using IterableTables: getiterator
 using DataFrames
 
 abstract type AbstractBranchTree{RT, N, B, LI, ND} <:
-    AbstractTree{OneTree, RT, String, N, B}
-end
+              AbstractTree{OneTree, RT, String, N, B} end
 
 import Phylo.API: _hasinbound
-function _hasinbound(tree::AbstractBranchTree{<: Rooted}, name::String)
+function _hasinbound(tree::AbstractBranchTree{<:Rooted}, name::String)
     return tree.nodes[name].inbound !== nothing
 end
 
 import Phylo.API: _getinbound
-function _getinbound(tree::AbstractBranchTree{<: Rooted}, name::String)
+function _getinbound(tree::AbstractBranchTree{<:Rooted}, name::String)
     return tree.nodes[name].inbound
 end
 
 import Phylo.API: _addinbound!
-function _addinbound!(tree::AbstractBranchTree{<: Rooted, N, B},
+function _addinbound!(tree::AbstractBranchTree{<:Rooted, N, B},
                       name::String,
                       inbound::B) where {N, B <: Branch}
     _hasinbound(tree, name) &&
         error("Node already has an inbound connection")
-    tree.nodes[name].inbound = inbound
+    return tree.nodes[name].inbound = inbound
 end
 
 import Phylo.API: _removeinbound!
-function _removeinbound!(tree::AbstractBranchTree{<: Rooted, N, B},
+function _removeinbound!(tree::AbstractBranchTree{<:Rooted, N, B},
                          name::String,
                          inbound::B) where {N, B <: Branch}
     _hasinbound(tree, name) || error("Node has no inbound connection")
     node = tree.nodes[name]
     node.inbound === inbound ||
         error("Node has no inbound connection from branch $inbound")
-    node.inbound = nothing
+    return node.inbound = nothing
 end
 
 import Phylo.API: _leafinfotype
-_leafinfotype(::Type{T}) where {RT, N, B, LI,
-                                T <: AbstractBranchTree{RT, N, B, LI}} = LI
+function _leafinfotype(::Type{T}) where {RT, N, B, LI,
+                                         T <: AbstractBranchTree{RT, N, B, LI}}
+    return LI
+end
 
 import Phylo.API: _nodedatatype
-_nodedatatype(::Type{<: AbstractBranchTree{RT, N, B, LI, ND}}) where {RT, N, B, LI, ND} = ND
+function _nodedatatype(::Type{<:AbstractBranchTree{RT, N, B, LI, ND}}) where {
+                                                                              RT,
+                                                                              N,
+                                                                              B,
+                                                                              LI,
+                                                                              ND
+                                                                              }
+    return ND
+end
 
 import Phylo.API: _branchdatatype
-_branchdatatype(::Type{<: AbstractBranchTree}) = Nothing
+_branchdatatype(::Type{<:AbstractBranchTree}) = Nothing
 
 import Phylo.API: _getnodes
 _getnodes(bt::AbstractBranchTree) = keys(bt.nodes)
@@ -66,7 +75,7 @@ end
 
 import Phylo.API: _setleafinfo!
 function _setleafinfo!(bt::AbstractBranchTree, info)
-    bt.leafinfos = info
+    return bt.leafinfos = info
 end
 
 import Phylo.API: _resetleaves!
@@ -83,17 +92,18 @@ end
 import Phylo.API: _setnodedata!
 function _setnodedata!(bt::AbstractBranchTree{RT, N, B, LI, ND},
                        name::String, value::ND) where {RT, N, B, LI, ND}
-    bt.nodedata[name] = value
+    return bt.nodedata[name] = value
 end
 
 import Phylo.API: _hasnode
 _hasnode(tree::AbstractBranchTree, name::String) = haskey(tree.nodes, name)
 
 import Phylo.API: _getnode
-@traitfn _getnode(tree::T,
-                  nodename::String) where {T <: AbstractBranchTree;
-                                           PreferNodeObjects{T}} =
-                                               tree.nodes[name]
+@traitfn function _getnode(tree::T,
+                           name::String) where {T <: AbstractBranchTree;
+                                                PreferNodeObjects{T}}
+    return tree.nodes[name]
+end
 
 import Phylo.API: _createnode!
 function _createnode!(tree::AbstractBranchTree{RT, N, B, LI, ND},
@@ -141,7 +151,7 @@ _getbranch(tree::AbstractBranchTree, name::Int) = tree.branches[name]
 import Phylo.API: _createbranch!
 function _createbranch!(tree::AbstractBranchTree{RT}, source, destination,
                         len::Union{Float64, Missing}, name::Union{Int, Missing},
-                        data::Nothing = nothing) where RT
+                        data::Nothing = nothing) where {RT}
     # Add the new branch
     id = ismissing(name) ? _newbranchlabel(tree) : name
     branch = Branch{RT}(id, _getnodename(tree, source),
@@ -186,7 +196,7 @@ import Phylo.API: _validate!
 function _validate!(tree::TREE) where {RT, TREE <: AbstractBranchTree{RT}}
     if _leafinfotype(TREE) != Nothing && length(getiterator(tree.leafinfos)) > 0
         if Set(info[1] for info in getiterator(tree.leafinfos)) !=
-            Set(_getleafnames(tree, anyorder))
+           Set(_getleafnames(tree, anyorder))
             @warn "LeafInfo names do not match actual leaves of tree"
             return false
         end
@@ -231,7 +241,7 @@ end
 
 import Phylo.API: _clearrootheight!
 function _clearrootheight!(tree::AbstractBranchTree)
-    tree.rootheight = missing
+    return tree.rootheight = missing
 end
 
 """
@@ -240,8 +250,9 @@ end
 Binary phylogenetic tree object with known leaves and per node data
 """
 mutable struct BinaryTree{RT <: Rooted, LI, ND} <:
-    AbstractBranchTree{RT, BinaryNode{RT, String, Branch{RT, String}},
-                       Branch{RT, String}, LI, ND}
+               AbstractBranchTree{RT,
+                                  BinaryNode{RT, String, Branch{RT, String}},
+                                  Branch{RT, String}, LI, ND}
     nodes::OrderedDict{String, BinaryNode{RT, String, Branch{RT, String}}}
     branches::Dict{Int, Branch{RT, String}}
     leafinfos::LI
@@ -250,7 +261,7 @@ mutable struct BinaryTree{RT <: Rooted, LI, ND} <:
 end
 
 function BinaryTree(lt::BinaryTree{RT, LI, ND};
-                    copyinfo=false) where {RT, LI, ND}
+                    copyinfo = false) where {RT, LI, ND}
     validate!(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records are conserved across trees, as could be invariant?
@@ -299,15 +310,17 @@ function BinaryTree{RT, LI, ND}(leafinfos::LI,
                                   nodedata, rootheight)
 end
 
-BinaryTree{RT}(leafinfos::LI;
-               rootheight::Union{Float64, Missing} =
-               missing) where {RT <: Rootedness, LI} =
-               BinaryTree{RT, LI, Dict{String, Any}}(leafinfos;
-                                                     rootheight = rootheight)
+function BinaryTree{RT}(leafinfos::LI;
+                        rootheight::Union{Float64, Missing} =
+                        missing) where {RT <: Rootedness, LI}
+    return BinaryTree{RT, LI, Dict{String, Any}}(leafinfos;
+                                                 rootheight = rootheight)
+end
 
-BinaryTree(leafinfos::LI;
-           rootheight::Union{Float64, Missing} = missing) where LI =
-    BinaryTree{OneRoot}(leafinfos; rootheight = rootheight)
+function BinaryTree(leafinfos::LI;
+                    rootheight::Union{Float64, Missing} = missing) where {LI}
+    return BinaryTree{OneRoot}(leafinfos; rootheight = rootheight)
+end
 
 """
     NamedBinaryTree
@@ -323,8 +336,8 @@ Phylogenetic tree object with polytomous branching, and known leaves
 and per node data
 """
 mutable struct PolytomousTree{RT <: Rooted, LI, ND} <:
-    AbstractBranchTree{RT, Node{RT, String, Branch{RT, String}},
-                       Branch{RT, String}, LI, ND}
+               AbstractBranchTree{RT, Node{RT, String, Branch{RT, String}},
+                                  Branch{RT, String}, LI, ND}
     nodes::OrderedDict{String, Node{RT, String, Branch{RT, String}}}
     branches::Dict{Int, Branch{RT, String}}
     leafinfos::LI
@@ -333,7 +346,7 @@ mutable struct PolytomousTree{RT <: Rooted, LI, ND} <:
 end
 
 function PolytomousTree(lt::PolytomousTree{RT, LI, ND};
-                        copyinfo=false) where {RT, LI, ND}
+                        copyinfo = false) where {RT, LI, ND}
     validate!(lt) || error("Tree to copy is not valid")
     leafnames = getleafnames(lt)
     # Leaf records may be conserved across trees, as could be invariant?
@@ -364,7 +377,7 @@ function PolytomousTree{RT, LI, ND}(numleaves::Int = 0,
                                     PolytomousTree{RT, LI, ND};
                                     rootheight::Union{Float64, Missing} =
                                     missing) where {RT, LI, ND}
-    leafnames = ["Leaf $num"  for num in Base.OneTo(numleaves)]
+    leafnames = ["Leaf $num" for num in Base.OneTo(numleaves)]
     return PolytomousTree{RT, LI, ND}(leafnames, treetype;
                                       rootheight = rootheight)
 end
@@ -383,39 +396,47 @@ function PolytomousTree{RT, LI, ND}(leafinfos::LI,
                                       nodedata, rootheight)
 end
 
-PolytomousTree{RT}(leafinfos::LI;
-                   rootheight::Union{Float64, Missing} = missing) where {RT, LI} =
-    PolytomousTree{RT, LI, Dict{String, Any}}(leafinfos; rootheight = rootheight)
+function PolytomousTree{RT}(leafinfos::LI;
+                            rootheight::Union{Float64, Missing} = missing) where {
+                                                                                  RT,
+                                                                                  LI
+                                                                                  }
+    return PolytomousTree{RT, LI, Dict{String, Any}}(leafinfos;
+                                                     rootheight = rootheight)
+end
 
-PolytomousTree(leafinfos::LI;
-               rootheight::Union{Float64, Missing} = missing) where LI =
-    PolytomousTree{OneRoot}(leafinfos; rootheight = rootheight)
+function PolytomousTree(leafinfos::LI;
+                        rootheight::Union{Float64, Missing} = missing) where {LI
+                                                                              }
+    return PolytomousTree{OneRoot}(leafinfos; rootheight = rootheight)
+end
 
 """
     NamedPolytomousTree
 
 Polytomous phylogenetic tree object with known leaves
 """
-const NamedTree = NamedPolytomousTree =
-    PolytomousTree{ManyRoots, DataFrame, Dict{String, Any}}
+const NamedTree = NamedPolytomousTree = PolytomousTree{ManyRoots, DataFrame,
+                                                       Dict{String, Any}}
 
 import Phylo.API: _outdegree
-function _outdegree(tree::BinaryTree{<: Rooted}, name::String)
+function _outdegree(tree::BinaryTree{<:Rooted}, name::String)
     node = tree.nodes[name]
     return (node.outbounds[1] ≡ nothing ? 0 : 1) +
-        (node.outbounds[2] ≡ nothing ? 0 : 1)
+           (node.outbounds[2] ≡ nothing ? 0 : 1)
 end
-function _outdegree(tree::PolytomousTree{<: Rooted}, name::String)
+function _outdegree(tree::PolytomousTree{<:Rooted}, name::String)
     node = tree.nodes[name]
     return length(node.outbounds)
 end
 
 import Phylo.API: _hasoutboundspace
-_hasoutboundspace(tree::BinaryTree{<: Rooted}, node::String) =
-    _outdegree(tree, node) < 2
+function _hasoutboundspace(tree::BinaryTree{<:Rooted}, node::String)
+    return _outdegree(tree, node) < 2
+end
 
 import Phylo.API: _getoutbounds
-function _getoutbounds(tree::BinaryTree{RT}, name::String) where RT <: Rooted
+function _getoutbounds(tree::BinaryTree{RT}, name::String) where {RT <: Rooted}
     node = tree.nodes[name]
     return (node.outbounds[1] ≡ nothing ?
             (node.outbounds[2] ≡ nothing ? Branch{RT, String}[] :
@@ -423,39 +444,41 @@ function _getoutbounds(tree::BinaryTree{RT}, name::String) where RT <: Rooted
             (node.outbounds[2] ≡ nothing ? [node.outbounds[1]] :
              [node.outbounds[1], node.outbounds[2]]))
 end
-function _getoutbounds(tree::PolytomousTree{<: Rooted}, name::String)
+function _getoutbounds(tree::PolytomousTree{<:Rooted}, name::String)
     return tree.nodes[name].outbounds
 end
 
 import Phylo.API: _addoutbound!
-function _addoutbound!(tree::BinaryTree{RT}, name::String, branch::B) where
-    {RT <: Rooted, B <: Branch{RT, String}}
+function _addoutbound!(tree::BinaryTree{RT}, name::String,
+                       branch::B) where
+         {RT <: Rooted, B <: Branch{RT, String}}
     node = tree.nodes[name]
-    node.outbounds[1] ≡ nothing ?
-        node.outbounds = (branch, node.outbounds[2]) :
-        (node.outbounds[2] ≡ nothing ?
-         node.outbounds = (node.outbounds[1], branch) :
-         error("BinaryNode already has two outbound connections"))
+    return node.outbounds[1] ≡ nothing ?
+           node.outbounds = (branch, node.outbounds[2]) :
+           (node.outbounds[2] ≡ nothing ?
+            node.outbounds = (node.outbounds[1], branch) :
+            error("BinaryNode already has two outbound connections"))
 end
 
-function _addoutbound!(tree::PolytomousTree{<: Rooted}, name::String,
+function _addoutbound!(tree::PolytomousTree{<:Rooted}, name::String,
                        branch::Branch)
     node = tree.nodes[name]
-    push!(node.outbounds, branch)
+    return push!(node.outbounds, branch)
 end
 
 import Phylo.API: _removeoutbound!
-function _removeoutbound!(tree::BinaryTree{<: Rooted}, name::String,
+function _removeoutbound!(tree::BinaryTree{<:Rooted}, name::String,
                           branch::Branch)
     node = tree.nodes[name]
-    node.outbounds[1] ≡ branch ?
-        node.outbounds = (node.outbounds[2], nothing) :
-        (node.outbounds[2] ≡ branch ?
-         node.outbounds = (node.outbounds[1], nothing) :
-         error("BinaryNode does not have outbound connection to branch " *
-               "$branch"))
+    return node.outbounds[1] ≡ branch ?
+           node.outbounds = (node.outbounds[2], nothing) :
+           (node.outbounds[2] ≡ branch ?
+            node.outbounds = (node.outbounds[1], nothing) :
+            error("BinaryNode does not have outbound connection to branch " *
+                  "$branch"))
 end
 
-_removeoutbound!(tree::PolytomousTree{<: Rooted}, name::String,
-                 branch::Branch) =
-                     filter!(x -> x ≢ branch, tree.nodes[name].outbounds)
+function _removeoutbound!(tree::PolytomousTree{<:Rooted}, name::String,
+                          branch::Branch)
+    return filter!(x -> x ≢ branch, tree.nodes[name].outbounds)
+end

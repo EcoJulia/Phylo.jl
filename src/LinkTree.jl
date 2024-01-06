@@ -2,7 +2,7 @@ using Missings
 using SimpleTraits
 using Unitful
 
-newempty(::Type{Data}) where Data = Data()
+newempty(::Type{Data}) where {Data} = Data()
 
 """
     struct LinkBranch <: AbstractBranch
@@ -27,9 +27,11 @@ mutable struct LinkNode{RT, NL, Data,
     inbound::Union{B, Missing}
     other::Vector{B}
     data::Data
-    LinkNode{RT, NL, Data, B}(name::NL, data::Data = newempty(Data)) where
-    {RT, NL, Data, B} = new{RT, NL, Data, B}(name, missing, Vector{B}(), data)
-
+    function LinkNode{RT, NL, Data, B}(name::NL,
+                                       data::Data = newempty(Data)) where
+             {RT, NL, Data, B}
+        return new{RT, NL, Data, B}(name, missing, Vector{B}(), data)
+    end
 end
 
 import Phylo.API: _prefernodeobjects
@@ -42,7 +44,7 @@ A phylogenetic tree type containing LinkNodes and LinkBranches
 """
 mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
                         B <: LinkBranch{RT, NL}, TD} <:
-                            AbstractTree{OneTree, RT, NL, N, B}
+               AbstractTree{OneTree, RT, NL, N, B}
     name::Union{String, Missing}
     nodedict::Dict{NL, Int}
     roots::Vector{N}
@@ -50,10 +52,10 @@ mutable struct LinkTree{RT, NL, N <: LinkNode{RT, NL},
     branches::Vector{Union{B, Missing}}
     data::Dict{String, Any}
     tipdata::TD
-    rootheight
+    rootheight::Any
     isvalid::Union{Bool, Missing}
     cache::Dict{TraversalOrder, Vector{N}}
-    
+
     function LinkTree{RT, NL, N,
                       B, TD}(tipnames::AbstractVector{NL} = NL[];
                              treename::Union{String, Missing} = missing,
@@ -83,8 +85,10 @@ import Phylo.API: _branchdims
 _branchdims(T::Type{<:LinkTree}) = _branchdims(branchtype(T))
 
 const LB{RT, LenUnits} = LinkBranch{RT, String, Dict{String, Any}, LenUnits}
-const LN{RT, LenUnits} = LinkNode{RT, String, Dict{String, Any}, LB{RT, LenUnits}}
-const LT{RT, TD, LenUnits} = LinkTree{RT, String, LN{RT, LenUnits}, LB{RT, LenUnits}, TD}
+const LN{RT, LenUnits} = LinkNode{RT, String, Dict{String, Any},
+                                  LB{RT, LenUnits}}
+const LT{RT, TD, LenUnits} = LinkTree{RT, String, LN{RT, LenUnits},
+                                      LB{RT, LenUnits}, TD}
 const LTD{RT, LenUnits} = LT{RT, Dict{String, Any}, LenUnits}
 
 # LinkBranch methods
@@ -96,15 +100,16 @@ function LinkBranch(name::Int,
     ismissing(len) || ustrip(len) >= 0.0 ||
         error("Branch length must be positive or missing (no recorded length), not $len")
     return ismissing(len) ?
-        LinkBranch{RT, NL, Data, Float64}(name, (from, to), len, data) :
-        LinkBranch{RT, NL, Data, typeof(len)}(name, (from, to), len, data)
+           LinkBranch{RT, NL, Data, Float64}(name, (from, to), len, data) :
+           LinkBranch{RT, NL, Data, typeof(len)}(name, (from, to), len, data)
 end
 
 import Phylo.API: _preferbranchobjects
 _preferbranchobjects(::Type{<:LinkBranch}) = true
-_branchdims(::Type{B}) where {RT, NL, Data, LenUnits,
-                               B <: LinkBranch{RT, NL, Data, LenUnits}} =
-    dimension(LenUnits)
+function _branchdims(::Type{B}) where {RT, NL, Data, LenUnits,
+                                       B <: LinkBranch{RT, NL, Data, LenUnits}}
+    return dimension(LenUnits)
+end
 
 import Phylo.API: _src
 _src(::AbstractTree, branch::LinkBranch{<:Rooted}) = branch.inout[1]
@@ -113,32 +118,35 @@ _dst(::AbstractTree, branch::LinkBranch{<:Rooted}) = branch.inout[2]
 import Phylo.API: _conn
 function _conn(::LinkTree, branch::LinkBranch, exclude::LinkNode)
     return exclude ≡ branch.inout[1] ? branch.inout[2] :
-        (exclude ≡ branch.inout[2] ? branch.inout[1] :
-         error("Branch $(branch.name) not connected to $(exclude.name)"))
+           (exclude ≡ branch.inout[2] ? branch.inout[1] :
+            error("Branch $(branch.name) not connected to $(exclude.name)"))
 end
 import Phylo.API: _getlength
 _getlength(::AbstractTree, branch::LinkBranch) = branch.length
 import Phylo.API: _getbranchname
 _getbranchname(tree::LinkTree, id::Int) = id
-function _getbranchname(tree::LinkTree{RT, NL, N, B}, branch::B) where
-    {RT, NL, N, B}
+function _getbranchname(tree::LinkTree{RT, NL, N, B},
+                        branch::B) where
+         {RT, NL, N, B}
     id = branch.name
     branch ≡ tree.branches[id] || error("Branch $id not in tree")
     return id
 end
 
 import Phylo.API: _branchdatatype
-_branchdatatype(::Type{<: LinkBranch{RT, NL, Data}}) where {RT, NL, Data} = Data
+_branchdatatype(::Type{<:LinkBranch{RT, NL, Data}}) where {RT, NL, Data} = Data
 import Phylo.API: _getbranchdata
 _getbranchdata(::AbstractTree, branch::LinkBranch) = branch.data
 import Phylo.API: _setbranchdata!
-_setbranchdata!(::AbstractTree, branch::LinkBranch{RT, NL, Data},
-                data::Data) where {RT, NL, Data} = (branch.data = data)
+function _setbranchdata!(::AbstractTree, branch::LinkBranch{RT, NL, Data},
+                         data::Data) where {RT, NL, Data}
+    return (branch.data = data)
+end
 
 # LinkNode methods
 function LinkNode(tree::T, name::NL,
                   data::Dict{String, Any} = Dict{String, Any}()) where
-    {RT, NL, N <: LinkNode, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
+         {RT, NL, N <: LinkNode, B, T <: AbstractTree{OneTree, RT, NL, N, B}}
     return N(name, missing, Vector{B}(), data)
 end
 
@@ -149,11 +157,13 @@ import Phylo.API: _getnodedata
 _getnodedata(::LinkTree, node::LinkNode) = node.data
 
 import Phylo.API: _setnodedata!
-_setnodedata!(::LinkTree, node::LinkNode{RT, NL, Data, B},
-              data::Data) where {RT, NL, B, Data} = (node.data = data)
+function _setnodedata!(::LinkTree, node::LinkNode{RT, NL, Data, B},
+                       data::Data) where {RT, NL, B, Data}
+    return (node.data = data)
+end
 
 import Phylo.API: _hasinbound
-_hasinbound(::LinkTree, node::LinkNode{<: Rooted}) = !ismissing(node.inbound)
+_hasinbound(::LinkTree, node::LinkNode{<:Rooted}) = !ismissing(node.inbound)
 
 import Phylo.API: _degree
 _degree(::LinkTree, node::LinkNode{Unrooted}) = length(node.other)
@@ -163,59 +173,64 @@ _getinbound(::LinkTree, node::LinkNode) = node.inbound
 
 import Phylo.API: _addinbound!
 function _addinbound!(tree::LinkTree,
-                      node::LinkNode{<: Rooted, NL, Data, B},
+                      node::LinkNode{<:Rooted, NL, Data, B},
                       branch::B) where {NL, Data, B}
     _hasinbound(tree, node) &&
         error("LinkNode already has an inbound connection")
     node.inbound = branch
     filter!(n -> n ≠ node, tree.roots)
-    tree.isvalid = missing
+    return tree.isvalid = missing
 end
 
 import Phylo.API: _removeinbound!
-function _removeinbound!(tree::LinkTree, node::LinkNode{<: Rooted, NL, Data, B},
+function _removeinbound!(tree::LinkTree, node::LinkNode{<:Rooted, NL, Data, B},
                          branch::B) where {NL, Data, B}
     _hasinbound(tree, node) || error("Node has no inbound connection")
     node.inbound ≡ branch ||
         error("Node has no inbound connection from branch $inbound")
     node.inbound = missing
     push!(tree.roots, node)
-    tree.isvalid = missing
+    return tree.isvalid = missing
 end
 
 import Phylo.API: _getoutbounds
-_getoutbounds(::LinkTree, node::LinkNode{<: Rooted}) = node.other
+_getoutbounds(::LinkTree, node::LinkNode{<:Rooted}) = node.other
 
 import Phylo.API: _addoutbound!
-_addoutbound!(::LinkTree,
-              node::LinkNode{<: Rooted, NL, Data, B},
-              branch::B) where {NL, Data, B} = push!(node.other, branch)
+function _addoutbound!(::LinkTree,
+                       node::LinkNode{<:Rooted, NL, Data, B},
+                       branch::B) where {NL, Data, B}
+    return push!(node.other, branch)
+end
 
 import Phylo.API: _removeoutbound!
 function _removeoutbound!(tree::LinkTree,
-                          node::LinkNode{<: Rooted, NL, Data, B},
+                          node::LinkNode{<:Rooted, NL, Data, B},
                           branch::B) where {NL, Data, B}
-    branch ∈ _getoutbounds(tree, node) ? filter!(p -> p ≢ branch, node.other) :
-        error("Node does not have outbound connection to branch $branch")
+    return branch ∈ _getoutbounds(tree, node) ?
+           filter!(p -> p ≢ branch, node.other) :
+           error("Node does not have outbound connection to branch $branch")
 end
 
 import Phylo.API: _getconnections
-_getconnections(::LinkTree, node::LinkNode{Unrooted}, exclude) =
-    filter(∉(exclude), node.other)
+function _getconnections(::LinkTree, node::LinkNode{Unrooted}, exclude)
+    return filter(∉(exclude), node.other)
+end
 
 import Phylo.API: _addconnection!
 function _addconnection!(::AbstractTree, node::LinkNode{Unrooted, NL, Data, B},
                          branch::B) where {NL, Data, B}
-    push!(node.other, branch)
+    return push!(node.other, branch)
 end
 
 import Phylo.API: _removeconnection!
 function _removeconnection!(tree::AbstractTree,
-                            node::LinkNode{Unrooted, NL}, branch::B) where
-    {NL, B <: LinkBranch{Unrooted, NL}}
-    outbound ∈ _getoutbounds(tree, node) ?
-        filter!(p -> p ≢ branch, node.other) :
-        error("Node does not have a connection to branch $branch")
+                            node::LinkNode{Unrooted, NL},
+                            branch::B) where
+         {NL, B <: LinkBranch{Unrooted, NL}}
+    return outbound ∈ _getoutbounds(tree, node) ?
+           filter!(p -> p ≢ branch, node.other) :
+           error("Node does not have a connection to branch $branch")
 end
 
 # LinkTree methods
@@ -243,15 +258,15 @@ function _validate!(tree::LinkTree{RT, NL, N, B, TD}) where {RT, NL, N, B, TD}
 end
 
 import Phylo.API: _treenametype
-_treenametype(::Type{<: LinkTree}) = String
+_treenametype(::Type{<:LinkTree}) = String
 import Phylo.API: _gettreename
 _gettreename(tree::LinkTree) = ismissing(tree.name) ? TREENAME : tree.name
 import Phylo.API: _newnodelabel
-function _newnodelabel(tree::LinkTree{RT, String}) where RT
+function _newnodelabel(tree::LinkTree{RT, String}) where {RT}
     id = length(tree.nodes) + 1
     name = NODENAME * " $id"
     return haskey(tree.nodedict, name) ?
-        _newlabel(collect(getnodenames(tree)), NODENAME) : name
+           _newlabel(collect(getnodenames(tree)), NODENAME) : name
 end
 import Phylo.API: _newbranchlabel
 _newbranchlabel(tree::LinkTree) = length(tree.branches) + 1
@@ -259,7 +274,7 @@ import Phylo.API: _deletenode!
 function _deletenode!(tree::LinkTree{RT, NL, N}, node::N) where {RT, NL, N}
     (haskey(tree.nodedict, node.name) &&
      tree.nodes[tree.nodedict[node.name]] ≡ node) ||
-     error("Node $(node.name) is not in tree $(_gettreename(tree)), cannot be deleted")
+        error("Node $(node.name) is not in tree $(_gettreename(tree)), cannot be deleted")
     # Does nothing for unrooted tree, as inbound is never set
     !ismissing(node.inbound) && _deletebranch!(tree, node.inbound)
     # Delete outbound connections of rooted tree, all connections of unrooted
@@ -274,7 +289,7 @@ function _deletenode!(tree::LinkTree{RT, NL, N}, node::N) where {RT, NL, N}
 end
 
 import Phylo.API: _getroots
-_getroots(tree::LinkTree{<: Rooted}) = tree.roots
+_getroots(tree::LinkTree{<:Rooted}) = tree.roots
 
 import Phylo.API: _getnodes
 _getnodes(tree::LinkTree) = skipmissing(tree.nodes)
@@ -286,31 +301,38 @@ import Phylo.API: _getnodename
 _getnodename(::LinkTree{RT, NL, N}, node::N) where {RT, NL, N} = node.name
 
 import Phylo.API: _hasnode
-_hasnode(tree::LinkTree{RT, NL}, name::NL) where {RT, NL} =
-    haskey(tree.nodedict, name)
-_hasnode(tree::LinkTree{RT, NL, N}, node::N) where {RT, NL, N} =
-    haskey(tree.nodedict, node.name)
+function _hasnode(tree::LinkTree{RT, NL}, name::NL) where {RT, NL}
+    return haskey(tree.nodedict, name)
+end
+function _hasnode(tree::LinkTree{RT, NL, N}, node::N) where {RT, NL, N}
+    return haskey(tree.nodedict, node.name)
+end
 
 import Phylo.API: _getnode
-@traitfn _getnode(tree::T,
-                  node::NL) where {RT, NL,
-                                   T <: LinkTree{RT, NL};
-                                   PreferNodeObjects{T}} =
-    tree.nodes[tree.nodedict[node]]
+@traitfn function _getnode(tree::T,
+                           node::NL) where {RT, NL,
+                                            T <: LinkTree{RT, NL};
+                                            PreferNodeObjects{T}}
+    return tree.nodes[tree.nodedict[node]]
+end
 
 import Phylo.API: _getbranches
 _getbranches(tree::LinkTree) = skipmissing(tree.branches)
 
 import Phylo.API: _getbranchnames
-_getbranchnames(tree::LinkTree) =
-    [getbranchname(tree, b) for b in tree.branches if !ismissing(b)]
+function _getbranchnames(tree::LinkTree)
+    return [getbranchname(tree, b) for b in tree.branches if !ismissing(b)]
+end
 
 import Phylo.API: _hasbranch
-_hasbranch(tree::LinkTree, id::Int) =
-    1 ≤ id ≤ length(tree.branches) && !ismissing(tree.branches[id])
-_hasbranch(tree::LinkTree{RT, NL, N, B}, branch::B) where
-{RT, NL, N <: LinkNode{RT, NL}, B <: LinkBranch{RT, NL}} =
-    branch ∈ skipmissing(tree.branches)
+function _hasbranch(tree::LinkTree, id::Int)
+    return 1 ≤ id ≤ length(tree.branches) && !ismissing(tree.branches[id])
+end
+function _hasbranch(tree::LinkTree{RT, NL, N, B},
+                    branch::B) where
+         {RT, NL, N <: LinkNode{RT, NL}, B <: LinkBranch{RT, NL}}
+    return branch ∈ skipmissing(tree.branches)
+end
 
 import Phylo.API: _getbranch
 _getbranch(tree::LinkTree, id::Int) = tree.branches[id]
@@ -320,8 +342,8 @@ function _createbranch!(tree::LinkTree{RT, NL, N, B},
                         from::N, to::N, len::Union{LenUnits, Missing} = missing,
                         name::Union{Int, Missing} = missing,
                         data::Data = newempty(Data)) where
-    {RT <: Rooted, NL, N, Data, LenUnits,
-     B <: LinkBranch{RT, NL, Data, LenUnits}}
+         {RT <: Rooted, NL, N, Data, LenUnits,
+          B <: LinkBranch{RT, NL, Data, LenUnits}}
     id = ismissing(name) ? length(tree.branches) + 1 : name
     branch = LinkBranch(id, from, to, len, data)
     if ismissing(name)
@@ -330,7 +352,7 @@ function _createbranch!(tree::LinkTree{RT, NL, N, B},
         l = length(tree.branches)
         if id > l
             resize!(tree.branches, id)
-            tree.branches[l+1:id-1] .= missing
+            tree.branches[(l + 1):(id - 1)] .= missing
         else
             ismissing(tree.branches[id]) || error("Branch $name already exists")
         end
@@ -345,8 +367,8 @@ function _createbranch!(tree::LinkTree{Unrooted, NL, N, B},
                         from::N, to::N, len::Union{LenUnits, Missing} = missing,
                         name::Union{Int, Missing} = missing,
                         data::Data = newempty(Data)) where
-    {NL, N, Data, LenUnits,
-     B <: LinkBranch{Unrooted, NL, Data, LenUnits}}
+         {NL, N, Data, LenUnits,
+          B <: LinkBranch{Unrooted, NL, Data, LenUnits}}
     id = ismissing(name) ? length(tree.branches) + 1 : name
     branch = LinkBranch(id, from, to, len, data)
     push!(tree.branches, branch)
@@ -357,7 +379,7 @@ function _createbranch!(tree::LinkTree{Unrooted, NL, N, B},
 end
 
 import Phylo.API: _deletebranch!
-function _deletebranch!(tree::LinkTree{<: Rooted}, id::Int)
+function _deletebranch!(tree::LinkTree{<:Rooted}, id::Int)
     branch = tree.branches[id]
     _removeoutbound!(tree, branch.inout[1], branch)
     _removeinbound!(tree, branch.inout[2], branch)
@@ -373,8 +395,9 @@ function _deletebranch!(tree::LinkTree{Unrooted}, id::Int)
     tree.isvalid = missing
     return true
 end
-function _deletebranch!(tree::LinkTree{<: Rooted, NL, N, B}, branch::B) where
-    {NL, N, B}
+function _deletebranch!(tree::LinkTree{<:Rooted, NL, N, B},
+                        branch::B) where
+         {NL, N, B}
     _removeoutbound!(tree, branch.inout[1], branch)
     _removeinbound!(tree, branch.inout[2], branch)
     id = _getbranchname(tree, branch)
@@ -382,8 +405,9 @@ function _deletebranch!(tree::LinkTree{<: Rooted, NL, N, B}, branch::B) where
     tree.isvalid = missing
     return true
 end
-function _deletebranch!(tree::LinkTree{Unrooted, NL, N, B}, branch::B) where
-    {NL, N, B}
+function _deletebranch!(tree::LinkTree{Unrooted, NL, N, B},
+                        branch::B) where
+         {NL, N, B}
     _removeconnection!(tree, branch.inout[1], branch)
     _removeconnection!(tree, branch.inout[2], branch)
     id = _getbranchname(tree, branch)
@@ -395,7 +419,7 @@ end
 import Phylo.API: _createnode!
 function _createnode!(tree::LinkTree{RT, NL, N, B}, name::Union{NL, Missing},
                       data::Data = newempty(Data)) where
-    {RT <: Rooted, NL, Data, B, N <: LinkNode{RT, NL, Data, B}}
+         {RT <: Rooted, NL, Data, B, N <: LinkNode{RT, NL, Data, B}}
     nodename = ismissing(name) ? _newnodelabel(tree) : name
     _hasnode(tree, nodename) && error("Node $nodename already exists in tree.")
     node = LinkNode{RT, NL, Data, B}(nodename, data)
@@ -407,7 +431,7 @@ function _createnode!(tree::LinkTree{RT, NL, N, B}, name::Union{NL, Missing},
 end
 function _createnode!(tree::LinkTree{RT, NL, N, B}, name::Union{NL, Missing},
                       data::Data = newempty(Data)) where
-    {RT <: Unrooted, NL, Data, B, N <: LinkNode{RT, NL, Data, B}}
+         {RT <: Unrooted, NL, Data, B, N <: LinkNode{RT, NL, Data, B}}
     nodename = ismissing(name) ? _newnodelabel(tree) : name
     _hasnode(tree, nodename) && error("Node $nodename already exists in tree.")
     node = LinkNode{RT, NL, Data, B}(nodename, data)
@@ -418,38 +442,47 @@ function _createnode!(tree::LinkTree{RT, NL, N, B}, name::Union{NL, Missing},
 end
 
 import Phylo.API: _leafinfotype
-_leafinfotype(::Type{<:LinkTree{RT, NL, N, B, TD}}) where {RT, NL, N, B, TD} =
-    TD
+function _leafinfotype(::Type{<:LinkTree{RT, NL, N, B, TD}}) where {RT, NL, N,
+                                                                    B, TD}
+    return TD
+end
 
 import Phylo.API: _getleafinfo
 _getleafinfo(tree::LinkTree) = tree.tipdata
 
 import Phylo.API: _setleafinfo!
-_setleafinfo!(tree::LinkTree{RT, NL, N, B, TD}, leafinfo::TD) where
-{RT, NL, N, B, TD} = tree.tipdata = leafinfo
+function _setleafinfo!(tree::LinkTree{RT, NL, N, B, TD},
+                       leafinfo::TD) where
+         {RT, NL, N, B, TD}
+    return tree.tipdata = leafinfo
+end
 
 import Phylo.API: _nodedatatype
-_nodedatatype(::Type{<:LinkTree{RT, NL, N}}) where {RT, NL, N} =
-    _nodedatatype(N)
+function _nodedatatype(::Type{<:LinkTree{RT, NL, N}}) where {RT, NL, N}
+    return _nodedatatype(N)
+end
 
 import Phylo.API: _branchdatatype
-_branchdatatype(::Type{<:LinkTree{RT, NL, N, B}}) where {RT, NL, N, B} =
-    _branchdatatype(B)
+function _branchdatatype(::Type{<:LinkTree{RT, NL, N, B}}) where {RT, NL, N, B}
+    return _branchdatatype(B)
+end
 
 import Phylo.API: _nnodes
-_nnodes(tree::LinkTree) = count((!)∘ismissing, tree.nodes)
+_nnodes(tree::LinkTree) = count((!) ∘ ismissing, tree.nodes)
 import Phylo.API: _nbranches
-_nbranches(tree::LinkTree) = count((!)∘ismissing, tree.branches)
+_nbranches(tree::LinkTree) = count((!) ∘ ismissing, tree.branches)
 
 import Base.show
 function show(io::IO, node::LinkNode{Unrooted})
-    print(io, "Unrooted LinkNode '$(node.name)', with $(length(node.other)) connection(s).")
+    print(io,
+          "Unrooted LinkNode '$(node.name)', with $(length(node.other)) connection(s).")
     if length(node.other) == 0
         print(io, "a node with no connections.")
     elseif length(node.other) == 1
         print(io, "a node with 1 connection (branch $(node.other[1].name))")
     else
-        print(io, "a node with $(length(node.other)) outbound connections (branches $(node.other[1].name)")
+        print(io,
+              "a node with $(length(node.other)) outbound connections (branches $(node.other[1].name)")
         for i in 2:length(node.other)
             print(io, ", $(node.other[i].name)")
         end
@@ -463,9 +496,11 @@ function show(io::IO, node::LinkNode)
         if length(node.other) == 0
             print(io, "an isolated node with no connections.")
         elseif length(node.other) == 1
-            print(io, "a root node with 1 outbound connection (branch $(node.other[1].name))")
+            print(io,
+                  "a root node with 1 outbound connection (branch $(node.other[1].name))")
         else
-            print(io, "a root node with $(length(node.other)) outbound connections (branches $(node.other[1].name)")
+            print(io,
+                  "a root node with $(length(node.other)) outbound connections (branches $(node.other[1].name)")
             for i in 2:length(node.other)
                 print(io, ", $(node.other[i].name)")
             end
@@ -473,11 +508,14 @@ function show(io::IO, node::LinkNode)
         end
     else
         if length(node.other) == 0
-            print(io, "a tip of the tree with an incoming connection (branch $(node.inbound.name)).")
+            print(io,
+                  "a tip of the tree with an incoming connection (branch $(node.inbound.name)).")
         elseif length(node.other) == 1
-            print(io, "an internal node with 1 inbound and 1 outbound connection (branches $(node.inbound.name) and $(node.other[1].name))")
+            print(io,
+                  "an internal node with 1 inbound and 1 outbound connection (branches $(node.inbound.name) and $(node.other[1].name))")
         else
-            print(io, "an internal node with 1 inbound and $(length(node.other)) outbound connections (branches $(node.inbound.name) and $(node.other[1].name)")
+            print(io,
+                  "an internal node with 1 inbound and $(length(node.other)) outbound connections (branches $(node.inbound.name) and $(node.other[1].name)")
             for i in 2:length(node.other)
                 print(io, ", $(node.other[i].name)")
             end
@@ -487,9 +525,11 @@ function show(io::IO, node::LinkNode)
 end
 
 function show(io::IO, branch::LinkBranch{Unrooted})
-    print(io, "Unrooted LinkBranch $(branch.name), connecting nodes $(branch.inout[1].name) and $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
+    return print(io,
+                 "Unrooted LinkBranch $(branch.name), connecting nodes $(branch.inout[1].name) and $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
 end
 
 function show(io::IO, branch::LinkBranch)
-    print(io, "LinkBranch $(branch.name), from node $(branch.inout[1].name) to node $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
+    return print(io,
+                 "LinkBranch $(branch.name), from node $(branch.inout[1].name) to node $(branch.inout[2].name)$(ismissing(branch.length) ? "" : " (length $(branch.length))").")
 end

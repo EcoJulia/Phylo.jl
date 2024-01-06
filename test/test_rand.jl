@@ -18,12 +18,18 @@ using Test
     @test ntrees(t) == 1
     @test validate!(t)
     @test Set(getleafnames(t)) == Set(species)
+    for n1 in getnodes(t)
+        @test all(n1 ∈ getsiblings(t, n2) for n2 in getsiblings(t, n1))
+    end
+    for n1 in getnodenames(t)
+        @test all(n1 ∈ getsiblings(t, n2) for n2 in getsiblings(t, n1))
+    end
 
     t2 = rand(Nonultrametric{BinaryTree{OneRoot, DataFrame, Vector{Float64}}}(species))
     @test length(getnodedata(t2, species[1])) == 0
     t3 = rand(Nonultrametric{BinaryTree{OneRoot, DataFrame, Vector{String}}}(species))
     map(nodenameiter(t3)) do name
-        setnodedata!(t3, name, nodehistory(t3, name))
+        return setnodedata!(t3, name, nodehistory(t3, name))
     end
     for name in nodenameiter(t3)
         @test all(getnodedata(t3, name) .== nodehistory(t3, name))

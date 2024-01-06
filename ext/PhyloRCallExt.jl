@@ -16,8 +16,9 @@ end
 
 using Phylo
 
-function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
-    if !isObject(rt) || isS4(rt) || rcopy(String, rcall_p(:class, rt)) != "phylo"
+function rcopy(::Type{T}, rt::Ptr{VecSxp}) where {T <: AbstractTree}
+    if !isObject(rt) || isS4(rt) ||
+       rcopy(String, rcall_p(:class, rt)) != "phylo"
         error("Object is not of S3 phylo class, aborting")
     end
 
@@ -44,17 +45,17 @@ function rcopy(::Type{T}, rt::Ptr{VecSxp}) where T <: AbstractTree
     return tree
 end
 
-
 rcopytype(::Type{RClass{:phylo}}, s::Ptr{VecSxp}) = RootedTree
 
-function sexp(tree::T) where T <: AbstractTree
+function sexp(tree::T) where {T <: AbstractTree}
     validate!(tree) || @warn "Tree does not internally validate"
     leafnames = getleafnames(tree)
     root = getnodename.(tree, getroots(tree))
     if (length(root) != 1)
         error("Can't currently translate tree with > 1 roots")
     end
-    nontips = [getnodename(tree, node) for node in traversal(tree, preorder)
+    nontips = [getnodename(tree, node)
+               for node in traversal(tree, preorder)
                if isinternal(tree, node)]
     tor = Dict{Symbol, Any}()
     tor[:Nnode] = length(nontips) + length(root)
@@ -69,7 +70,7 @@ function sexp(tree::T) where T <: AbstractTree
     for branch in bi
         lengths[index] = getlength(tree, branch)
         edges[index, :] = indexin([getnodename(tree, src(tree, branch)),
-                                   getnodename(tree, dst(tree, branch))], nodes)
+                                      getnodename(tree, dst(tree, branch))], nodes)
         index += 1
     end
     tor[:edge] = edges

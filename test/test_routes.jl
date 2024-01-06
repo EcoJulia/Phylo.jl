@@ -4,8 +4,7 @@ using Phylo
 using Test
 
 @testset "Routes" begin
-    @testset "For $TreeType" for TreeType in
-        [NamedTree, NamedBinaryTree,
+    @testset "For $TreeType" for TreeType in [NamedTree, NamedBinaryTree,
         Phylo.LTD{OneRoot, Float64}, Phylo.LTD{ManyRoots, Float64},
         RootedTree, ManyRootTree]
         species = ["Dog", "Cat", "Human", "Potato"]
@@ -29,8 +28,9 @@ using Test
         br2 = getbranch(tree, createbranch!(tree, n3, "Cat"))
         @test [br2, br] == branchroute(tree, "Cat", "Dog")
         br3 = createbranch!(tree, n2, "Human")
-        @test getbranchname(tree, createbranch!(tree, nr, "Potato",
-                                                name = 551)) == 551
+        @test getbranchname(tree,
+                            createbranch!(tree, nr, "Potato",
+                                          name = 551)) == 551
         @test 551 ∈ getbranchname.(tree, branchroute(tree, "Dog", "Potato"))
         deletebranch!(tree, 551)
         createbranch!(tree, nr, "Potato")
@@ -38,7 +38,7 @@ using Test
         @test validate!(tree)
         root = getroot(tree)
         @test Set(getdescendants(tree, getchildren(tree, root)[1])) ⊆
-            Set(getdescendants(tree, root)) ⊆ Set(traversal(tree))
+              Set(getdescendants(tree, root)) ⊆ Set(traversal(tree))
         @test Set(getdescendants(tree,
                                  getchildren(tree,
                                              getnodename(tree, root))[1])) ⊆
@@ -46,20 +46,21 @@ using Test
               Set(getnodename.(tree, traversal(tree)))
         @test length(collect(traversal(tree))) == nnodes(tree)
         @test length(getdescendants(tree, root)) ==
-            length(branchfuture(tree, root))
+              length(branchfuture(tree, root))
         nn = first(nodenamefilter(isleaf, tree))
         @test length(branchhistory(tree, nn)) == length(getancestors(tree, nn))
-        @test length(branchfuture(tree, root)) == length(nodefuture(tree, root)) - 1
+        @test length(branchfuture(tree, root)) ==
+              length(nodefuture(tree, root)) - 1
         @test Set(getancestors(tree, nn)) ⊆ Set(nodehistory(tree, nn))
         n = first(nodefilter(isleaf, tree))
         @test length(branchhistory(tree, n)) == length(getancestors(tree, n))
         @test Set(getancestors(tree, n)) ⊆ Set(nodehistory(tree, n))
         @test Set(traversal(tree, anyorder)) ==
-            Set(traversal(tree, preorder)) ==
-            Set(traversal(tree, inorder)) ==
-            Set(traversal(tree, postorder)) ==
-            Set(traversal(tree, breadthfirst))
-    end 
+              Set(traversal(tree, preorder)) ==
+              Set(traversal(tree, inorder)) ==
+              Set(traversal(tree, postorder)) ==
+              Set(traversal(tree, breadthfirst))
+    end
 end
 
 end

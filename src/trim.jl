@@ -7,7 +7,6 @@ using Phylo.API
 
 Function to retrieve only the internal nodes from a tree, `t`, which does not
 include tips or root.
-
 """
 getinternalnodes(t::AbstractTree) = collect(nodenamefilter(isinternal, t))
 
@@ -18,32 +17,35 @@ Function to drop tips from a phylogenetic tree `tree`, which are found in
 the vector of tips or tip names, `tips`.
 """
 function droptips! end
-@traitfn function droptips!(tree::T, tips::AbstractVector{N}) where
-    {N, RT, T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
+@traitfn function droptips!(tree::T,
+                            tips::AbstractVector{N}) where
+                  {N, RT,
+                   T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
     return droptips!(tree, [getnode(tree, tip) for tip in tips])
 end
 
-@traitfn function droptips!(tree::T, tips::AbstractVector{N}) where
-    {N, RT, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
+@traitfn function droptips!(tree::T,
+                            tips::AbstractVector{N}) where
+                  {N, RT, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
     keep_tips = [tip for tip in getleaves(tree) if tip ∉ tips]
     tipnames = [getnodename(tree, tip) for tip in tips]
-    
+
     # Remove nodes that are not in tip names
     for tip in tips
         _deletenode!(tree, tip)
     end
-    
+
     # Remove nodes that are related to the cut tips
     while length(setdiff(collect(nodefilter(isleaf, tree)), keep_tips)) > 0
         nodes = setdiff(collect(nodefilter(isleaf, tree)), keep_tips)
         map(x -> deletenode!(tree, x), nodes)
     end
-    
+
     # Merge internal nodes that no longer have multiple children
     while any(map(x -> length(getchildren(tree, x)) .< 2,
                   getinternalnodes(tree)))
         inner_nodes = getinternalnodes(tree)
-        remove_nodes = findall(map(x->length(getchildren(tree, x)) .< 2,
+        remove_nodes = findall(map(x -> length(getchildren(tree, x)) .< 2,
                                    inner_nodes))
         for i in remove_nodes
             parent = getparent(tree, inner_nodes[i])
@@ -61,7 +63,7 @@ end
             createbranch!(tree, parent, child, len)
         end
     end
-    
+
     # Remove root if it no longer has two branches
     root = first(nodefilter(isroot, tree))
     if length(getchildren(tree, root)) < 2
@@ -84,13 +86,16 @@ Function to keep only the tips in a phylogenetic tree, `tree`, that are found in
 the vector of tips or tip names, `tips`.
 """
 function keeptips! end
-@traitfn function keeptips!(tree::T, tips::AbstractVector{N}) where
-    {N, RT, T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
+@traitfn function keeptips!(tree::T,
+                            tips::AbstractVector{N}) where
+                  {N, RT,
+                   T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
     return keeptips!(tree, [getnode(tree, tip) for tip in tips])
 end
 
-@traitfn function keeptips!(tree::T, tips::AbstractVector{N}) where
-    {N, RT, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
+@traitfn function keeptips!(tree::T,
+                            tips::AbstractVector{N}) where
+                  {N, RT, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
     drop_tips = [tip for tip in getleaves(tree) if tip ∉ tips]
     return droptips!(tree, drop_tips)
 end
