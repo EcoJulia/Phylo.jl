@@ -1,7 +1,7 @@
 using DataFrames
 using LinearAlgebra
 using Optim
-using StaticArrays
+using Distributions
 
 
 abstract type AbstractTraitData end
@@ -16,7 +16,7 @@ mutable struct TraitData{NTraits} <: AbstractTraitData
     xl::Float64                   # 1' V^(-1) x  (we set x as 1)
     Q::Vector{Float64}            # x' V^(-1) y
     xx::Float64                   # x' V^(-1) x
-    yy::Matrix{Float64}           # y' V^(-1) y
+    yy::Float64                   # y' V^(-1) y
     v::Vector{Float64}            #used for PIC
     xlmult::Vector{Float64}       # 1' W^(-1) x  
     pmult::Matrix{Float64}        # 1' W^(-1) C1      
@@ -30,7 +30,7 @@ traitdata(name::String, value::Float64, t::Float64 = 0.0) = traitdata([name], [v
 
 traitdata(name::Vector{String}, value::Vector{Float64}, t::Float64 = 0.0) =
     TraitData{length(name)}(name, value, t, NaN, NaN, fill(NaN, length(name)), NaN, 
-                            fill(NaN, length(name)), NaN, fill(NaN, length(name), length(name)), fill(NaN, length(name)), fill(NaN, length(name)),
+                            fill(NaN, length(name)), NaN, NaN, fill(NaN, length(name)), fill(NaN, length(name)),
                             fill(NaN, length(name), length(name)), fill(NaN, length(name), length(name)), NaN, NaN, fill(NaN, length(name), length(name)))
 
 TraitData{NTraits}() where NTraits = traitdata(fill("", NTraits), fill(NaN, NTraits))
@@ -64,7 +64,7 @@ function threepoint!(tree::T, trait::Vector{String}, nodes::Vector{N}) where
             nd.xl = 1.0
             nd.Q = nodetrait / nodet
             nd.xx = inv(nodet)
-            nd.yy = nodetrait * nodetrait' / nodet
+            nd.yy = nodetrait' * nodetrait / nodet
 
         else
             # need to find direct desendents 
@@ -78,16 +78,16 @@ function threepoint!(tree::T, trait::Vector{String}, nodes::Vector{N}) where
             pA = sum(childp)
             ws = childp / pA
            
-            calc = 1.0 + nodet * pA
+            calc = 1.0 + nodet * pA 
             nd.logV = sum(s.logV for s in childdata) + log(calc)
             nd.p = pA / calc
             nd.xl = sum(ws .* [s.xl for s in childdata]) 
-            nd.yl = sum(ws .* [s.yl for s in childdata])#, dims = 1) 
+            nd.yl = sum(ws .* [s.yl for s in childdata])
 
             c2 = nodet * pA^2 / calc
             nd.Q = sum(s.Q for s in childdata) - c2 * nd.xl * nd.yl
             nd.xx = sum(s.xx for s in childdata) - c2 * nd.xl * nd.xl
-            nd.yy = sum(s.yy for s in childdata) - c2 * nd.yl * nd.yl'
+            nd.yy = sum(s.yy for s in childdata) - c2 * nd.yl' * nd.yl
 
         end
         # @assert getnodedata(tree, node) === nd
@@ -100,6 +100,7 @@ function estimaterates!(tree::T, trait::Vector{String}, lambda) where T <: Abstr
 
     #get information from tree in order to preform threepoint
     nodes = getnodes(tree, postorder)
+    n = nleaves(tree)
     
 
     if lambda !== missing
@@ -121,7 +122,7 @@ function estimaterates!(tree::T, trait::Vector{String}, lambda) where T <: Abstr
 
         #optimise to find lambda
         opts = optimize(x -> tooptimise(x, tree, nodes, trait, n),
-                        lower, upper, start, Fminbox(LBFGS()))
+                        lower, upper, start, Fminbox(LBFGS()), Optim.Options(time_limit = 600))
         lambda = Optim.minimizer(opts)
 
         #update internal branches
@@ -276,7 +277,7 @@ function threepointmultlambda!(tree::T, trait::Vector{String}, nodes::Vector{N},
             # update node data
             nd.logV = log(abs(det(C * height - (height - nodet) * C1))) 
             nd.pmult = inv(height * C * C1inv - (height - nodet) * I)
-            nd.ylmult = repeat(nodetrait, 1, k)'
+            nd.ylmult = repeat(nodetrait, 1, k)
             nd.xlmult = ones(k)
             nd.Q = nd.ylmult' * nd.pmult * C1inv * ones(k)
             nd.xx = ones(k)' * nd.pmult * C1inv * ones(k)
@@ -419,6 +420,52 @@ function estimaterates!(tree::T, trait::Vector{String}, lambda::Vector{Float64})
     negloglik = (1.0 / 2.0) * (n * k * log(2π) + nd.logV + n + log(abs(det((nd.yy - 2 * betahat * nd.Q' + betahat * nd.xx * betahat')))))
 
     return betahat, C, negloglik, lambda
+end
+
+
+
+#used for Bayes calculations (may move parts to other places)
+
+#define loglikelihood function, used in Bayes methods
+loglik(n, nd, sigma, beta) =  -(1.0 / 2.0) * (n * log(2π) + nd.logV + n*log(abs(sigma)) + abs(sigma)^(-1) * (nd.yy[] - 2 * nd.Q[] * beta + nd.xx * beta^2))
+
+#Need to create own distribution to use threepoint to calculate likelihood
+#needs to be a mutable struct as threepoint changes tree
+#also needs renamed
+mutable struct MyDist2{T <: AbstractTree, N <: Number} <: ContinuousMultivariateDistribution
+    sigma::N
+    beta::N
+    tree::T
+end
+
+#rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
+function Distributions.rand(rng::AbstractRNG, d::MyDist2) 
+    a = BrownianTrait(d.tree, "BMtrait", σ² = d.sigma);
+    BMtraits = rand(a)
+
+    leafnames = getleafnames(d.tree, postorder);
+    z = Vector{Float64}();
+
+    for leaf in leafnames
+        push!(z, BMtraits[leaf])
+    end
+    return z
+end
+
+#define logpdf for my dist
+function Distributions.logpdf(d::MyDist2, z::Vector{Float64}) 
+    #add errors for if tree doesnt have right data
+
+    n = nleaves(d.tree)
+    nodes = getnodes(d.tree, postorder)
+    trait = getnodedata(d.tree, nodes[1]).name
+
+    threepoint!(d.tree, trait, nodes)
+
+    nN = last(nodes)
+    nd = getnodedata(d.tree, nN)
+    
+    return loglik(n, nd, d.sigma, d.beta) 
 end
 
 
