@@ -500,14 +500,14 @@ function Distributions.logpdf(d::MyDist3, z::Vector{Float64})
 
     #add lengths to tree - must be a better way
     for node in nodes
-        val = getnodedata(tree, node).value
-        if hasinbound(tree, node)
-            len = Phylo.getlength(tree, Phylo.getinbound(tree, node)) 
+        val = getnodedata(d.tree, node).value
+        if hasinbound(d.tree, node)
+            len = Phylo.getlength(d.tree, Phylo.getinbound(d.tree, node)) 
             td = traitdata(trait, val, len)
-            setnodedata!(tree, node, td)
+            setnodedata!(d.tree, node, td)
         else
             td = traitdata(trait, val)
-            setnodedata!(tree, node, td)
+            setnodedata!(d.tree, node, td)
         end
     end
 
