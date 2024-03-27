@@ -6,29 +6,29 @@ using Distributions
 
 abstract type AbstractTraitData end
 
-mutable struct TraitData{NTraits} <: AbstractTraitData 
+mutable struct TraitData{NTraits} <: AbstractTraitData #had to change types to Number for Bayes to work w/ lambda
     name::Vector{String}          #Name of traits
     value::Vector{Float64}        #Trait values
-    t::Float64                    #branch length
-    logV::Float64
-    p::Float64                    # 1' V^(-1) 1
-    yl::Vector{Float64}           # 1' V^(-1) y  (y is trait values)
-    xl::Float64                   # 1' V^(-1) x  (we set x as 1)
-    Q::Vector{Float64}            # x' V^(-1) y
-    xx::Float64                   # x' V^(-1) x
-    yy::Float64                   # y' V^(-1) y
-    v::Vector{Float64}            #used for PIC
-    xlmult::Vector{Float64}       # 1' W^(-1) x  
-    pmult::Matrix{Float64}        # 1' W^(-1) C1      
-    xxmult::Matrix{Float64}       # x' W^(-1) x 
-    yymult::Float64               # y' W^(-1) y
-    Qmult::Float64                # x' W^(-1) y
-    ylmult::Matrix{Float64}       # 1' W^(-1) y
+    t::Number                    #branch length
+    logV::Number
+    p::Number                    # 1' V^(-1) 1
+    yl::Vector{Number}           # 1' V^(-1) y  (y is trait values)
+    xl::Number                   # 1' V^(-1) x  (we set x as 1)
+    Q::Vector{Number}            # x' V^(-1) y
+    xx::Number                   # x' V^(-1) x
+    yy::Number                   # y' V^(-1) y
+    v::Vector{Number}            #used for PIC
+    xlmult::Vector{Number}       # 1' W^(-1) x  
+    pmult::Matrix{Number}        # 1' W^(-1) C1      
+    xxmult::Matrix{Number}       # x' W^(-1) x 
+    yymult::Number               # y' W^(-1) y
+    Qmult::Number                # x' W^(-1) y
+    ylmult::Matrix{Number}       # 1' W^(-1) y
 end
+#change these from Float to number too
+traitdata(name::String, value::Float64, t::Number = 0.0) = traitdata([name], [value], t)
 
-traitdata(name::String, value::Float64, t::Float64 = 0.0) = traitdata([name], [value], t)
-
-traitdata(name::Vector{String}, value::Vector{Float64}, t::Float64 = 0.0) =
+traitdata(name::Vector{String}, value::Vector{Float64}, t::Number = 0.0) =
     TraitData{length(name)}(name, value, t, NaN, NaN, fill(NaN, length(name)), NaN, 
                             fill(NaN, length(name)), NaN, NaN, fill(NaN, length(name)), fill(NaN, length(name)),
                             fill(NaN, length(name), length(name)), fill(NaN, length(name), length(name)), NaN, NaN, fill(NaN, length(name), length(name)))
@@ -430,7 +430,6 @@ end
 loglik(n, nd, sigma, beta) =  -(1.0 / 2.0) * (n * log(2π) + nd.logV + n*log(abs(sigma)) + abs(sigma)^(-1) * (nd.yy[] - 2 * nd.Q[] * beta + nd.xx * beta^2))
 
 #Need to create own distribution to use threepoint to calculate likelihood
-#needs to be a mutable struct as threepoint changes tree
 #also needs renamed
 mutable struct MyDist2{T <: AbstractTree, N <: Number} <: ContinuousMultivariateDistribution
     sigma::N
@@ -464,6 +463,69 @@ function Distributions.logpdf(d::MyDist2, z::Vector{Float64})
 
     nN = last(nodes)
     nd = getnodedata(d.tree, nN)
+    
+    return loglik(n, nd, d.sigma, d.beta) 
+end
+
+#Bayes threepoint signal
+#needs renamed
+struct MyDist3{T <: AbstractTree, N <: Number} <: ContinuousMultivariateDistribution
+    sigma::N
+    beta::N
+    lambda::N
+    tree::T
+end
+
+#rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
+function Distributions.rand(rng::AbstractRNG, d::MyDist3) #incorrect but can fix later
+    a = BrownianTrait(d.tree, "BMtrait", σ² = d.sigma);
+    BMtraits = rand(a)
+
+    leafnames = getleafnames(d.tree, postorder);
+    z = Vector{Float64}();
+
+    for leaf in leafnames
+        push!(z, BMtraits[leaf])
+    end
+    return z
+end
+
+#define logpdf for my dist
+function Distributions.logpdf(d::MyDist3, z::Vector{Float64}) 
+    #add errors for if tree doesnt have right data
+
+    n = nleaves(d.tree)
+    nodes = getnodes(d.tree, postorder)
+    trait = getnodedata(d.tree, nodes[1]).name
+
+    #add lengths to tree - must be a better way
+    for node in nodes
+        val = getnodedata(tree, node).value
+        if hasinbound(tree, node)
+            len = Phylo.getlength(tree, Phylo.getinbound(tree, node)) 
+            td = traitdata(trait, val, len)
+            setnodedata!(tree, node, td)
+        else
+            td = traitdata(trait, val)
+            setnodedata!(tree, node, td)
+        end
+    end
+
+    #multiply internal branches by lambda
+    t = [getnodedata(d.tree, node).t for node in nodes]
+
+    for (i, node) in enumerate(nodes)
+        if !isleaf(d.tree, node)
+            tupdate = d.lambda * t[i]
+            getnodedata(d.tree, node).t = tupdate
+        end
+    end
+
+    threepoint!(d.tree, trait, nodes)
+
+    nN = last(nodes)
+    nd = getnodedata(d.tree, nN)
+
     
     return loglik(n, nd, d.sigma, d.beta) 
 end
