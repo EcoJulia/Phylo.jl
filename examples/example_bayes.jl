@@ -13,14 +13,12 @@ Random.seed!(678)
 
 #generate a random tree
 #number of tips on the tree
-x=10
-
+x=100
 
 #generate tree
 nu = Ultrametric{TraitTree{1}}(x);
 tree = rand(nu);
 distances(tree)
-
 
 #get phylogentic variance matrix - needed for method using built in Julia functions
 C = fill(1.0, (x,x)) - distances(tree)./2
@@ -89,3 +87,21 @@ end
 c2 = sample(phyloinftree(tree, z), HMC(0.01, 5), 100000)
 plot(c2[:beta])
 plot(c2[:sigma])
+
+#Signal
+@model function phyloinftreelambda(tree, z) #z needs to be for leaves in postorder
+    #calculate upper bound for signal
+    intnodeheights = nodeheights(tree, noleaves=true)
+    longnodeheight = maximum(intnodeheights)
+    
+    leafnodeheights = nodeheights(tree, onlyleaves=true)
+    shortleafheight = minimum(leafnodeheights)
+    
+    upper = shortleafheight/longnodeheight
+
+    lambda ~ Uniform(0, upper)
+    beta ~ Uniform(-100, 100) 
+    sigma ~ Uniform(0, 100)
+    
+    z ~ MyDist3(sigma, beta, lambda, tree) #tree.z ~ (impliment later)
+end
