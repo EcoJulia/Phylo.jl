@@ -105,3 +105,8 @@ plot(c2[:sigma])
     
     z ~ MyDist3(sigma, beta, lambda, tree) #tree.z ~ (impliment later)
 end
+
+c3 = sample(phyloinftreelambda(tree, z), HMC(0.01, 5), 10000) #add initial_params 
+plot(c3[:beta])
+plot(c3[:sigma])
+plot(c3[:lambda])
