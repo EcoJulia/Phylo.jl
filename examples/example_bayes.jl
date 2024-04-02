@@ -5,108 +5,149 @@ using Random
 using BenchmarkTools
 using DataFrames
 using LinearAlgebra
-using Plots 
+using Plots
 
-
-#set seed
+# set seed
 Random.seed!(678)
 
-#generate a random tree
-#number of tips on the tree
-x=100
-
-#generate tree
-nu = Ultrametric{TraitTree{1}}(x);
-tree = rand(nu);
-distances(tree)
-
-#get phylogentic variance matrix - needed for method using built in Julia functions
-C = fill(1.0, (x,x)) - distances(tree)./2
-C = abs.(Symmetric(C)) 
-
-#generate traits, store in vector z
-a = BrownianTrait(tree, "BMtrait", σ² = 1.0);
-BMtraits = rand(a)
-
-leafnames = getleafnames(tree);
-z = Vector{Float64}();
-
-for leaf in leafnames
-    push!(z, BMtraits[leaf])
-end
-
-#using built in Julia functions
-@model function phyloinf(z,C)
-    beta ~ Uniform(-100, 100) 
-    sigma ~ Uniform(0, 100)
-
-    z ~ MvNormal(beta * ones(length(z)), sigma * C) 
-end
-
-c = sample(phyloinf(z, C), HMC(0.1, 5), 100000)
-
-plot(c[:beta])
-plot(c[:sigma])
-
-
-
-#Use threepoint:
-#pop trait data on tree
-nodes = getnodes(tree, postorder)
-rdat = DataFrame(species = leafnames, data = z)
-for i in eachrow(rdat)
-    setnodedata!(tree, i.species, Phylo.traitdata(["trait"], [i.data]));
-end
-
-#trait needs to be a vector of trait names, used for functions later
-trait = ["trait"]
-
-
-#add lengths to tree
-for node in nodes
-    val = getnodedata(tree, node).value
-    if hasinbound(tree, node)
-        len = Phylo.getlength(tree, Phylo.getinbound(tree, node)) 
-        td = traitdata(trait, val, len)
-        setnodedata!(tree, node, td)
-    else
-        td = traitdata(trait, val)
-        setnodedata!(tree, node, td)
-    end
-end
-
-
-
 @model function phyloinftree(tree, z) #z needs to be for leaves in postorder
-    beta ~ Uniform(-100, 100) 
-    sigma ~ Uniform(0, 100)
-    
-    z ~ Phylo.MyDist2(sigma, beta, tree) #tree.z ~ (impliment later)
+    β ~ Uniform(-100, 100)
+    σ ~ Uniform(0, 100)
+
+    return z ~ Phylo.MyDist2(σ, β, tree) #tree.z ~ (impliment later)
 end
 
-c2 = sample(phyloinftree(tree, z), HMC(0.01, 5), 100000)
-plot(c2[:beta])
-plot(c2[:sigma])
+@model function phyloinftreelambda(tree, z, upper = 1.0) #z needs to be for leaves in postorder
+    lambda ~ Uniform(0, 1.0)
+    beta ~ Uniform(-100, 100)
+    sigma ~ Uniform(0, 100)
 
-#Signal
-@model function phyloinftreelambda(tree, z) #z needs to be for leaves in postorder
-    #calculate upper bound for signal
-    intnodeheights = nodeheights(tree, noleaves=true)
+    return z ~ Phylo.MyDist3(sigma, beta, lambda, tree)
+end
+
+function run_βσ_inference(::Type{T}, n_tips, n_samples) where {T}
+    # generate tree
+    nu = Ultrametric{T}(n_tips)
+    tree = rand(nu)
+    # distances(tree)
+
+    # get phylogenetic variance matrix - needed for method using built in Julia functions
+    # C = fill(1.0, (n_tips,n_tips)) - distances(tree)./2
+    # C = abs.(Symmetric(C)) 
+
+    # generate traits, store in vector z
+    a = BrownianTrait(tree, "BMtrait", σ² = 1.0)
+    bm_traits = rand(a)
+    leafnames = getleafnames(tree)
+    z = [bm_traits[leaf] for leaf in leafnames]
+
+    # using built in Julia functions 
+    #=
+    @model function phyloinf(z,C)
+        beta ~ Uniform(-100, 100) 
+        sigma ~ Uniform(0, 100)
+
+        z ~ MvNormal(beta * ones(length(z)), sigma * C) 
+    end
+
+    c = sample(phyloinf(z, C), HMC(0.1, 5), 100000)
+
+    plot(c[:beta])
+    plot(c[:sigma])
+
+    =#
+
+    # Use threepoint:
+    # pop trait data on tree
+    nodes = getnodes(tree, postorder)
+    rdat = DataFrame(species = leafnames, data = z)
+    for i in eachrow(rdat)
+        setnodedata!(tree, i.species,
+                     Phylo.traitdata(eltype(nodedatatype(typeof(tree))),
+                                     ["trait"],
+                                     [i.data]))
+    end
+
+    # trait needs to be a vector of trait names, used for functions later
+    trait = ["trait"]
+
+    # add lengths to tree
+    for node in nodes
+        val = getnodedata(tree, node).value
+        if hasinbound(tree, node)
+            len = Phylo.getlength(tree, Phylo.getinbound(tree, node))
+            td = traitdata(eltype(nodedatatype(typeof(tree))), trait, val, len)
+            setnodedata!(tree, node, td)
+        else
+            td = traitdata(eltype(nodedatatype(typeof(tree))), trait, val)
+            setnodedata!(tree, node, td)
+        end
+    end
+
+    return sample(phyloinftree(tree, z), HMC(0.01, 5), n_samples)
+end
+
+function run_βσλ_inference(::Type{T}, n_tips, n_samples) where {T}
+    # generate tree
+    nu = Ultrametric{T}(n_tips)
+    tree = rand(nu)
+    # distances(tree)
+
+    # generate traits, store in vector z
+    a = BrownianTrait(tree, "BMtrait", σ² = 1.0)
+    bm_traits = rand(a)
+    leafnames = getleafnames(tree)
+    z = [bm_traits[leaf] for leaf in leafnames]
+
+    # Use threepoint:
+    # pop trait data on tree
+    nodes = getnodes(tree, postorder)
+    rdat = DataFrame(species = leafnames, data = z)
+    for i in eachrow(rdat)
+        setnodedata!(tree, i.species,
+                     Phylo.traitdata(eltype(nodedatatype(typeof(tree))),
+                                     ["trait"],
+                                     [i.data]))
+    end
+
+    #trait needs to be a vector of trait names, used for functions later
+    trait = ["trait"]
+
+    #add lengths to tree
+    for node in nodes
+        val = getnodedata(tree, node).value
+        if hasinbound(tree, node)
+            len = Phylo.getlength(tree, Phylo.getinbound(tree, node))
+            td = traitdata(eltype(nodedatatype(typeof(tree))), trait, val, len)
+            setnodedata!(tree, node, td)
+        else
+            td = traitdata(eltype(nodedatatype(typeof(tree))), trait, val)
+            setnodedata!(tree, node, td)
+        end
+    end
+
+    intnodeheights = nodeheights(tree, noleaves = true)
     longnodeheight = maximum(intnodeheights)
-    
-    leafnodeheights = nodeheights(tree, onlyleaves=true)
-    shortleafheight = minimum(leafnodeheights)
-    
-    upper = shortleafheight/longnodeheight
 
-    lambda ~ Uniform(0, upper)
-    beta ~ Uniform(-100, 100) 
-    sigma ~ Uniform(0, 100)
-    
-    z ~ MyDist3(sigma, beta, lambda, tree) #tree.z ~ (impliment later)
+    leafnodeheights = nodeheights(tree, onlyleaves = true)
+    shortleafheight = minimum(leafnodeheights)
+
+    # calculate upper bound for signal
+    upper = shortleafheight / longnodeheight
+
+    return sample(phyloinftreelambda(tree, z), HMC(0.01, 5), n_samples) #add initial_params 
 end
 
-c3 = sample(phyloinftreelambda(tree, z), HMC(0.01, 5), 10000) #add initial_params 
-plot(c3[:beta])
-plot(c3[:sigma])
-plot(c3[:lambda])
+# number of tips on the tree
+n_tips = 400
+n_samples = 10_000
+# spl = run_βσ_inference(TraitTree{1}, n_tips, n_samples)
+spl = run_βσ_inference(Phylo.TraitTreeFloat64{1}, n_tips, n_samples)
+plot(spl[:β])
+plot(spl[:σ])
+
+# spl = run_βσλ_inference(Phylo.TraitTreeNum{1}, n_tips, n_samples)
+spl = run_βσλ_inference(TraitTree{1}, n_tips, n_samples)
+plot(spl[:β])
+plot(spl[:σ])
+plot(spl[:λ])
