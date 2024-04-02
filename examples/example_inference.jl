@@ -18,7 +18,8 @@ Random.seed!(1234)
 
 #Compare Phylo against phylolm and PhyloNetworks on a tree with uniform random tips
 #Load the hummingbirds tree from test
-const jtree::TraitTree{1} = open(f -> parsenewick(f, TraitTree{1}), "test/hummingbirds.tree")
+const jtree::TraitTree{1} = open(f -> parsenewick(f, TraitTree{1}),
+                                 "test/hummingbirds.tree")
 
 #Create dataframe with leafnames and random trait values
 species = getleaves(jtree)
@@ -30,7 +31,7 @@ rdat = DataFrame(species = speciesnames, data = data);
 
 #add the data to the tree
 for i in eachrow(rdat)
-    setnodedata!(jtree, i.species, Phylo.traitdata(["trait"], [i.data]));
+    setnodedata!(jtree, i.species, Phylo.traitdata(["trait"], [i.data]))
 end
 
 #run inference
@@ -38,7 +39,7 @@ estimaterates(jtree, ["trait"])
 
 Profile.clear_malloc_data()
 
-ProfileView.@profview for i in 1:1000 
+ProfileView.@profview for i in 1:1000
     estimaterates(jtree, ["trait"])
 end
 
@@ -53,7 +54,7 @@ estimaterates(jtree, ["trait"], lambda = 0.1)
 
 Profile.clear_malloc_data()
 
-ProfileView.@profview for i in 1:10 
+ProfileView.@profview for i in 1:10
     estimaterates(jtree, ["trait"], lambda = 0.1)
 end
 
@@ -63,7 +64,7 @@ R"
 library('ape')
 library('phylolm')"
 
-R"rtree = ape::read.tree(file = 'test/hummingbirds.tree')" 
+R"rtree = ape::read.tree(file = 'test/hummingbirds.tree')"
 
 #send dataframe into R
 @rput rdat
@@ -94,41 +95,33 @@ tipnames = tipLabels(tree2)
 dat = DataFrame(tipNames = tipnames, data = data)
 
 #run inference 
-phylolm(@formula(data ~ 1), dat, tree2)
+phylolm(@formula(data~1), dat, tree2)
 
 #check inference run time
-@benchmark plm = phylolm(@formula(data ~ 1), dat, tree2)
+@benchmark plm = phylolm(@formula(data~1), dat, tree2)
 
 #run inference to calculate signal
-phylolm(@formula(data ~ 1), dat, tree2, model="lambda")
+phylolm(@formula(data~1), dat, tree2, model = "lambda")
 
 #check inference run time
-@benchmark plm = phylolm(@formula(data ~ 1), dat, tree2, model="lambda")
-
-
-
-
+@benchmark plm = phylolm(@formula(data~1), dat, tree2, model = "lambda")
 
 #Comparison done using the same tree, but with tip trait data generated using Brownian Motion
 #Generate data using Brownian Motion
 a = BrownianTrait(jtree, "BMtrait")
-BMtraits = rand(a)
+bm_traits = rand(a)
 
 #create a vector to store trait data
 nodes = getnodenames(jtree)
 leafnames = getleafnames(jtree);
-traitvector = Vector{Float64}();
-
-for leaf in leafnames
-    push!(traitvector, BMtraits[leaf])
-end
+traitvector = [bm_traits[leaf] for leaf in leafnames]
 
 #Crate dataframe
 rdat = DataFrame(species = leafnames, data = traitvector)
 
 #add data to the tree
 for i in eachrow(rdat)
-    setnodedata!(jtree, i.species, Phylo.traitdata(["trait"], [i.data]));
+    setnodedata!(jtree, i.species, Phylo.traitdata(["trait"], [i.data]))
 end
 
 #run inference
@@ -149,7 +142,7 @@ R"
 library('ape')
 library('phylolm')"
 
-R"rtree = ape::read.tree(file = 'test/hummingbirds.tree')" 
+R"rtree = ape::read.tree(file = 'test/hummingbirds.tree')"
 
 #send dataframe into R
 @rput rdat
@@ -177,28 +170,24 @@ dat = DataFrame(tipNames = tipnames, data = traitvector)
 dat = DataFrame(tipNames = tipnames, data = data)
 
 #run inference 
-phylolm(@formula(data ~ 1), dat, tree2)
+phylolm(@formula(data~1), dat, tree2)
 
 #check inference run time
-@benchmark plm = phylolm(@formula(data ~ 1), dat, tree2)
+@benchmark plm = phylolm(@formula(data~1), dat, tree2)
 
 #run inference to calculate signal
-phylolm(@formula(data ~ 1), dat, tree2, model="lambda")
+phylolm(@formula(data~1), dat, tree2, model = "lambda")
 
 #check inference run time
-@benchmark plm = phylolm(@formula(data ~ 1), dat, tree2, model="lambda")
-
-
-
-
-
+@benchmark plm = phylolm(@formula(data~1), dat, tree2, model = "lambda")
 
 #Using the Myrtaceae tree, compare packages using real world data
 #load the data
 df = DataFrame(CSV.File("Data/Myrtaceae.csv"))
 
 #load the tree
-const bigtree::TraitTree{1} = open(f -> parsenewick(f, TraitTree{1}), "Data/Qian2016.tree")
+const bigtree::TraitTree{1} = open(f -> parsenewick(f, TraitTree{1}),
+                                   "Data/Qian2016.tree")
 
 #remove missing species from dataframe
 dropmissing!(df, :species)
@@ -213,11 +202,26 @@ filter!(:species => x -> x ∈ keep, df)
 
 #use mean data for trait value
 gdf = groupby(df, :species)
-dat = combine(gdf, [:tmin, :tmax, :trng, :stl1, :stl2, :stl3, :stl4, :swvl1, :swvl2, :swvl3, :swvl4, :ssr, :tp] .=> mean; renamecols=false)
+dat = combine(gdf,
+              [
+                  :tmin,
+                  :tmax,
+                  :trng,
+                  :stl1,
+                  :stl2,
+                  :stl3,
+                  :stl4,
+                  :swvl1,
+                  :swvl2,
+                  :swvl3,
+                  :swvl4,
+                  :ssr,
+                  :tp
+              ] .=> mean; renamecols = false)
 
 #add the data for tmin to the tree
 for i in eachrow(dat)
-    setnodedata!(bigtree, i.species, Phylo.traitdata(["tmin"], [i.tmin]));
+    setnodedata!(bigtree, i.species, Phylo.traitdata(["tmin"], [i.tmin]))
 end
 
 #run inference
@@ -251,7 +255,7 @@ R"row.names(dat) <- dat$species"
 R"filteredtree <- keep.tip(rbigtree, keep)"
 
 #run inference
-rcopy(R"phylolm(tmin~1,data=dat,phy=filteredtree)") 
+rcopy(R"phylolm(tmin~1,data=dat,phy=filteredtree)")
 
 #check inference run time
 @benchmark rcopy(R"phylolm(tmin~1,data=dat,phy=filteredtree)")
@@ -260,7 +264,7 @@ rcopy(R"phylolm(tmin~1,data=dat,phy=filteredtree)")
 rcopy(R"phylolm(tmin~1,data=dat,phy=filteredtree, model = c('lambda'))")
 
 #check inference run time
-@benchmark rcopy(R"phylolm(tmin~1,data=dat,phy=filteredtree, model = c('lambda'))") 
+@benchmark rcopy(R"phylolm(tmin~1,data=dat,phy=filteredtree, model = c('lambda'))")
 
 #Compare against PhyloNetworks
 #load the tree and get the names of the leaves
@@ -277,26 +281,22 @@ end
 rename!(dat, :species => :tipNames)
 
 #run inference
-phylolm(@formula(tmin ~ 1), dat, tree)
+phylolm(@formula(tmin~1), dat, tree)
 
 #check inference run time
-@benchmark phylolm(@formula(tmin ~ 1), dat, tree)
+@benchmark phylolm(@formula(tmin~1), dat, tree)
 
 #run inference to calculate signal
-phylolm(@formula(tmin ~ 1), dat, tree, model="lambda") 
+phylolm(@formula(tmin~1), dat, tree, model = "lambda")
 
 #check run time
-@benchmark phylolm(@formula(tmin ~ 1), dat, tree, model="lambda")
-
-
-
-
-
+@benchmark phylolm(@formula(tmin~1), dat, tree, model = "lambda")
 
 #Preform inference on multiple traits, both generated uniformly
 
 #load the hummingbirds tree that can store data for two trait values
-const multtree::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}), "test/hummingbirds.tree")
+const multtree::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
+                                    "test/hummingbirds.tree")
 
 #load leafnames and generate uniform random trait values
 species = getleaves(multtree)
@@ -309,11 +309,12 @@ rdat = DataFrame(species = speciesnames, data1 = data1, data2 = data2);
 
 #add the data to the tree
 for i in eachrow(rdat)
-    setnodedata!(multtree, i.species, Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]));
+    setnodedata!(multtree, i.species,
+                 Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]))
 end
 
 #run inference
-estimaterates(multtree, ["trait1", "trait2"]) 
+estimaterates(multtree, ["trait1", "trait2"])
 
 #check inference run time
 @benchmark estimaterates(multtree, ["trait1", "trait2"])
@@ -326,7 +327,8 @@ estimaterates(multtree, ["trait1", "trait2"], lambda = 0.1)
 
 #Preform inference on multiple traits, both generated through Brownian Motion
 #load a new tree
-const multtree2::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}), "test/hummingbirds.tree")
+const multtree2::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
+                                     "test/hummingbirds.tree")
 
 #gennerate data
 a = BrownianTrait(multtree2, "BMtrait")
@@ -346,15 +348,17 @@ for leaf in leafnames
 end
 
 #create a dataframe
-rdat = DataFrame(species = leafnames, data1 = traitvector1, data2 = traitvector2)
+rdat = DataFrame(species = leafnames, data1 = traitvector1,
+                 data2 = traitvector2)
 
 #add data to the tree
 for i in eachrow(rdat)
-    setnodedata!(multtree2, i.species, Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]));
+    setnodedata!(multtree2, i.species,
+                 Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]))
 end
 
 #run inference
-estimaterates(multtree2, ["trait1", "trait2"]) 
+estimaterates(multtree2, ["trait1", "trait2"])
 
 #check inference run time
 @benchmark estimaterates(multtree2, ["trait1", "trait2"])
@@ -367,7 +371,8 @@ estimaterates(multtree2, ["trait1", "trait2"], lambda = 0.1)
 
 #Preform inference on multiple traits using real world data
 #load the tree
-const multtree3::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}), "Data/Qian2016.tree")
+const multtree3::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
+                                     "Data/Qian2016.tree")
 
 #load the data
 df = DataFrame(CSV.File("Data/Myrtaceae.csv"))
@@ -385,15 +390,31 @@ filter!(:species => x -> x ∈ keep, df)
 
 #use mean data for trait value
 gdf = groupby(df, :species)
-dat = combine(gdf, [:tmin, :tmax, :trng, :stl1, :stl2, :stl3, :stl4, :swvl1, :swvl2, :swvl3, :swvl4, :ssr, :tp] .=> mean; renamecols=false)
+dat = combine(gdf,
+              [
+                  :tmin,
+                  :tmax,
+                  :trng,
+                  :stl1,
+                  :stl2,
+                  :stl3,
+                  :stl4,
+                  :swvl1,
+                  :swvl2,
+                  :swvl3,
+                  :swvl4,
+                  :ssr,
+                  :tp
+              ] .=> mean; renamecols = false)
 
 #add the data for tmin to the tree
 for i in eachrow(dat)
-    setnodedata!(multtree3, i.species, Phylo.traitdata(["tmin", "tmax"], [i.tmin, i.tmax]));
+    setnodedata!(multtree3, i.species,
+                 Phylo.traitdata(["tmin", "tmax"], [i.tmin, i.tmax]))
 end
 
 #run inference
-estimaterates(multtree3, ["tmin", "tmax"]) 
+estimaterates(multtree3, ["tmin", "tmax"])
 
 #check inference run time
 @benchmark estimaterates(multtree3, ["tmin", "tmax"])
@@ -403,5 +424,3 @@ estimaterates(multtree3, ["tmin", "tmax"], lambda = 0.5)
 
 #check inference run time
 @benchmark estimaterates(multtree3, ["tmin", "tmax"], lambda = 0.5)
-
-
