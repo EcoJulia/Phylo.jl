@@ -10,36 +10,39 @@ using Plots
 # set seed
 Random.seed!(678)
 
-@model function βσ_covariance(z, C)
-    beta ~ Uniform(-100, 100) 
-    sigma ~ Uniform(0, 100)
+@model function βσ()
+    β ~ Uniform(-100, 100)
+    σ ~ Uniform(0, 100)
+    return β, σ
+end
 
-    return z ~ MvNormal(beta * ones(length(z)), sigma * C) 
+@model function βσ_covariance(z, C)
+    @submodel β, σ = βσ()
+    z ~ MvNormal(β * ones(length(z)), σ * C)
+    return nothing
 end
 
 @model function βσ_threepoint(tree, z) # z needs to be for leaves in postorder
-    β ~ Uniform(-100, 100)
-    σ ~ Uniform(0, 100)
-
-    return z ~ Phylo.MyDist2(σ, β, tree) # tree.z ~ (impliment later)
+    @submodel β, σ = βσ()
+    z ~ Phylo.MyDist2(σ, β, tree) # tree.z ~ (implement later)
+    return nothing
 end
 
 @model function βσλ_threepoint(tree, z, upper = 1.0) # z needs to be for leaves in postorder
-    lambda ~ Uniform(0, 1.0)
-    beta ~ Uniform(-100, 100)
-    sigma ~ Uniform(0, 100)
-
-    return z ~ Phylo.MyDist3(sigma, beta, lambda, tree)
+    @submodel β, σ = βσ()
+    λ ~ Uniform(0, 1.0)
+    z ~ Phylo.MyDist3(σ, β, λ, tree)
+    return nothing
 end
 
-function run_βσ_covariance(::Type{T}, n_tips, n_samples) where {T}
+function gen_βσ_covariance(::Type{T}, n_tips) where {T}
     # generate tree
     nu = Ultrametric{T}(n_tips)
     tree = rand(nu)
 
     # get phylogenetic variance matrix - needed for method using built in Julia functions
-    C = fill(1.0, (n_tips,n_tips)) - distances(tree)./2
-    C = abs.(Symmetric(C)) 
+    C = fill(1.0, (n_tips, n_tips)) - distances(tree) ./ 2
+    C = abs.(Symmetric(C))
 
     # generate traits, store in vector z
     a = BrownianTrait(tree, "BMtrait", σ² = 1.0)
@@ -48,10 +51,10 @@ function run_βσ_covariance(::Type{T}, n_tips, n_samples) where {T}
     z = [bm_traits[leaf] for leaf in leafnames]
 
     # using built in Julia functions 
-    return sample(βσ_covariance(z, C), HMC(0.1, 5), n_samples)
+    return βσ_covariance(z, C)
 end
 
-function run_βσ_threepoint(::Type{T}, n_tips, n_samples) where {T}
+function gen_βσ_threepoint(::Type{T}, n_tips) where {T}
     # generate tree
     nu = Ultrametric{T}(n_tips)
     tree = rand(nu)
@@ -88,10 +91,10 @@ function run_βσ_threepoint(::Type{T}, n_tips, n_samples) where {T}
         end
     end
 
-    return sample(βσ_threepoint(tree, z), HMC(0.01, 5), n_samples)
+    return βσ_threepoint(tree, z)
 end
 
-function run_βσλ_threepoint(::Type{T}, n_tips, n_samples) where {T}
+function gen_βσλ_threepoint(::Type{T}, n_tips) where {T}
     # generate tree
     nu = Ultrametric{T}(n_tips)
     tree = rand(nu)
@@ -138,27 +141,29 @@ function run_βσλ_threepoint(::Type{T}, n_tips, n_samples) where {T}
     # calculate upper bound for signal
     upper = shortleafheight / longnodeheight
 
-    return sample(βσλ_threepoint(tree, z), HMC(0.01, 5), n_samples) # add initial_params 
+    return βσλ_threepoint(tree, z)
 end
 
 # number of tips on the tree
-n_tips = 100
+n_tips = 200
 n_samples = 10_000
 
-# spl = run_βσ_covariance(Phylo.TraitTreeNum{1}, n_tips, n_samples)
-# spl = run_βσ_covariance(TraitTree{1}, n_tips, n_samples)
-spl = run_βσ_covariance(Phylo.TraitTreeFloat64{1}, n_tips, n_samples)
+model = gen_βσ_covariance(TraitTree{1}, n_tips)
+spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 
-# spl = run_βσ_threepoint(Phylo.TraitTreeNum{1}, n_tips, n_samples)
-# spl = run_βσ_threepoint(TraitTree{1}, n_tips, n_samples)
-spl = run_βσ_threepoint(Phylo.TraitTreeFloat64{1}, n_tips, n_samples)
+model = gen_βσ_threepoint(Phylo.TraitTreeNum{1}, n_tips)
+model = gen_βσ_threepoint(TraitTree{1}, n_tips)
+model = gen_βσ_threepoint(Phylo.TraitTreeFloat64{1}, n_tips)
+spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 
-# spl = run_βσλ_threepoint(Phylo.TraitTreeNum{1}, n_tips, n_samples)
-spl = run_βσλ_threepoint(TraitTree{1}, n_tips, n_samples)
+model = gen_βσλ_threepoint(Phylo.TraitTreeNum{1}, n_tips)
+model = gen_βσλ_threepoint(Phylo.TraitTreeDual{1}, n_tips)
+model = gen_βσλ_threepoint(TraitTree{1}, n_tips)
+spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 plot(spl[:λ])
