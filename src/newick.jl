@@ -1,6 +1,6 @@
 #=
 # Tree → Subtree ";"
-# Subtree → Leaf | Internal
+# Subtree → Leaf | Internal
 # Leaf → Name
 # Internal → "(" BranchSet ")" Name_or_Support
 # BranchSet → Branch | Branch "," BranchSet

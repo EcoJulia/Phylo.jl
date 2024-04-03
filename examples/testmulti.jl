@@ -5,14 +5,14 @@ using CSV
 using Statistics
 using Profile
 using ProfileView
-using Optim #need to remember to remove
+using Optim # need to remember to remove
 
 estimaterates(multtree2, ["trait1", "trait2"], lambda = [0.8, 0.8])
 
 Random.seed!(110)
 
 n_tips = 10
-#generate tree
+# generate tree
 nu = Ultrametric{TraitTree{2}}(n_tips);
 tree = rand(nu)
 
@@ -27,10 +27,10 @@ z2 = [bm_traits2[leaf] for leaf in leafnames];
 
 nodes = getnodes(tree, postorder)
 
-#Crate dataframe
+# Crate dataframe
 rdat = DataFrame(species = leafnames, data1 = z1, data2 = z2)
 
-#add data to the tree
+# add data to the tree
 for i in eachrow(rdat)
     setnodedata!(tree, i.species,
                  Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]))
@@ -38,26 +38,26 @@ end
 
 estimaterates(tree, ["trait1", "trait2"], lambda = [0.8, 0.8])
 
-#Preform inference on multiple traits using real world data
-#load the tree
+# Preform inference on multiple traits using real world data
+# load the tree
 const multtree3::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
                                      "Data/Qian2016.tree");
 
-#load the data
+# load the data
 df = DataFrame(CSV.File("Data/Myrtaceae.csv"))
 
-#remove missing species from dataframe
+# remove missing species from dataframe
 dropmissing!(df, :species)
 
-#add underscores to dataframe
+# add underscores to dataframe
 df.species = replace.(df.species, " " => "_")
 
-#filter the tree and dataframe for the species that are in  both
+# filter the tree and dataframe for the species that are in  both
 keep = intersect(getleafnames(multtree3), df.species)
 keeptips!(multtree3, keep)
 filter!(:species => x -> x ∈ keep, df)
 
-#use mean data for trait value
+# use mean data for trait value
 gdf = groupby(df, :species)
 dat = combine(gdf,
               [
@@ -76,7 +76,7 @@ dat = combine(gdf,
                   :tp
               ] .=> mean; renamecols = false)
 
-#add the data for tmin to the tree
+# add the data for tmin to the tree
 for i in eachrow(dat)
     setnodedata!(multtree3, i.species,
                  Phylo.traitdata(["tmin", "tmax"],
@@ -104,21 +104,21 @@ k = length(2)
 n = nleaves(multtree3)
 =#
 
-#test w/o signal to see if getting the thing I expect
+# test w/o signal to see if getting the thing I expect
 
 const multtree2::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
                                      "test/hummingbirds.tree");
 
-#gennerate data
+# gennerate data
 a = BrownianTrait(multtree2, "BMtrait", σ² = 100)
 b = BrownianTrait(multtree2, "BMtrait", σ² = 3)
 BMtrait1 = rand(a)
 BMtrait2 = rand(b)
 
-#get leaf names
+# get leaf names
 leafnames = getleafnames(multtree2);
 
-#add data to a vector
+# add data to a vector
 traitvector1 = Vector{Float64}();
 traitvector2 = Vector{Float64}();
 for leaf in leafnames
@@ -126,17 +126,17 @@ for leaf in leafnames
     push!(traitvector2, BMtrait2[leaf])
 end
 
-#create a dataframe
+# create a dataframe
 rdat = DataFrame(species = leafnames, data1 = traitvector1,
                  data2 = traitvector2)
 
-#add data to the tree
+# add data to the tree
 for i in eachrow(rdat)
     setnodedata!(multtree2, i.species,
                  Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]))
 end
 
-#run inference
+# run inference
 estimaterates(multtree2, ["trait1", "trait2"])
 
 estimaterates(multtree2, ["trait1", "trait2"], lambda = [1.0, 1.0])

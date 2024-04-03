@@ -9,7 +9,7 @@ global skipR = !(rcopy(R"require(ape)") && rcopy(R"require(phylolm)"))
 
 @testset "Compare estimaterates output to phylolm" begin
     jtree = nothing
-    #@test_nowarn
+    # @test_nowarn
     jtree = open(f -> parsenewick(f, TraitTree{1}),
                  Phylo.path("hummingbirds.tree"))
 
