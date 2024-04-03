@@ -12,12 +12,12 @@ mutable struct TraitData{T <: Number, NTraits} <: AbstractTraitData # had to cha
     value::Vector{Float64}        # Trait values
     t::T                          # branch length
     logV::T
-    p::T                    # 1' V^(-1) 1
-    yl::Vector{T}           # 1' V^(-1) y  (y is trait values)
-    xl::T                   # 1' V^(-1) x  (we set x as 1)
-    Q::Vector{T}            # x' V^(-1) y
-    xx::T                   # x' V^(-1) x
-    yy::T                   # y' V^(-1) y
+    p::T                          # 1' V^(-1) 1
+    yl::Vector{T}                 # 1' V^(-1) y  (y is trait values)
+    xl::T                         # 1' V^(-1) x  (we set x as 1)
+    Q::Vector{T}                  # x' V^(-1) y
+    xx::T                         # x' V^(-1) x
+    yy::T                         # y' V^(-1) y
     v::Vector{Float64}            # used for PIC
     xlmult::Vector{Float64}       # 1' W^(-1) x  
     pmult::Matrix{Float64}        # 1' W^(-1) C1      
@@ -546,30 +546,24 @@ end
 # define logpdf for my dist
 function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist3}
     # add errors for if tree doesnt have right data
+
     n = nleaves(d.tree)
     nodes = getnodes(d.tree, postorder)
     trait = getnodedata(d.tree, nodes[1]).name
 
-    # add lengths to tree - must be a better way
-    for node in nodes
-        val = getnodedata(d.tree, node).value
-        if hasinbound(d.tree, node)
-            len = Phylo.getlength(d.tree, Phylo.getinbound(d.tree, node))
-            td = traitdata(eltype(MD), trait, val, len)
-            setnodedata!(d.tree, node, td)
-        else
-            td = traitdata(eltype(MD), trait, val)
-            setnodedata!(d.tree, node, td)
-        end
-    end
-
     # multiply internal branches by lambda
-    t = [getnodedata(d.tree, node).t for node in nodes]
-
-    for (i, node) in enumerate(nodes)
-        if !isleaf(d.tree, node)
-            tupdate = d.lambda * t[i]
-            getnodedata(d.tree, node).t = tupdate
+    for node in nodes
+        if isleaf(d.tree, node)
+            getnodedata(d.tree, node).t = d.lambda *
+                                          getlength(d.tree,
+                                                    getinbound(d.tree, node)) +
+                                          1.0 - d.lambda
+        elseif isroot(d.tree, node)
+            getnodedata(d.tree, node).t = zero(d.lambda)
+        else
+            getnodedata(d.tree, node).t = d.lambda *
+                                          getlength(d.tree,
+                                                    getinbound(d.tree, node))
         end
     end
 
