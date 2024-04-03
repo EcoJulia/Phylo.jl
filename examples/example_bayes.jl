@@ -132,15 +132,6 @@ function gen_βσλ_threepoint(::Type{T}, n_tips) where {T}
         end
     end
 
-    intnodeheights = nodeheights(tree, noleaves = true)
-    longnodeheight = maximum(intnodeheights)
-
-    leafnodeheights = nodeheights(tree, onlyleaves = true)
-    shortleafheight = minimum(leafnodeheights)
-
-    # calculate upper bound for signal
-    upper = shortleafheight / longnodeheight
-
     return βσλ_threepoint(tree, z)
 end
 
@@ -163,7 +154,7 @@ plot(spl[:σ])
 model = gen_βσλ_threepoint(Phylo.TraitTreeNum{1}, n_tips)
 model = gen_βσλ_threepoint(Phylo.TraitTreeDual{1}, n_tips)
 model = gen_βσλ_threepoint(TraitTree{1}, n_tips)
-spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
+spl = sample(model, HMC(0.01, 5), n_samples, drop_warmup = true) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 plot(spl[:λ])
