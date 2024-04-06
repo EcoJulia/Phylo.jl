@@ -139,22 +139,25 @@ end
 n_tips = 200
 n_samples = 10_000
 
-model = gen_βσ_covariance(TraitTree{1}, n_tips)
+model = gen_βσ_covariance(TraitTree{1}, n_tips);
+sample(model, HMC(0.01, 5), 1);
 spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 
-model = gen_βσ_threepoint(Phylo.TraitTreeNum{1}, n_tips)
-model = gen_βσ_threepoint(TraitTree{1}, n_tips)
-model = gen_βσ_threepoint(Phylo.TraitTreeFloat64{1}, n_tips)
+model = gen_βσ_threepoint(Phylo.TraitTreeNum{1}, n_tips);
+model = gen_βσ_threepoint(TraitTree{1}, n_tips);
+model = gen_βσ_threepoint(Phylo.TraitTreeFloat64{1}, n_tips);
+sample(model, HMC(0.01, 5), 1);
 spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 
-model = gen_βσλ_threepoint(Phylo.TraitTreeNum{1}, n_tips)
-model = gen_βσλ_threepoint(Phylo.TraitTreeDual{1}, n_tips)
-model = gen_βσλ_threepoint(TraitTree{1}, n_tips)
-spl = sample(model, HMC(0.01, 5), n_samples, drop_warmup = true) # add initial_params
+model = gen_βσλ_threepoint(Phylo.TraitTreeNum{1}, n_tips);
+model = gen_βσλ_threepoint(Phylo.TraitTreeDual{1}, n_tips);
+model = gen_βσλ_threepoint(TraitTree{1}, n_tips);
+sample(model, HMC(0.01, 5), 1);
+spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 plot(spl[:λ])
