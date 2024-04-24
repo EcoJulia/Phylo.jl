@@ -16,7 +16,7 @@ installed with `add`. For example:
 (@v1.9) pkg> add Phylo
    Resolving package versions...
     Updating `~/.julia/environments/v1.9/Project.toml`
-  [aea672f4] + Phylo v0.5.0
+  [aea672f4] + Phylo v0.5.2
     Updating `~/.julia/environments/v1.9/Manifest.toml`
 
 (@v1.9) pkg>
@@ -400,6 +400,6 @@ julia> d = DataFrame(nodename=getnodename.(tree, traversal(tree, preorder)), tra
 [zenodo-badge]: https://zenodo.org/badge/93447241.svg
 [zenodo-url]: https://zenodo.org/badge/latestdoi/93447241
 
-[issues-url]: https://github.com/EcoJuli/Phylo.jl/issues
+[issues-url]: https://github.com/EcoJulia/Phylo.jl/issues
 [pr-url]: https://github.com/EcoJulia/Phylo.jl/pulls
 [diversity-url]: https://github.com/EcoJulia/Diversity.jl/
