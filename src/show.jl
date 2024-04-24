@@ -35,8 +35,8 @@ function outputnode!(io::IO, tree::TREE, node, ::CompactOutput,
                                                                  String}}
     od = outdegree(tree, node)
     opening = hasinbound(tree, node) ?
-              (od > 0 ? "root node" : "unattached node") :
-              (od > 0 ? "internal node" : "leaf node")
+              (od > 0 ? "internal node" : "leaf node") :
+              (od > 0 ? "root node" : "unattached node")
     print(io, "$opening \"$(getnodename(tree, node))\"")
     return nothing
 end
@@ -48,8 +48,8 @@ function outputnode!(io::IO, tree::TREE, node, ::CompactOutput,
                                                                  <:Number}}
     od = outdegree(tree, node)
     opening = hasinbound(tree, node) ?
-              (od > 0 ? "root node" : "unattached node") :
-              (od > 0 ? "internal node" : "leaf node")
+              (od > 0 ? "internal node" : "leaf node") :
+              (od > 0 ? "root node" : "unattached node")
     print(io, "$opening $(getnodename(tree, node))")
     return nothing
 end
