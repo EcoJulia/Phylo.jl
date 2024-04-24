@@ -3,6 +3,8 @@
 - v0.5.2
   - Bugfix in displaying node names
   - Link fix
+  - Improve testing
+  - Standardise formatting
 - v0.5.1
   - Allow export of trees to nexus and newick format
     - Overload Base.write() and Base.parse()
