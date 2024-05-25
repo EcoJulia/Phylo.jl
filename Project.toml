@@ -1,8 +1,6 @@
 name = "Phylo"
 uuid = "aea672f4-3940-5932-aa44-993d1c3ff149"
-author = ["Richard Reeve <Richard.Reeve@glasgow.ac.uk>",
-          "Michael Krabbe Borregaard <mkborregaard@sund.ku.dk>",
-          "Claire Harris <Claire.Harris@defra.gov.uk>"]
+author = ["Richard Reeve <Richard.Reeve@glasgow.ac.uk>", "Michael Krabbe Borregaard <mkborregaard@sund.ku.dk>", "Claire Harris <Claire.Harris@defra.gov.uk>"]
 version = "0.5.2"
 
 [deps]
@@ -45,7 +43,7 @@ Missings = "1"
 ParserCombinator = "2"
 Plots = "1"
 Printf = "1.6"
-RCall = "0.13"
+RCall = "0.13, 0.14"
 Random = "1.6"
 RecipesBase = "1"
 Requires = "1"
