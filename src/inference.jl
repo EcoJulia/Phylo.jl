@@ -182,7 +182,7 @@ function estimaterates!(tree::T, trait::Vector{String},
     nd = getnodedata(tree, nN)
 
     betahat = inv(nd.xx) * nd.Q
-    sigmahat = ((nd.yy - 2 * betahat * nd.Q' + betahat * nd.xx * betahat') / n)
+    sigmahat = ((nd.yy .- 2 * betahat .* nd.Q' .+ betahat .* nd.xx .* betahat') ./ n)
 
     # NEED TO THINK ABOUT THIS
     while any(i -> i < 0, diag(sigmahat))
@@ -258,7 +258,7 @@ function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N},
             end
             getnodedata(tree, node).t = len
         else
-            getnodedata(tree, node).t = 0
+            getnodedata(tree, node).t = 0.0
         end
     end
 
@@ -269,7 +269,7 @@ function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N},
     nd = getnodedata(tree, nN)
 
     betahat = inv(nd.xx) * nd.Q
-    sigmahat = (nd.yy - 2 * betahat * nd.Q' + betahat * nd.xx * betahat') / n
+    sigmahat = (nd.yy .- 2 * betahat * nd.Q' .+ betahat * nd.xx * betahat') ./ n
 
     while any(i -> i < 0, sigmahat)
         leaves = getleaves(tree)
@@ -557,7 +557,7 @@ function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist3}
             getnodedata(d.tree, node).t = d.lambda *
                                           getlength(d.tree,
                                                     getinbound(d.tree, node)) +
-                                          1.0 - d.lambda
+                                          (1.0 - d.lambda) * heighttoroot(d.tree, node)
         elseif isroot(d.tree, node)
             getnodedata(d.tree, node).t = zero(d.lambda)
         else
@@ -575,6 +575,47 @@ function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist3}
     return loglik(n, nd, d.sigma, d.beta)
 end
 
+#= Need to use method at then of three point paper
+mutable struct MyDistMult{T <: AbstractTree, M <: Matrix, V <: Vector} <:
+        ContinuousMultivariateDistribution
+    sigma::M
+    beta::V
+    tree::T
+end
+
+eltype(::MD) where {T, N <: Number, MD <: MyDistMult{T, N}} = N
+eltype(::Type{MD}) where {T, N <: Number, MD <: MyDistMult{T, N}} = N
+
+# rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
+function Distributions.rand(rng::AbstractRNG, d::MyDistMult) #need to think about will depend on the number of traits
+    a = BrownianTrait(d.tree, "BMtrait", σ² = d.sigma)
+    bm_traits = rand(a)
+    z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
+    return z
+end
+
+function loglik2(n, nd, sigma, beta)
+    return -(1.0 / 2.0) * (n * log(2π) + nd.logV + n * log(abs(sigma)) +
+            abs(sigma)^(-1) * (nd.yy[] - 2 * nd.Q[] * beta + nd.xx * beta^2))
+end
+
+# define logpdf for my dist
+function Distributions.logpdf(d::MyDistMult, z::Vector{Float64})
+    # add errors for if tree doesnt have right data
+
+    n = nleaves(d.tree)
+    nodes = getnodes(d.tree, postorder)
+    trait = getnodedata(d.tree, nodes[1]).name
+
+    threepoint!(d.tree, trait, nodes)
+
+    nN = last(nodes)
+    nd = getnodedata(d.tree, nN)
+
+    return loglik2(n, nd, d.sigma, d.beta)
+end
+
+=#
 # PIC calculations, ignore for now
 # ## ## ## ## ## ## ## ## ## ## ## ## ## ## #
 #=
