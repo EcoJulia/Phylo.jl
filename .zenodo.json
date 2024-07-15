@@ -1,6 +1,6 @@
 {
     "title": "Phylo.jl",
-    "description": "Simple phylogenetic trees in Julia to work with Diversity.jl",
+    "description": "Package for creating and manipulating phylogenies in Julia",
     "upload_type": "software",
     "creators": [
         {
@@ -35,6 +35,7 @@
         "EcoJulia",
         "ecology",
         "julia",
-        "phylogenetics"
+        "phylogenetics",
+        "traits"
     ]
 }

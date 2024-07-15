@@ -6,13 +6,14 @@
     "dateCreated": "2017-04-21",
     "dateModified": "2024-07-15",
     "datePublished": "2018-08-11",
-    "description": "Simple phylogenetic trees in Julia to work with Diversity.jl",
+    "description": "Package for creating and manipulating phylogenies in Julia",
     "downloadUrl": "https://github.com/EcoJulia/Phylo.jl/archive/refs/tags/v0.5.3.tar.gz",
     "keywords": [
         "EcoJulia",
         "ecology",
         "julia",
-        "phylogenetics"
+        "phylogenetics",
+        "traits"
     ],
     "license": "https://spdx.org/licenses/BSD-2-Clause",
     "name": "Phylo.jl",
