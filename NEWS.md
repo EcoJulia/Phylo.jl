@@ -1,5 +1,7 @@
 # NEWS
 
+- v0.5.3
+  - Add in metadata and crosswalk
 - v0.5.2
   - Bugfix in displaying node names
   - Link fix
