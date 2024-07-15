@@ -21,10 +21,10 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
-          arch:
-            - x64
-            - arm64
-          r-testing:
+        arch:
+          - x64
+          - arm64
+        r-testing:
           - ${{ true }}
           - ${{ false }}
         exclude:
