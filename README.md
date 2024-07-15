@@ -10,16 +10,16 @@
 ## Installation
 
 The package is registered in the `General` registry so can be
-installed with `add`. For example:
+built and installed with `add`. For example:
 
 ```julia
-(@v1.9) pkg> add Phylo
+(@v1.10) pkg> add Phylo
    Resolving package versions...
-    Updating `~/.julia/environments/v1.9/Project.toml`
-  [aea672f4] + Phylo v0.5.2
-    Updating `~/.julia/environments/v1.9/Manifest.toml`
+    Updating `~/.julia/environments/v1.10/Project.toml`
+  [aea672f4] + Phylo v0.5.3
+    Updating `~/.julia/environments/v1.10/Manifest.toml`
 
-(@v1.9) pkg>
+(@v1.10) pkg>
 ```
 
 ## Project Status
