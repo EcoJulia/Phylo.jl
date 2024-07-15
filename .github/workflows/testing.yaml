@@ -29,6 +29,10 @@ jobs:
           - ${{ false }}
         exclude:
           - os: macOS-latest
+            julia-version: '1.6'
+            arch: arm64
+          - os: macOS-latest
+            julia-version: '1'
             arch: x64
           - os: ubuntu-latest
             arch: arm64

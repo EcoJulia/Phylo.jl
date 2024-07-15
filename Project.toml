@@ -46,7 +46,7 @@ Missings = "1"
 ParserCombinator = "2"
 Plots = "1"
 Printf = "1.6"
-RCall = "0.13"
+RCall = "0.13, 0.14"
 Random = "1.6"
 RecipesBase = "1"
 Requires = "1"
@@ -59,22 +59,22 @@ julia = "1.6"
 
 [[authors]]
 name = "Richard Reeve"
-orcid = "0000-0003-2589-8091"
 email = "richard.reeve@glasgow.ac.uk"
+orcid = "0000-0003-2589-8091"
 
     [[authors.affiliation]]
     ror = "00vtgdb53"
 [[authors]]
 name = "Michael Borregaard"
-orcid = "0000-0002-8146-8435"
 email = "mkborregaard@sund.ku.dk"
+orcid = "0000-0002-8146-8435"
 
     [[authors.affiliation]]
     ror = "035b05819"
 [[authors]]
 name = "Claire Harris"
-orcid = "0000-0003-0852-2340"
 email = "Claire.Harris@defra.gov.uk"
+orcid = "0000-0003-0852-2340"
 
     [[authors.affiliation]]
     ror = "03jwrz939"
