@@ -30,7 +30,7 @@
     "continuousIntegration": "https://github.com/EcoJulia/Phylo.jl/actions/workflows/testing.yaml",
     "developmentStatus": "active",
     "issueTracker": "https://github.com/EcoJulia/Phylo.jl/issues",
-    "referencePublication": "https://arxiv.org/abs/1404.6520",
+    "identifier": "10.5281/zenodo.3753580",
     "readme": "https://github.com/EcoJulia/Phylo.jl/blob/dev/README.md",
     "buildInstructions": "https://github.com/EcoJulia/Phylo.jl/blob/dev/README.md",
     "author": [
