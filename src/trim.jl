@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using IterableTables
 using IterableTables: getiterator
 using Phylo.API

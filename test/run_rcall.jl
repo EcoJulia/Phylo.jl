@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 module ValidateRCall_wrapped
 using Test
 using Phylo

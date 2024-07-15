@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 module PhyloRCallExt
 
 if isdefined(Base, :get_extension)

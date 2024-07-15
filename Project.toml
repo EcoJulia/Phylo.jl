@@ -1,9 +1,10 @@
 name = "Phylo"
 uuid = "aea672f4-3940-5932-aa44-993d1c3ff149"
-author = ["Richard Reeve <Richard.Reeve@glasgow.ac.uk>",
-          "Michael Krabbe Borregaard <mkborregaard@sund.ku.dk>",
-          "Claire Harris <Claire.Harris@defra.gov.uk>"]
+author = ["Richard Reeve <richard.reeve@glasgow.ac.uk>", "Michael Borregaard", "Claire Harris"]
 version = "0.5.2"
+
+[license]
+SPDX = "BSD-2-Clause"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
@@ -55,6 +56,28 @@ Test = "1.6"
 Tokenize = "0.5"
 Unitful = "1"
 julia = "1.6"
+
+[[authors]]
+name = "Richard Reeve"
+orcid = "0000-0003-2589-8091"
+email = "richard.reeve@glasgow.ac.uk"
+
+    [[authors.affiliation]]
+    ror = "00vtgdb53"
+[[authors]]
+name = "Michael Borregaard"
+orcid = "0000-0002-8146-8435"
+email = "mkborregaard@sund.ku.dk"
+
+    [[authors.affiliation]]
+    ror = "035b05819"
+[[authors]]
+name = "Claire Harris"
+orcid = "0000-0003-0852-2340"
+email = "Claire.Harris@defra.gov.uk"
+
+    [[authors.affiliation]]
+    ror = "03jwrz939"
 
 [extras]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using Random
 import Distributions: ValueSupport, Sampleable
 import Base: eltype, rand

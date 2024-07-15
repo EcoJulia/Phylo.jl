@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 #=
 # Tree → Subtree ";"
 # Subtree → Leaf | Internal
