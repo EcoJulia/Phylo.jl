@@ -2,8 +2,29 @@
 
 module TestPhylo
 using Test
-
 using Phylo
+using Git
+using Logging
+using ResearchSoftwareMetadata
+
+function is_repo_clean(repo_path)
+    # Get the status of the repository
+    statuses = readlines(`$(Git.git()) status -s $repo_path`)
+    statuses = filter((!)∘contains("??"), statuses)
+
+    is_clean = isempty(statuses)
+    is_clean || @error "\n" * join(statuses, "\n")
+
+    return is_clean
+end
+
+@testset "RSMD" begin
+    git_dir = readchomp(`$(Git.git()) rev-parse --show-toplevel`)
+    @test isnothing(ResearchSoftwareMetadata.crosswalk())
+    global_logger(SimpleLogger(stderr, Logging.Warn))
+    @test_nowarn ResearchSoftwareMetadata.crosswalk()
+    @test is_repo_clean(git_dir)
+end
 
 @testset "Deprecations" begin
     t = NamedTree()
