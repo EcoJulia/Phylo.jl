@@ -4,10 +4,10 @@
     "applicationCategory": "ecology",
     "codeRepository": "https://github.com/EcoJulia/Phylo.jl",
     "dateCreated": "2017-04-21",
-    "dateModified": "2024-07-15",
+    "dateModified": "2024-07-17",
     "datePublished": "2018-08-11",
     "description": "Package for creating and manipulating phylogenies in Julia",
-    "downloadUrl": "https://github.com/EcoJulia/Phylo.jl/archive/refs/tags/v0.5.3.tar.gz",
+    "downloadUrl": "https://github.com/EcoJulia/Phylo.jl/archive/refs/tags/v0.5.4.tar.gz",
     "keywords": [
         "EcoJulia",
         "ecology",
@@ -23,7 +23,7 @@
         "macos"
     ],
     "programmingLanguage": "julia",
-    "version": "v0.5.3",
+    "version": "v0.5.4",
     "codemeta:contIntegration": {
         "id": "https://github.com/EcoJulia/Phylo.jl/actions/workflows/testing.yaml"
     },

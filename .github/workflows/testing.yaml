@@ -10,6 +10,11 @@ on:
 
 jobs:
   phylo-tests:
+    name: Julia ${{ matrix.julia-version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    timeout-minutes: 60
+    permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
+      actions: write
+      contents: read
     runs-on: ${{ matrix.os }}
     continue-on-error: false
     strategy:
@@ -62,7 +67,7 @@ jobs:
         install.packages("ape", repos="http://cran.r-project.org")
       shell: R --vanilla --file={0}
     - name: Cache
-      uses: julia-actions/cache@v1
+      uses: julia-actions/cache@v2
     - name: Build package
       uses: julia-actions/julia-buildpkg@v1
     - name: Running
