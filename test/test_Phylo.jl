@@ -10,7 +10,7 @@ using ResearchSoftwareMetadata
 function is_repo_clean(repo_path)
     # Get the status of the repository
     statuses = readlines(`$(Git.git()) status -s $repo_path`)
-    statuses = filter((!)∘contains("??"), statuses)
+    statuses = filter((!) ∘ contains("??"), statuses)
 
     is_clean = isempty(statuses)
     is_clean || @error "\n" * join(statuses, "\n")
