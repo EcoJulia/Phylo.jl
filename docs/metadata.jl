@@ -11,7 +11,8 @@ if isdir("examples")
     if isfile("examples/Project.toml")
         Pkg.activate("examples")
         Pkg.update()
-        Pkg.rm("Phylo")
+        "Phylo" ∈ [p.name for p in values(Pkg.dependencies())] &&
+            Pkg.rm("Phylo")
         Pkg.develop("Phylo")
     end
 end
@@ -19,7 +20,10 @@ end
 # Update docs folder packages
 Pkg.activate("docs")
 Pkg.update()
-Pkg.rm("Phylo")
+"Phylo" ∈ [p.name for p in values(Pkg.dependencies())] &&
+    Pkg.rm("Phylo")
+"ResearchSoftwareMetadata" ∈ [p.name for p in values(Pkg.dependencies())] &&
+    Pkg.rm("ResearchSoftwareMetadata")
 Pkg.develop("Phylo")
 Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
 
