@@ -6,6 +6,8 @@ using Phylo
 using Pkg
 
 Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
+using ResearchSoftwareMetadata
+@error pwd()
 
 # Identify files in test/ that are testing matching files in src/
 #  - src/Source.jl will be matched by test/test_Source.jl
