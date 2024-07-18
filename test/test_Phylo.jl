@@ -5,7 +5,7 @@ using Test
 using Phylo
 using Git
 using Logging
-using ResearchSoftwareMetadata
+using Pkg
 
 function is_repo_clean(repo_path)
     # Get the status of the repository
@@ -18,12 +18,17 @@ function is_repo_clean(repo_path)
     return is_clean
 end
 
-@testset "RSMD" begin
-    git_dir = readchomp(`$(Git.git()) rev-parse --show-toplevel`)
-    @test isnothing(ResearchSoftwareMetadata.crosswalk())
-    global_logger(SimpleLogger(stderr, Logging.Warn))
-    @test_nowarn ResearchSoftwareMetadata.crosswalk()
-    @test is_repo_clean(git_dir)
+if !haskey(ENV, "GITHUB_TOKEN")
+    Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
+    using ResearchSoftwareMetadata
+
+    @testset "RSMD" begin
+        git_dir = readchomp(`$(Git.git()) rev-parse --show-toplevel`)
+        @test isnothing(ResearchSoftwareMetadata.crosswalk())
+        global_logger(SimpleLogger(stderr, Logging.Warn))
+        @test_nowarn ResearchSoftwareMetadata.crosswalk()
+        @test is_repo_clean(git_dir)
+    end
 end
 
 @testset "Deprecations" begin
