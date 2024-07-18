@@ -6,12 +6,12 @@ using Test
 using Phylo
 using RCall
 using DataFrames
+using DynamicPPL
+using ForwardDiff
 
 global skipR = !(rcopy(R"require(ape)") && rcopy(R"require(phylolm)"))
 
 @testset "Compare estimaterates output to phylolm" begin
-    jtree = nothing
-    # @test_nowarn
     jtree = open(f -> parsenewick(f, TraitTree{1}),
                  Phylo.path("hummingbirds.tree"))
 
@@ -21,7 +21,12 @@ global skipR = !(rcopy(R"require(ape)") && rcopy(R"require(phylolm)"))
     dat = DataFrame(species = species, data = data)
 
     # Save data on leaves so can test on estimaterates 2
-    setnodedata!.(jtree, dat.species, Phylo.traitdata.(Ref("trait"), dat.data))
+    traits = Phylo.traitdata.(Union{Float64,
+                                    ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag,
+                                                                     Float64},
+                                                     Float64, 3}}, Ref("trait"),
+                              dat.data)
+    setnodedata!.(jtree, dat.species, traits)
 
     jfit = nothing
     @test_nowarn jfit = estimaterates(jtree, ["trait"])

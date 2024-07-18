@@ -36,7 +36,7 @@ eltype(::Type{TD}) where {T <: Number, NT, TD <: TraitData{T, NT}} = T
 # change these from Float to <: Number too
 function traitdata(::Type{T}, name::String, value::Float64,
                    t = 0.0) where {T <: Number}
-    return traitdata{T}([name], [value], t)
+    return traitdata(T, [name], [value], t)
 end
 
 function traitdata(::Type{T}, name::Vector{String}, value::Vector{Float64},
