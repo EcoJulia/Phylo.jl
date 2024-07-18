@@ -1,4 +1,4 @@
-name: Documentation
+name: Metadata and hygene
 
 on:
   push:
@@ -33,9 +33,11 @@ jobs:
         with:
           version: '1'
           arch: x64
-      - name: Build Package
+      - name: Cache
+        uses: julia-actions/cache@v2
+      - name: Build package
         uses: julia-actions/julia-buildpkg@v1
-      - name: Run metadata tests
+      - name: Running
         uses: julia-actions/julia-runtest@v1
         env:
           RSMD_CROSSWALK: TRUE
