@@ -18,7 +18,7 @@ function is_repo_clean(repo_path)
     return is_clean
 end
 
-if !haskey(ENV, "GITHUB_TOKEN")
+if !haskey(ENV, "GITHUB_ACTIONS")
     Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
     using ResearchSoftwareMetadata
 
