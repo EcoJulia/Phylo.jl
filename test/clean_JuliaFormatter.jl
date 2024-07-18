@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-module CleanRSMD
+module CleanJuliaFormatter
 using Test
 using Phylo
 using Git
