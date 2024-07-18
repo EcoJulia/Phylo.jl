@@ -18,15 +18,17 @@ function is_repo_clean(repo_path)
     return is_clean
 end
 
-Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
-using ResearchSoftwareMetadata
+if ENV["RUNNER_OS"] ≠ "Windows"
+    Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
+    using ResearchSoftwareMetadata
 
-@testset "RSMD" begin
-    git_dir = readchomp(`$(Git.git()) rev-parse --show-toplevel`)
-    @test isnothing(ResearchSoftwareMetadata.crosswalk())
-    global_logger(SimpleLogger(stderr, Logging.Warn))
-    @test_nowarn ResearchSoftwareMetadata.crosswalk()
-    @test is_repo_clean(git_dir)
+    @testset "RSMD" begin
+        git_dir = readchomp(`$(Git.git()) rev-parse --show-toplevel`)
+        @test isnothing(ResearchSoftwareMetadata.crosswalk())
+        global_logger(SimpleLogger(stderr, Logging.Warn))
+        @test_nowarn ResearchSoftwareMetadata.crosswalk()
+        @test is_repo_clean(git_dir)
+    end
 end
 
 @testset "Deprecations" begin
