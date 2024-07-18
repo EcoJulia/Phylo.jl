@@ -18,7 +18,7 @@ function is_repo_clean(repo_path)
     return is_clean
 end
 
-if !haskey(ENV, "RUNNER_OS") || ENV["RUNNER_OS"] ≠ "Windows"
+if VERSION ≥ VersionNumber("1.8.0") && (!haskey(ENV, "RUNNER_OS") || ENV["RUNNER_OS"] ≠ "Windows")
     Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
     using ResearchSoftwareMetadata
 
