@@ -266,7 +266,7 @@ function parsenexus(tokens::Tokenize.Lexers.Lexer,
     result = iterateskip(tokens)
     isnothing(result) && return nothing
     token, state = result
-    if token.kind == T.COMMENT && lowercase(untokenize(token)) == "#NEXUS"
+    if token.kind == T.COMMENT && lowercase(untokenize(token)) == "#nexus"
         result = iterateskip(tokens, state)
         isnothing(result) && return nothing
         token, state = result
