@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 import Base: length, eltype
 using Base: HasLength, HasEltype
 using Phylo.API

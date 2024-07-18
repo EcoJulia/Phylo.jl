@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using DataFrames
 using LinearAlgebra
 using Optim
@@ -182,7 +184,8 @@ function estimaterates!(tree::T, trait::Vector{String},
     nd = getnodedata(tree, nN)
 
     betahat = inv(nd.xx) * nd.Q
-    sigmahat = ((nd.yy .- 2 * betahat .* nd.Q' .+ betahat .* nd.xx .* betahat') ./ n)
+    sigmahat = ((nd.yy .- 2 * betahat .* nd.Q' .+ betahat .* nd.xx .* betahat') ./
+                n)
 
     # NEED TO THINK ABOUT THIS
     while any(i -> i < 0, diag(sigmahat))
@@ -557,7 +560,8 @@ function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist3}
             getnodedata(d.tree, node).t = d.lambda *
                                           getlength(d.tree,
                                                     getinbound(d.tree, node)) +
-                                          (1.0 - d.lambda) * heighttoroot(d.tree, node)
+                                          (1.0 - d.lambda) *
+                                          heighttoroot(d.tree, node)
         elseif isroot(d.tree, node)
             getnodedata(d.tree, node).t = zero(d.lambda)
         else

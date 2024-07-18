@@ -1,6 +1,7 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 module TestPhylo
 using Test
-
 using Phylo
 
 @testset "Deprecations" begin

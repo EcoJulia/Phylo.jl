@@ -1,4 +1,4 @@
-name: CI
+name: Testing
 
 on:
   push:
@@ -8,15 +8,25 @@ on:
       - 'v*'
   pull_request:
 
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: only if it is a pull request build.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   phylo-tests:
+    name: Julia ${{ matrix.julia-version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    timeout-minutes: 60
+    permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
+      actions: write
+      contents: read
     runs-on: ${{ matrix.os }}
     continue-on-error: false
     strategy:
       matrix:
         julia-version:
           - '1.6'
-          - '1.9'
           - '1'
         os:
           - ubuntu-latest
@@ -24,10 +34,21 @@ jobs:
           - windows-latest
         arch:
           - x64
+          - arm64
         r-testing:
           - ${{ true }}
           - ${{ false }}
         exclude:
+          - os: macOS-latest
+            julia-version: '1.6'
+            arch: arm64
+          - os: macOS-latest
+            julia-version: '1'
+            arch: x64
+          - os: ubuntu-latest
+            arch: arm64
+          - os: windows-latest
+            arch: arm64
           - os: ubuntu-latest
             r-testing: ${{ true }}
           - os: windows-latest
@@ -39,19 +60,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Set up julia
-      uses: julia-actions/setup-julia@v1
+      uses: julia-actions/setup-julia@v2
       with:
         version: ${{ matrix.julia-version }}
         arch: ${{ matrix.arch }}
     - name: Install R
       if: ${{ matrix.r-testing }}
       uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: 'release'
+        use-public-rspm: true
     - name: Install ape
       if: ${{ matrix.r-testing }}
       run: |
         install.packages("ape", repos="http://cran.r-project.org")
         install.packages("phylolm", repos="http://cran.r-project.org")
       shell: R --vanilla --file={0}
+    - name: Cache
+      uses: julia-actions/cache@v2
     - name: Build package
       uses: julia-actions/julia-buildpkg@v1
     - name: Running
@@ -59,4 +85,7 @@ jobs:
     - name: Process coverage
       uses: julia-actions/julia-processcoverage@v1
     - name: Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        verbose: true

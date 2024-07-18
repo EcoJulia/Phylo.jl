@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 module TestInference
 
 # Environment variable to avoid boring R package builds

@@ -1,13 +1,9 @@
 name: JuliaNightly
 # Nightly Scheduled Julia Nightly Run
 on:
-  push:
-    branches:
-      - dev
-    tags:
-      - 'v*'
   schedule:
-    - cron: '0 2 * * 0'  # Weekly at 2 AM UTC Sunday
+    - cron: '0 1 * * 0'  # Weekly at 1 AM UTC Sunday
+  workflow_dispatch:
 
 jobs:
   test:
@@ -17,11 +13,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Set up julia
-        uses: julia-actions/setup-julia@v1
+        uses: julia-actions/setup-julia@v2
         with:
           version: nightly
           arch: x64
       - name: Build package
         uses: julia-actions/julia-buildpkg@v1
+        with:
+          ignore-no-cache: true
       - name: Run tests
         uses: julia-actions/julia-runtest@v1

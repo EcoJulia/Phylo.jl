@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using RecipesBase
 
 @recipe function f(tree::Phylo.AbstractTree; treetype = :dendrogram,

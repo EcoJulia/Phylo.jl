@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using Phylo
 using Turing
 using DataFrames
@@ -9,7 +11,7 @@ df = DataFrame(CSV.File("Data/Myrtaceae.csv"))
 
 # load the tree
 const traittree::TraitTree{1} = open(f -> parsenewick(f, TraitTree{1}),
-                                   "Data/Qian2016.tree")
+                                     "Data/Qian2016.tree")
 
 # remove missing species from dataframe
 dropmissing!(df, :species)
@@ -43,8 +45,9 @@ dat = combine(gdf,
 
 # add the data for tmin to the tmintree
 for i in eachrow(dat)
-    setnodedata!(traittree, i.species, Phylo.traitdata(eltype(nodedatatype(typeof(traittree))),
-                                                    ["tmin"], [i.tmin]))
+    setnodedata!(traittree, i.species,
+                 Phylo.traitdata(eltype(nodedatatype(typeof(traittree))),
+                                 ["tmin"], [i.tmin]))
 end
 
 trait = ["tmin"]
@@ -83,44 +86,53 @@ end
 
 z = dat.tmin
 
-spl = sample(βσ_threepoint(traittree, z),  HMC(0.001, 10), 5000, initial_params = [290.0, 8.0]) # add initial_params
+spl = sample(βσ_threepoint(traittree, z), HMC(0.001, 10), 5000,
+             initial_params = [290.0, 8.0]) # add initial_params
 
-spl = sample(βσλ_threepoint(traittree, z),  HMC(0.001, 10), 5000, initial_params = [290.0, 8.0, 0.8])
-
+spl = sample(βσλ_threepoint(traittree, z), HMC(0.001, 10), 5000,
+             initial_params = [290.0, 8.0, 0.8])
 
 for i in eachrow(dat)
-    setnodedata!(traittree, i.species, Phylo.traitdata(eltype(nodedatatype(typeof(traittree))),
-                                                    ["tmax"], [i.tmax]))
+    setnodedata!(traittree, i.species,
+                 Phylo.traitdata(eltype(nodedatatype(typeof(traittree))),
+                                 ["tmax"], [i.tmax]))
 end
 
 z = dat.tmax
 
-spl = sample(βσ_threepoint(traittree, z),  HMC(0.01, 10), 5000, initial_params = [290.0, 8.0])
+spl = sample(βσ_threepoint(traittree, z), HMC(0.01, 10), 5000,
+             initial_params = [290.0, 8.0])
 
-spl = sample(βσλ_threepoint(traittree, z),  HMC(0.01, 10), 5000, initial_params = [290.0, 8.0, 0.8])
-
+spl = sample(βσλ_threepoint(traittree, z), HMC(0.01, 10), 5000,
+             initial_params = [290.0, 8.0, 0.8])
 
 for i in eachrow(dat)
-    setnodedata!(traittree, i.species, Phylo.traitdata(eltype(nodedatatype(typeof(traittree))),
-                                                    ["trng"], [i.trng]))
+    setnodedata!(traittree, i.species,
+                 Phylo.traitdata(eltype(nodedatatype(typeof(traittree))),
+                                 ["trng"], [i.trng]))
 end
 
 z = dat.trng
 
-spl = sample(βσ_threepoint(traittree, z),  HMC(0.01, 10), 5000, initial_params = [4.0, 1.0])
+spl = sample(βσ_threepoint(traittree, z), HMC(0.01, 10), 5000,
+             initial_params = [4.0, 1.0])
 
-spl = sample(βσλ_threepoint(traittree, z),  HMC(0.01, 10), 5000, initial_params = [4.0, 1.0, 0.8])
+spl = sample(βσλ_threepoint(traittree, z), HMC(0.01, 10), 5000,
+             initial_params = [4.0, 1.0, 0.8])
 
 for i in eachrow(dat)
-    setnodedata!(traittree, i.species, Phylo.traitdata(eltype(nodedatatype(typeof(traittree))),
-                                                    ["swvl1"], [i.swvl1]))
+    setnodedata!(traittree, i.species,
+                 Phylo.traitdata(eltype(nodedatatype(typeof(traittree))),
+                                 ["swvl1"], [i.swvl1]))
 end
 
 z = dat.swvl1
 
 estimaterates(traittree, ["swvl1"], lambda = 0.5)
 
-spl = sample(βσ_threepoint(traittree, z),  HMC(0.0001, 10), 5000, initial_params = [0.1, 1.0])
+spl = sample(βσ_threepoint(traittree, z), HMC(0.0001, 10), 5000,
+             initial_params = [0.1, 1.0])
 
-spl = sample(βσλ_threepoint(traittree, z),  HMC(0.0001, 10), 5000, initial_params = [0.1, 1.0, 0.5])
+spl = sample(βσλ_threepoint(traittree, z), HMC(0.0001, 10), 5000,
+             initial_params = [0.1, 1.0, 0.5])
 plot(spl[:λ])

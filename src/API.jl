@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
 using Phylo
 using Phylo: Rootedness, Rooted, TreeType, TraversalOrder
 using Phylo: AbstractElt, AbstractNode, AbstractBranch, AbstractTree
