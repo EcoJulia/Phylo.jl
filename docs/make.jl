@@ -1,12 +1,5 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
-using Pkg
-"Phylo" ∈ [p.name for p in values(Pkg.dependencies())] &&
-    Pkg.rm("Phylo")
-"ResearchSoftwareMetadata" ∈ [p.name for p in values(Pkg.dependencies())] &&
-    Pkg.rm("ResearchSoftwareMetadata")
-Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
-
 using Documenter
 using Phylo
 
