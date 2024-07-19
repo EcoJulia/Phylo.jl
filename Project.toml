@@ -1,10 +1,8 @@
 name = "Phylo"
 uuid = "aea672f4-3940-5932-aa44-993d1c3ff149"
+license = "BSD-2-Clause"
 authors = ["Richard Reeve <richard.reeve@glasgow.ac.uk>", "Michael Borregaard", "Claire Harris"]
 version = "0.5.4"
-
-[license]
-SPDX = "BSD-2-Clause"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
