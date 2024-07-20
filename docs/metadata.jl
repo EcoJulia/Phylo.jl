@@ -22,10 +22,7 @@ Pkg.activate("docs")
 Pkg.update()
 "Phylo" ∈ [p.name for p in values(Pkg.dependencies())] &&
     Pkg.rm("Phylo")
-"ResearchSoftwareMetadata" ∈ [p.name for p in values(Pkg.dependencies())] &&
-    Pkg.rm("ResearchSoftwareMetadata")
 Pkg.develop("Phylo")
-Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
 
 # Reformat files in package
 using JuliaFormatter

@@ -6,6 +6,7 @@ using Phylo
 using Git
 using Logging
 using Pkg
+using ResearchSoftwareMetadata
 
 function is_repo_clean(repo_path; ignore_untracked = true)
     # Get the status of the repository
@@ -28,8 +29,6 @@ end
 # Also does not currently work on Windows runners on GitHub due to file writing issues
 if VERSION ≥ VersionNumber("1.8.0") &&
    (!haskey(ENV, "RUNNER_OS") || ENV["RUNNER_OS"] ≠ "Windows")
-    Pkg.develop(url = "https://github.com/richardreeve/ResearchSoftwareMetadata.jl.git")
-    using ResearchSoftwareMetadata
 
     @testset "RSMD" begin
         git_dir = readchomp(`$(Git.git()) rev-parse --show-toplevel`)

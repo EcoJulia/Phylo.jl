@@ -1,5 +1,11 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
+using Pkg
+Pkg.update()
+"Phylo" ∈ [p.name for p in values(Pkg.dependencies())] &&
+    Pkg.rm("Phylo")
+Pkg.develop("Phylo")
+
 using Documenter
 using Phylo
 
