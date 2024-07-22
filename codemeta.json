@@ -20,7 +20,7 @@
     "operatingSystem": [
         "Linux",
         "Windows",
-        "macos"
+        "macOS"
     ],
     "programmingLanguage": "julia",
     "version": "v0.5.4",
