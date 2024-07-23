@@ -222,41 +222,6 @@ function _extend(tmp, x)
     return ret
 end
 
-"""
-    sort!(::AbstractTree; rev = false)
-
-Sorts the branches descending from each node by total number of
-descendants. This creates a clearer tree for plotting. The
-process is also called "ladderizing" the tree. Use `rev=true` to
-reverse the sorting order.
-"""
-function Base.sort!(tree::T; rev = false) where {T <: AbstractTree}
-    function loc!(clade::String)
-        if isleaf(tree, clade)
-            return 1
-        end
-
-        sizes = map(loc!, getchildren(tree, clade))
-        node = getnode(tree, clade)
-        if T <: LinkTree
-            node.other .= node.other[sortperm(sizes, rev = rev)]
-        elseif T <: RecursiveTree
-            node.conns .= node.conns[sortperm(sizes, rev = rev)]
-        end
-        return sum(sizes) + 1
-    end
-
-    loc!(first(nodenamefilter(isroot, tree)))
-    return tree
-end
-
-"""
-    sort(::AbstractTree; rev = false)
-
-Copies a tree and sorts its branches. See `sort!` for further details.
-"""
-Base.sort(tree::AbstractTree; rev = false) = sort!(copy(tree))
-
 function _nodedepths(tree::Phylo.AbstractTree)
     function finddepths!(clade::String)
         if !in(clade, keys(depth))

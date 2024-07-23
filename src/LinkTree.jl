@@ -11,9 +11,9 @@ newempty(::Type{Data}) where {Data} = Data()
 
 A branch type that connects LinkNodes in a LinkTree
 """
-struct LinkBranch{RT, NL, Data, LenUnits} <: AbstractBranch{RT, NL}
+mutable struct LinkBranch{RT, NL, Data, LenUnits} <: AbstractBranch{RT, NL}
     name::Int
-    inout::Tuple{AbstractNode{RT, NL}, AbstractNode{RT, NL}}
+    inout::Tuple{<:AbstractNode{RT, NL}, <:AbstractNode{RT, NL}}
     length::Union{Missing, LenUnits}
     data::Data
 end

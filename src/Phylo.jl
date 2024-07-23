@@ -215,6 +215,63 @@ include("metrics.jl")
 export mrca, nodeheights
 export distance, distances, heighttoroot, heightstoroot
 
+"""
+    sort!(::AbstractTree; uselength = [if available], rev = false)
+
+Sorts the branches descending from each node by total number of descendants
+(or branch length is `uselength = true`). This creates a clearer tree for
+plotting. The process is also called "ladderizing" the tree. Use `rev = true`
+to reverse the sorting order.
+"""
+function Base.sort!(tree::T;
+                    uselength = all(haslength.(Ref(tree), getbranches(tree))),
+                    rev = false) where
+         {T <: AbstractTree{OneTree, <:Rooted}}
+    function loc!(clade::String)
+        if isleaf(tree, clade)
+            return uselength ?
+                   zero(nonmissingtype(typeof(getlength(tree,
+                                                        getinbound(tree,
+                                                                   clade))))) :
+                   1.0
+        end
+
+        sizes = uselength ?
+                [getlength(tree, child) +
+                 loc!(getnodename(tree, dst(tree, child)))
+                 for child in getoutbounds(tree, clade)] :
+                map(loc!, getchildren(tree, clade))
+        node = getnode(tree, clade)
+        if T <: LinkTree
+            node.other .= node.other[sortperm(sizes, rev = rev)]
+        elseif T <: RecursiveTree
+            node.conns .= node.conns[sortperm(sizes, rev = rev)]
+        end
+        if uselength
+            return maximum(sizes)
+        else
+            return sum(sizes) + 1.0
+        end
+    end
+
+    for root in getroots(tree)
+        loc!(getnodename(tree, root))
+    end
+
+    return tree
+end
+
+"""
+    sort(::AbstractTree; uselength = [if available], rev = false)
+
+Copies a tree and sorts its branches. See `sort!` for further details.
+"""
+function Base.sort(tree::AbstractTree;
+                   uselength = all(haslength.(Ref(tree), getbranches(tree))),
+                   rev = false)
+    return sort!(deepcopy(tree), uselength = uselength, rev = rev)
+end
+
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 

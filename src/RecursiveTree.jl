@@ -123,11 +123,7 @@ function RecursiveTree{RT, NL, NodeData, BranchData, BT, LenUnits, TD}(leafinfos
 end
 
 import Phylo.API: _prefernodeobjects, _preferbranchobjects
-_prefernodeobjects(::Type{<:RecursiveTree}) = true
-_prefernodeobjects(::Type{<:RecursiveNode}) = true
 _prefernodeobjects(::Type{<:RecursiveElt}) = true
-_preferbranchobjects(::Type{<:RecursiveTree}) = true
-_preferbranchobjects(::Type{<:RecursiveBranch}) = true
 _preferbranchobjects(::Type{<:RecursiveElt}) = true
 
 import Phylo.API: _validate!
