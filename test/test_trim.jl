@@ -35,6 +35,8 @@ end
     @test Set(tips) == Set(tips2)
     @test validate!(test_tree)
     @test validate!(test_tree2)
+    @test isempty(droptips!(test_tree2, nodetype(typeof(test_tree2))[]))
+    @test isempty(droptips!(test_tree, String[]))
 
     tdf = rand(Ultrametric(df))
     @test ["Dog"] == droptips!(tdf, ["Dog"])

@@ -23,14 +23,16 @@ function droptips! end
                             tips::AbstractVector{N}) where
                   {N, RT,
                    T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
-    return droptips!(tree, [getnode(tree, tip) for tip in tips])
+    return isempty(tips) ? N[] :
+           droptips!(tree, [getnode(tree, tip) for tip in tips])
 end
 
 @traitfn function droptips!(tree::T,
                             tips::AbstractVector{N}) where
-                  {N, RT, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
-    keep_tips = [tip for tip in getleaves(tree) if tip ∉ tips]
-    tipnames = [getnodename(tree, tip) for tip in tips]
+                  {N, RT, NL,
+                   T <: AbstractTree{OneTree, RT, NL}; MatchNodeType{T, N}}
+    keep_tips = N[tip for tip in getleaves(tree) if tip ∉ tips]
+    tipnames = NL[getnodename(tree, tip) for tip in tips]
 
     # Remove nodes that are not in tip names
     for tip in tips
@@ -78,6 +80,7 @@ end
                                                getiterator(getleafinfo(tree))))
         setleafinfo!(tree, li)
     end
+
     return tipnames
 end
 
