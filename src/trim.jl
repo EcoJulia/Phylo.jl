@@ -23,7 +23,7 @@ Internal nodes with no children will always be removed.
 function droptips! end
 @traitfn function droptips!(tree::T,
                             tips::AbstractVector{N};
-                            keep = false) where
+                            keep::Bool = false) where
                   {N, RT, NL,
                    T <: AbstractTree{OneTree, RT, NL}; !MatchNodeType{T, N}}
     return isempty(tips) ? NL[] :
@@ -32,7 +32,7 @@ end
 
 @traitfn function droptips!(tree::T,
                             tips::AbstractVector{N};
-                            keep = false) where
+                            keep::Bool = false) where
                   {N, RT, NL,
                    T <: AbstractTree{OneTree, RT, NL}; MatchNodeType{T, N}}
     keep_tips = N[tip for tip in getleaves(tree) if tip ∉ tips]
@@ -91,22 +91,26 @@ end
 end
 
 """
-    keeptips!(tree::AbstractTree{OneTree}, tips)
+    keeptips!(tree::AbstractTree{OneTree}, tips; keep = false)
 
 Function to keep only the tips in a phylogenetic tree, `tree`, that are found in
-the vector of tips or tip names, `tips`.
+the vector of tips or tip names, `tips`. `keep` determines whether to keep
+internal and root nodes that now only have one child (default is `false`).
+Internal nodes with no children will always be removed.
 """
 function keeptips! end
 @traitfn function keeptips!(tree::T,
-                            tips::AbstractVector{N}) where
+                            tips::AbstractVector{N};
+                            keep::Bool = false) where
                   {N, RT,
-                   T <: AbstractTree{OneTree, RT, N}; !MatchNodeType{T, N}}
-    return keeptips!(tree, [getnode(tree, tip) for tip in tips])
+                   T <: AbstractTree{OneTree, RT}; !MatchNodeType{T, N}}
+    return keeptips!(tree, [getnode(tree, tip) for tip in tips], keep = keep)
 end
 
 @traitfn function keeptips!(tree::T,
-                            tips::AbstractVector{N}) where
+                            tips::AbstractVector{N};
+                            keep::Bool = false) where
                   {N, RT, T <: AbstractTree{OneTree, RT}; MatchNodeType{T, N}}
-    drop_tips = [tip for tip in getleaves(tree) if tip ∉ tips]
-    return droptips!(tree, drop_tips)
+    drop_tips = N[tip for tip in getleaves(tree) if tip ∉ tips]
+    return droptips!(tree, drop_tips, keep = keep)
 end

@@ -41,6 +41,12 @@ end
     tdf = rand(Ultrametric(df))
     @test ["Dog"] == droptips!(tdf, ["Dog"])
     @test length(getiterator(getleafinfo(tdf))) == 2
+
+    test_keep = rand(Ultrametric(10))
+    droptips!(test_keep, ["tip 1"], keep = true)
+    test_dont = rand(Ultrametric(10))
+    droptips!(test_dont, ["tip 1"])
+    @test nnodes(test_keep) == nnodes(test_dont) + 1
 end
 
 end
