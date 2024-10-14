@@ -4,7 +4,7 @@
     "applicationCategory": "ecology",
     "codeRepository": "https://github.com/EcoJulia/Phylo.jl",
     "dateCreated": "2017-04-21",
-    "dateModified": "2024-10-13",
+    "dateModified": "2024-10-14",
     "datePublished": "2018-08-11",
     "description": "Package for creating and manipulating phylogenies in Julia",
     "downloadUrl": "https://github.com/EcoJulia/Phylo.jl/archive/refs/tags/v0.6.0.tar.gz",
