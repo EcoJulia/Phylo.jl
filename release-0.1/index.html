@@ -1,0 +1,980 @@
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Package for creating and manipulating phylogenies">
+      
+      
+      
+        <meta name="author" content="Richard Reeve">
+      
+      
+        <link rel="shortcut icon" href="./assets/images/favicon.png">
+      
+      <meta name="generator" content="mkdocs-0.16.3, mkdocs-material-1.7.3">
+    
+    
+      
+        <title>Phylo.jl</title>
+      
+    
+    
+      <script src="./assets/javascripts/modernizr-1df76c4e58.js"></script>
+    
+    
+      <link rel="stylesheet" href="./assets/stylesheets/application-acc56dad49.css">
+      
+    
+    
+      
+        
+        
+        
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+      <link rel="stylesheet" href="./assets/Documenter.css">
+    
+    
+  </head>
+  
+  
+  
+  
+    <body>
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="drawer">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="search">
+    <label class="md-overlay" data-md-component="overlay" for="drawer"></label>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <a href="." title="Phylo.jl" class="md-icon md-icon--home md-header-nav__button">
+          </a>
+        
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <span class="md-flex__ellipsis md-header-nav__title">
+          
+            
+              
+            
+            Introduction
+          
+        </span>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="search"></label>
+          
+<div class="md-search" data-md-component="search">
+  <label class="md-search__overlay" for="search"></label>
+  <div class="md-search__inner">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" required placeholder="Search" accesskey="s" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query">
+      <label class="md-icon md-search__icon" for="search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset">close</button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result" data-md-lang-search="">
+          <div class="md-search-result__meta" data-md-lang-result-none="No matching documents" data-md-lang-result-one="1 matching document" data-md-lang-result-other="# matching documents">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+
+  <a href="https://github.com/richardreeve/Phylo.jl" title="Go to repository" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      GitHub
+    </div>
+  </a>
+
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="drawer">
+    
+      <i class="md-icon md-icon--home md-nav__button"></i>
+    
+    Phylo.jl
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+
+  <a href="https://github.com/richardreeve/Phylo.jl" title="Go to repository" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      GitHub
+    </div>
+  </a>
+
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+      
+    
+    
+    <a href="." title="Introduction" class="md-nav__link md-nav__link--active">
+      Introduction
+    </a>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+    
+    <label class="md-nav__link" for="nav-2">
+      Submodules
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        Submodules
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="api/" title="API" class="md-nav__link">
+      API
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/richardreeve/Phylo.jl/edit/master/docs/index.md" title="Edit this page" class="md-icon md-content__icon">edit</a>
+                
+                
+                <p><a id='Phylo-1'></a></p>
+<h1 id="phylo">Phylo</h1>
+<p><em>Package for creating and manipulating phylogenies</em></p>
+<p><strong>Phylo</strong> is a <a href="http://www.julialang.org">Julia</a> package that provides  functionality for generating phylogenetic trees to feed into our  [Diversity][diversity-url] package to calculate phylogenetic  diversity (currently on master, accessible via <code>Pkg.checkout()</code>,  but not released). Both are currently under development, so please  [raise an issue][issues-url] if you find any problems. Currently the  package can be used to make trees manually, and to generate random  trees using the framework from <code>Distributions</code>. For instance, to  construct a sampler for 5 tip non-ultrametric trees, and then  generate a random tree of that type:</p>
+<div class="codehilite"><pre><span></span><span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">Phylo</span>
+
+<span class="n">julia</span><span class="o">&gt;</span> <span class="n">nu</span> <span class="o">=</span> <span class="n">Nonultrametric</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+
+<span class="n">julia</span><span class="o">&gt;</span> <span class="n">rand</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span>
+<span class="n">NamedTree</span> <span class="n">phylogenetic</span> <span class="n">tree</span> <span class="n">with</span> <span class="mi">9</span> <span class="n">nodes</span> <span class="n">and</span> <span class="mi">8</span> <span class="n">branches</span>
+<span class="n">Leaf</span> <span class="n">names</span><span class="o">:</span>
+<span class="n">String</span><span class="p">[</span><span class="s">&quot;tip 1&quot;</span><span class="p">,</span> <span class="s">&quot;tip 2&quot;</span><span class="p">,</span> <span class="s">&quot;tip 3&quot;</span><span class="p">,</span> <span class="s">&quot;tip 4&quot;</span><span class="p">,</span> <span class="s">&quot;tip 5&quot;</span><span class="p">]</span>
+</pre></div>
+
+
+<p>The main purpose of this package is to provide a framework for phylogenetics to use in our [Diversity][diversity-url] package, and they will <a href="https://github.com/richardreeve/Diversity.jl/pull/18">both</a> be adapted as appropriate until both are functioning as required.</p>
+<p>However, the other important feature that it holds is to allow an interface to R, allowing any existing R functionality to be carried out on julia trees, and trees to be read from disk and written using R helper functions. This is not built into the package as it will make RCall (and R) a dependency, which I wanted to avoid. Instead, for now, if you want to use the R interface you need to do it manually, as below:</p>
+<div class="codehilite"><pre><span></span><span class="n">julia</span><span class="o">&gt;</span> <span class="k">using</span> <span class="n">RCall</span>
+
+<span class="n">julia</span><span class="o">&gt;</span> <span class="n">include</span><span class="p">(</span><span class="n">joinpath</span><span class="p">(</span><span class="n">Pkg</span><span class="o">.</span><span class="n">dir</span><span class="p">(</span><span class="s">&quot;Phylo&quot;</span><span class="p">),</span> <span class="s">&quot;src&quot;</span><span class="p">,</span> <span class="s">&quot;rcall.jl&quot;</span><span class="p">));</span>
+
+<span class="n">R</span><span class="o">&gt;</span> <span class="n">library</span><span class="p">(</span><span class="n">ape</span><span class="p">)</span>
+</pre></div>
+
+
+<p>You can then translate back and forth using <code>NamedTree</code> contructors on R <code>phylo</code> objects, and <code>RObject</code> constructors on julia <code>NamedTree</code> types to keep them in Julia or <code>@rput</code> to move the object into R:</p>
+<div class="codehilite"><pre><span></span><span class="n">julia</span><span class="o">&gt;</span> <span class="n">rt</span> <span class="o">=</span> <span class="n">rcall</span><span class="p">(</span><span class="o">:</span><span class="n">rtree</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">RCall</span><span class="o">.</span><span class="n">RObject</span><span class="p">{</span><span class="n">RCall</span><span class="o">.</span><span class="n">VecSxp</span><span class="p">}</span>
+
+<span class="n">Phylogenetic</span> <span class="n">tree</span> <span class="n">with</span> <span class="mi">10</span> <span class="n">tips</span> <span class="n">and</span> <span class="mi">9</span> <span class="n">internal</span> <span class="n">nodes</span><span class="o">.</span>
+
+<span class="n">Tip</span> <span class="n">labels</span><span class="o">:</span>
+    <span class="n">t10</span><span class="p">,</span> <span class="n">t8</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t6</span><span class="p">,</span> <span class="n">t5</span><span class="p">,</span> <span class="o">...</span>
+
+<span class="n">Rooted</span><span class="p">;</span> <span class="n">includes</span> <span class="n">branch</span> <span class="n">lengths</span><span class="o">.</span>
+
+<span class="n">julia</span><span class="o">&gt;</span> <span class="n">jt</span> <span class="o">=</span> <span class="n">NamedTree</span><span class="p">(</span><span class="n">rt</span><span class="p">)</span>
+<span class="n">NamedTree</span> <span class="n">phylogenetic</span> <span class="n">tree</span> <span class="n">with</span> <span class="mi">19</span> <span class="n">nodes</span> <span class="n">and</span> <span class="mi">18</span> <span class="n">branches</span>
+<span class="n">Leaf</span> <span class="n">names</span><span class="o">:</span>
+<span class="n">String</span><span class="p">[</span><span class="s">&quot;t10&quot;</span><span class="p">,</span> <span class="s">&quot;t8&quot;</span><span class="p">,</span> <span class="s">&quot;t1&quot;</span><span class="p">,</span> <span class="s">&quot;t2&quot;</span><span class="p">,</span> <span class="s">&quot;t6&quot;</span><span class="p">,</span> <span class="s">&quot;t5&quot;</span><span class="p">,</span> <span class="s">&quot;t3&quot;</span><span class="p">,</span> <span class="s">&quot;t4&quot;</span><span class="p">,</span> <span class="s">&quot;t7&quot;</span><span class="p">,</span> <span class="s">&quot;t9&quot;</span><span class="p">]</span>
+
+<span class="n">julia</span><span class="o">&gt;</span> <span class="nd">@rput</span> <span class="n">rt</span><span class="p">;</span>
+
+<span class="n">julia</span><span class="o">&gt;</span> <span class="nd">@rput</span> <span class="n">jt</span><span class="p">;</span> <span class="c"># Automatically translates jt back to R</span>
+
+<span class="n">R</span><span class="o">&gt;</span> <span class="n">jt</span>
+
+<span class="n">Phylogenetic</span> <span class="n">tree</span> <span class="n">with</span> <span class="mi">10</span> <span class="n">tips</span> <span class="n">and</span> <span class="mi">9</span> <span class="n">internal</span> <span class="n">nodes</span><span class="o">.</span>
+
+<span class="n">Tip</span> <span class="n">labels</span><span class="o">:</span>
+    <span class="n">t10</span><span class="p">,</span> <span class="n">t8</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t6</span><span class="p">,</span> <span class="n">t5</span><span class="p">,</span> <span class="o">...</span>
+
+<span class="n">Rooted</span><span class="p">;</span> <span class="n">includes</span> <span class="n">branch</span> <span class="n">lengths</span><span class="o">.</span>
+
+<span class="n">R</span><span class="o">&gt;</span> <span class="n">all</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">rt</span><span class="p">,</span> <span class="n">jt</span><span class="p">)</span> <span class="c"># check no damage in translations</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="n">TRUE</span>
+</pre></div>
+
+
+<p>[issues-url]: https://github.com/richardreeve/Phylo.jl/issues [diversity-url]: https://github.com/richardreeve/Diversity.jl/</p>
+<ul>
+<li><a href=".#Phylo-1">Phylo</a></li>
+</ul>
+<p><a id='Phylo' href='#Phylo'>#</a>
+<strong><code>Phylo</code></strong> &mdash; <em>Module</em>.</p>
+<div class="codehilite"><pre><span></span>Phylo package
+</pre></div>
+
+
+<p>The <code>Phylo</code> package provides a standard abstract interface to phylogenetic trees, by defining <code>AbstractNode</code>, <code>AbstractBranch</code> and <code>AbstractTree</code> supertypes, and methods to interface to them. It also provides (through the <code>Phylo.API</code> submodule) methods to (re)define to write your own phylogenetic type in a way that will interact cleanly with other phylogenetic packages. Finally, it provides a simple phylogenetics type.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Phylo.jl#L3-L13' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.BinaryNode' href='#Phylo.BinaryNode'>#</a>
+<strong><code>Phylo.BinaryNode</code></strong> &mdash; <em>Type</em>.</p>
+<div class="codehilite"><pre><span></span>BinaryNode{T}(AbstractVector{T}, AbstractVector{T}) &lt;: AbstractNode
+</pre></div>
+
+
+<p>A node of strict binary phylogenetic tree</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Node.jl#L4-L8' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.BinaryTree' href='#Phylo.BinaryTree'>#</a>
+<strong><code>Phylo.BinaryTree</code></strong> &mdash; <em>Type</em>.</p>
+<div class="codehilite"><pre><span></span>BinaryTree
+</pre></div>
+
+
+<p>Binary phylogenetic tree object with known leaves and per node data</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Tree.jl#L4-L8' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.Branch' href='#Phylo.Branch'>#</a>
+<strong><code>Phylo.Branch</code></strong> &mdash; <em>Type</em>.</p>
+<div class="codehilite"><pre><span></span>Branch
+
+A directed branch connecting two AbstractNodes of phylogenetic tree
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Branch.jl#L4-L8' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.Nonultrametric' href='#Phylo.Nonultrametric'>#</a>
+<strong><code>Phylo.Nonultrametric</code></strong> &mdash; <em>Type</em>.</p>
+<div class="codehilite"><pre><span></span>Nonultrametric{T &lt;: AbstractTree,
+               RNG &lt;: Sampleable}(n::Int,
+                                  treetype::Type{T} = NamedTree,
+                                  rng::RNG = Exponential())
+Nonultrametric{T &lt;: AbstractTree,
+               RNG &lt;: Sampleable}(tiplabels::Vector{String},
+                                  treetype::Type{T} = NamedTree,
+                                  rng::RNG = Exponential())
+</pre></div>
+
+
+<p>The sampler for non-ultrametric phylogenetic trees of size <code>n</code> or with tip labels <code>tiplabels</code>. Generate random trees by calling rand(). Currently only works for <code>NamedTree</code>s.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/rand.jl#L9-L22' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.Ultrametric' href='#Phylo.Ultrametric'>#</a>
+<strong><code>Phylo.Ultrametric</code></strong> &mdash; <em>Type</em>.</p>
+<div class="codehilite"><pre><span></span>Ultrametric{T &lt;: AbstractTree,
+            RNG &lt;: Sampleable}(n::Int,
+                               treetype::Type{T} = NamedTree,
+                               rng::RNG = Exponential())
+Ultrametric{T &lt;: AbstractTree,
+            RNG &lt;: Sampleable}(tiplabels::Vector{String},
+                               treetype::Type{T} = NamedTree,
+                               rng::RNG = Exponential())
+</pre></div>
+
+
+<p>The sampler for ultrametric phylogenetic trees of size <code>n</code> or with tip labels <code>tiplabels</code>. Generate random trees by calling rand(). Currently only works for <code>NamedTree</code>s.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/rand.jl#L76-L89' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.NamedTree' href='#Phylo.NamedTree'>#</a>
+<strong><code>Phylo.NamedTree</code></strong> &mdash; <em>Type</em>.</p>
+<div class="codehilite"><pre><span></span>NamedTree
+</pre></div>
+
+
+<p>Binary phylogenetic tree object with known leaves</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Tree.jl#L161-L165' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.addbranch!' href='#Phylo.addbranch!'>#</a>
+<strong><code>Phylo.addbranch!</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span><span class="nt">addbranch</span><span class="o">!(</span><span class="nt">tree</span><span class="p">::</span><span class="nd">AbstractTree</span><span class="o">,</span> <span class="nt">source</span><span class="o">,</span> <span class="nt">target</span><span class="cp">[</span><span class="p">,</span> <span class="nx">length</span><span class="nl">::Float64</span><span class="cp">]</span><span class="o">;</span>
+           <span class="nt">branchname</span> <span class="o">=</span> <span class="nt">_newbranchlabel</span><span class="o">(</span><span class="nt">tree</span><span class="o">))</span>
+</pre></div>
+
+
+<p>Add a branch from <code>source</code> to <code>target</code> on <code>tree</code>.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L8-L13' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.addnode!' href='#Phylo.addnode!'>#</a>
+<strong><code>Phylo.addnode!</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>addnode!(tree::AbstractTree)
+addnode!(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L58-L63' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.addnodes!' href='#Phylo.addnodes!'>#</a>
+<strong><code>Phylo.addnodes!</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>addnodes!(tree::AbstractTree, nodenames::AbstractVector)
+addnodes!(tree::AbstractTree, count::Integer)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L68-L73' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.branch!' href='#Phylo.branch!'>#</a>
+<strong><code>Phylo.branch!</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span><span class="nt">branch</span><span class="o">!(</span><span class="nt">tree</span><span class="p">::</span><span class="nd">AbstractTree</span><span class="o">,</span> <span class="nt">source</span><span class="cp">[</span><span class="p">,</span> <span class="nx">length</span><span class="cp">]</span><span class="o">)</span>
+<span class="nt">branch</span><span class="o">!(</span><span class="nt">tree</span><span class="p">::</span><span class="nd">AbstractTree</span><span class="o">,</span> <span class="nt">source</span><span class="cp">[</span><span class="p">,</span> <span class="nx">length</span><span class="cp">]</span><span class="o">;</span> <span class="nt">target</span><span class="o">)</span>
+<span class="nt">branch</span><span class="o">!(</span><span class="nt">tree</span><span class="p">::</span><span class="nd">AbstractTree</span><span class="o">,</span> <span class="nt">source</span><span class="cp">[</span><span class="p">,</span> <span class="nx">length</span><span class="cp">]</span><span class="o">;</span> <span class="nt">target</span><span class="o">,</span> <span class="nt">branchname</span><span class="o">)</span>
+</pre></div>
+
+
+<p>Branch from a source node <code>source</code> and create a target node <code>target</code>.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L38-L44' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.branchhistory-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL}} where BL where NL' href='#Phylo.branchhistory-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL}} where BL where NL'>#</a>
+<strong><code>Phylo.branchhistory</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>branchhistory(tree::AbstractTree, node)
+</pre></div>
+
+
+<p>Find the branch route between a node on a tree and its root</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/routes.jl#L28-L32' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.branchroute-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL,NL}} where BL where NL' href='#Phylo.branchroute-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL,NL}} where BL where NL'>#</a>
+<strong><code>Phylo.branchroute</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>branchroute(tree::AbstractTree, node1, node2)
+</pre></div>
+
+
+<p>Find the branch route between two nodes on a tree</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/routes.jl#L46-L50' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.changesource!-Tuple{Phylo.AbstractTree,Any,Any}' href='#Phylo.changesource!-Tuple{Phylo.AbstractTree,Any,Any}'>#</a>
+<strong><code>Phylo.changesource!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>changesource!(tree::AbstractTree, branchname, source)
+</pre></div>
+
+
+<p>Change the source node for this branch.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L511-L515' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.changetarget!-Tuple{Phylo.AbstractTree,Any,Any}' href='#Phylo.changetarget!-Tuple{Phylo.AbstractTree,Any,Any}'>#</a>
+<strong><code>Phylo.changetarget!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>changetarget!(tree::AbstractTree, branchname, target)
+</pre></div>
+
+
+<p>Change the target node for this node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L529-L533' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.clearrootheight!-Tuple{Phylo.BinaryTree}' href='#Phylo.clearrootheight!-Tuple{Phylo.BinaryTree}'>#</a>
+<strong><code>Phylo.clearrootheight!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>clearrootheight(::AbstractTree)
+</pre></div>
+
+
+<p>Clears the tree's root height record.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Tree.jl#L228-L232' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.deletebranch!-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.deletebranch!-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.deletebranch!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>deletebranch!(tree::AbstractTree, branchname)
+</pre></div>
+
+
+<p>Delete the branch <code>branchname</code> from <code>tree</code>.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L27-L31' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.deletenode!-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.deletenode!-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.deletenode!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>deletenode!(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L84-L88' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.distance-Tuple{Phylo.AbstractTree,Any,Any}' href='#Phylo.distance-Tuple{Phylo.AbstractTree,Any,Any}'>#</a>
+<strong><code>Phylo.distance</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>distance(tree::AbstractTree, node1, node2)
+</pre></div>
+
+
+<p>Distance between two nodes on a tree</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/routes.jl#L81-L85' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.distances-Tuple{Phylo.AbstractTree}' href='#Phylo.distances-Tuple{Phylo.AbstractTree}'>#</a>
+<strong><code>Phylo.distances</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>distances(tree::AbstractTree)
+</pre></div>
+
+
+<p>Pairwise distances between all leaf nodes on a tree</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/routes.jl#L92-L96' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getancestors-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getancestors-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getancestors</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getancestors(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>Return the name of all of the nodes that are ancestral to this node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L388-L392' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getbranch-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getbranch-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getbranch</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getbranch(tree::AbstractTree, branchname)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L140-L144' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getbranchnames-Tuple{Phylo.AbstractTree}' href='#Phylo.getbranchnames-Tuple{Phylo.AbstractTree}'>#</a>
+<strong><code>Phylo.getbranchnames</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getbranchnames(tree::AbstractTree)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L122-L126' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getchildren-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getchildren-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getchildren</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getchildren(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>Return the name(s) of the child node(s) for this node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L413-L417' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getdescendants-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getdescendants-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getdescendants</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getdescendants(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>Return the names of all of the nodes that descend from this node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L422-L426' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getheight-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getheight-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getheight</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getheight(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>Return the height of the node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L442-L446' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getinbound' href='#Phylo.getinbound'>#</a>
+<strong><code>Phylo.getinbound</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>getinbound(node::AbstractNode)
+getinbound(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>return the name of the inbound branch to this node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L363-L368' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getleafinfo-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getleafinfo-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getleafinfo</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getleafinfo(::AbstractTree, label)
+</pre></div>
+
+
+<p>retrieve the leaf info for a leaf of the tree.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L557-L561' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getleafnames-Tuple{Phylo.AbstractTree}' href='#Phylo.getleafnames-Tuple{Phylo.AbstractTree}'>#</a>
+<strong><code>Phylo.getleafnames</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getleafnames(::AbstractTree)
+</pre></div>
+
+
+<p>Retrieve the leaf names from the tree.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L548-L552' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getlength' href='#Phylo.getlength'>#</a>
+<strong><code>Phylo.getlength</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>getlength(branch::AbstractBranch)
+getlength(tree::AbstractTree, branchname)
+</pre></div>
+
+
+<p>Return the length of this branch.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L495-L500' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getnode-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getnode-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getnode</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getnode(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L111-L115' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getnodenames-Tuple{Phylo.AbstractTree}' href='#Phylo.getnodenames-Tuple{Phylo.AbstractTree}'>#</a>
+<strong><code>Phylo.getnodenames</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getnodenames(tree::AbstractTree)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L93-L97' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getnoderecord-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getnoderecord-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getnoderecord</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getnoderecord(::AbstractTree, label)
+</pre></div>
+
+
+<p>retrieve the node record for a leaf of the tree.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L575-L579' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getoutbounds' href='#Phylo.getoutbounds'>#</a>
+<strong><code>Phylo.getoutbounds</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>getoutbounds(node::AbstractNode)
+getoutbounds(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>Return the names of the outbound branches from this node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L397-L402' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getparent-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.getparent-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.getparent</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getparent(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>Return the name of the parent node for this node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L379-L383' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getrootheight-Tuple{Phylo.AbstractTree}' href='#Phylo.getrootheight-Tuple{Phylo.AbstractTree}'>#</a>
+<strong><code>Phylo.getrootheight</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>getrootheight(tree::AbstractTree)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L160-L164' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.getsource' href='#Phylo.getsource'>#</a>
+<strong><code>Phylo.getsource</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>getsource(branch::AbstractBranch)
+getsource(tree::AbstractTree, branchname)
+</pre></div>
+
+
+<p>Return the source node for this branch.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L463-L468' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.gettarget' href='#Phylo.gettarget'>#</a>
+<strong><code>Phylo.gettarget</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>gettarget(branch::AbstractBranch)
+gettarget(tree::AbstractTree, branchname)
+</pre></div>
+
+
+<p>Return the target node for this branch.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L479-L484' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.hasbranch-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.hasbranch-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.hasbranch</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>hasbranch(tree::AbstractTree, branchname)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L131-L135' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.hasheight' href='#Phylo.hasheight'>#</a>
+<strong><code>Phylo.hasheight</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>hasheight(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>Does the node have a height defined?</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L431-L435' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.hasinbound' href='#Phylo.hasinbound'>#</a>
+<strong><code>Phylo.hasinbound</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>hasinbound(node::AbstractNode)
+hasinbound(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p>Does the node have an inbound connection?</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L331-L336' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.hasnode-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.hasnode-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.hasnode</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>hasnode(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L102-L106' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.hasrootheight-Tuple{Phylo.AbstractTree}' href='#Phylo.hasrootheight-Tuple{Phylo.AbstractTree}'>#</a>
+<strong><code>Phylo.hasrootheight</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>hasrootheight(tree::AbstractTree)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L151-L155' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.heightstoroot-Tuple{Phylo.AbstractTree}' href='#Phylo.heightstoroot-Tuple{Phylo.AbstractTree}'>#</a>
+<strong><code>Phylo.heightstoroot</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>heights(tree::AbstractTree)
+</pre></div>
+
+
+<p>Height of all of the leaves of the tree above the root </p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/routes.jl#L112-L116' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.heighttoroot-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.heighttoroot-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.heighttoroot</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>height(tree::AbstractTree, node)
+</pre></div>
+
+
+<p>Height of a node of the tree above the root </p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/routes.jl#L102-L106' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.indegree' href='#Phylo.indegree'>#</a>
+<strong><code>Phylo.indegree</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>indegree(node::AbstractNode)
+indegree(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L283-L288' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.isinternal' href='#Phylo.isinternal'>#</a>
+<strong><code>Phylo.isinternal</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>isinternal(node::AbstractNode)
+isinternal(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L251-L256' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.isleaf' href='#Phylo.isleaf'>#</a>
+<strong><code>Phylo.isleaf</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>isleaf(node::AbstractNode)
+isleaf(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L219-L224' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.isroot' href='#Phylo.isroot'>#</a>
+<strong><code>Phylo.isroot</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>isroot(node::AbstractNode)
+isroot(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L235-L240' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.isunattached' href='#Phylo.isunattached'>#</a>
+<strong><code>Phylo.isunattached</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>isunattached(node::AbstractNode)
+isunattached(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L267-L272' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.nodehistory-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL}} where BL where NL' href='#Phylo.nodehistory-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL}} where BL where NL'>#</a>
+<strong><code>Phylo.nodehistory</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>nodehistory(tree::AbstractTree, node)
+</pre></div>
+
+
+<p>Find the node route between a node on a tree and its root</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/routes.jl#L37-L41' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.noderoute-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL,NL}} where BL where NL' href='#Phylo.noderoute-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL,NL}} where BL where NL'>#</a>
+<strong><code>Phylo.noderoute</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>noderoute(tree::AbstractTree, node1, node2)
+</pre></div>
+
+
+<p>Find the node route between two nodes on a tree</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/routes.jl#L61-L65' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.outdegree' href='#Phylo.outdegree'>#</a>
+<strong><code>Phylo.outdegree</code></strong> &mdash; <em>Function</em>.</p>
+<div class="codehilite"><pre><span></span>outdegree(node::AbstractNode)
+outdegree(tree::AbstractTree, nodename)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L299-L304' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.setheight!-Tuple{Phylo.AbstractTree,Any,Any}' href='#Phylo.setheight!-Tuple{Phylo.AbstractTree,Any,Any}'>#</a>
+<strong><code>Phylo.setheight!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>setheight!(tree::AbstractTree, nodename, height)
+</pre></div>
+
+
+<p>Set the height of the node.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L452-L456' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.setleafinfo!-Tuple{Phylo.AbstractTree,Any,Any}' href='#Phylo.setleafinfo!-Tuple{Phylo.AbstractTree,Any,Any}'>#</a>
+<strong><code>Phylo.setleafinfo!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>setleafinfo!(::AbstractTree, label, value)
+</pre></div>
+
+
+<p>Set the leaf info for a leaf of the tree.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L566-L570' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.setnoderecord!-Tuple{Phylo.AbstractTree,Any,Any}' href='#Phylo.setnoderecord!-Tuple{Phylo.AbstractTree,Any,Any}'>#</a>
+<strong><code>Phylo.setnoderecord!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>setnoderecord(::AbstractTree, label, value)
+</pre></div>
+
+
+<p>Set the node record for a node of the tree.</p>
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L584-L588' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.setrootheight!-Tuple{Phylo.AbstractTree,Any}' href='#Phylo.setrootheight!-Tuple{Phylo.AbstractTree,Any}'>#</a>
+<strong><code>Phylo.setrootheight!</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>setrootheight!(tree::AbstractTree, height)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L169-L173' class='documenter-source'>source</a><br></p>
+<p><a id='Phylo.validate-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL}}} where BL where NL' href='#Phylo.validate-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL}}} where BL where NL'>#</a>
+<strong><code>Phylo.validate</code></strong> &mdash; <em>Method</em>.</p>
+<div class="codehilite"><pre><span></span>validate(tree::AbstractTree)
+</pre></div>
+
+
+<p><a target='_blank' href='https://github.com/richardreeve/Phylo.jl/tree/b1ceaefc7add7279ce6b140bba181f5c7c2401db/src/Interface.jl#L178-L182' class='documenter-source'>source</a><br></p>
+<ul>
+<li><a href=".#Phylo"><code>Phylo</code></a></li>
+<li><a href="api/#Phylo.API"><code>Phylo.API</code></a></li>
+<li><a href=".#Phylo.BinaryNode"><code>Phylo.BinaryNode</code></a></li>
+<li><a href=".#Phylo.BinaryTree"><code>Phylo.BinaryTree</code></a></li>
+<li><a href=".#Phylo.Branch"><code>Phylo.Branch</code></a></li>
+<li><a href=".#Phylo.NamedTree"><code>Phylo.NamedTree</code></a></li>
+<li><a href=".#Phylo.Nonultrametric"><code>Phylo.Nonultrametric</code></a></li>
+<li><a href=".#Phylo.Ultrametric"><code>Phylo.Ultrametric</code></a></li>
+<li><a href="api/#Phylo.API._addbranch!"><code>Phylo.API._addbranch!</code></a></li>
+<li><a href="api/#Phylo.API._addnode!"><code>Phylo.API._addnode!</code></a></li>
+<li><a href="api/#Phylo.API._addnodes!"><code>Phylo.API._addnodes!</code></a></li>
+<li><a href="api/#Phylo.API._branch!-Tuple{Phylo.AbstractTree,Any,Float64,Any,Any}"><code>Phylo.API._branch!</code></a></li>
+<li><a href="api/#Phylo.API._deletebranch!"><code>Phylo.API._deletebranch!</code></a></li>
+<li><a href="api/#Phylo.API._deletenode!"><code>Phylo.API._deletenode!</code></a></li>
+<li><a href="api/#Phylo.API._getbranch"><code>Phylo.API._getbranch</code></a></li>
+<li><a href="api/#Phylo.API._getbranches"><code>Phylo.API._getbranches</code></a></li>
+<li><a href="api/#Phylo.API._getbranchnames"><code>Phylo.API._getbranchnames</code></a></li>
+<li><a href="api/#Phylo.API._getheight-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.API._getheight</code></a></li>
+<li><a href="api/#Phylo.API._getinbound"><code>Phylo.API._getinbound</code></a></li>
+<li><a href="api/#Phylo.API._getlength"><code>Phylo.API._getlength</code></a></li>
+<li><a href="api/#Phylo.API._getnode"><code>Phylo.API._getnode</code></a></li>
+<li><a href="api/#Phylo.API._getnodenames"><code>Phylo.API._getnodenames</code></a></li>
+<li><a href="api/#Phylo.API._getnodes"><code>Phylo.API._getnodes</code></a></li>
+<li><a href="api/#Phylo.API._getoutbounds"><code>Phylo.API._getoutbounds</code></a></li>
+<li><a href="api/#Phylo.API._getrootheight-Tuple{Phylo.AbstractTree}"><code>Phylo.API._getrootheight</code></a></li>
+<li><a href="api/#Phylo.API._getsource"><code>Phylo.API._getsource</code></a></li>
+<li><a href="api/#Phylo.API._gettarget"><code>Phylo.API._gettarget</code></a></li>
+<li><a href="api/#Phylo.API._hasbranch"><code>Phylo.API._hasbranch</code></a></li>
+<li><a href="api/#Phylo.API._hasheight-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.API._hasheight</code></a></li>
+<li><a href="api/#Phylo.API._hasinbound"><code>Phylo.API._hasinbound</code></a></li>
+<li><a href="api/#Phylo.API._hasinboundspace-Tuple{Phylo.AbstractNode}"><code>Phylo.API._hasinboundspace</code></a></li>
+<li><a href="api/#Phylo.API._hasnode"><code>Phylo.API._hasnode</code></a></li>
+<li><a href="api/#Phylo.API._hasoutboundspace-Tuple{Phylo.AbstractNode}"><code>Phylo.API._hasoutboundspace</code></a></li>
+<li><a href="api/#Phylo.API._hasrootheight-Tuple{Phylo.AbstractTree}"><code>Phylo.API._hasrootheight</code></a></li>
+<li><a href="api/#Phylo.API._indegree-Tuple{Phylo.AbstractNode}"><code>Phylo.API._indegree</code></a></li>
+<li><a href="api/#Phylo.API._isinternal-Tuple{Phylo.AbstractNode}"><code>Phylo.API._isinternal</code></a></li>
+<li><a href="api/#Phylo.API._isleaf-Tuple{Phylo.AbstractNode}"><code>Phylo.API._isleaf</code></a></li>
+<li><a href="api/#Phylo.API._isroot-Tuple{Phylo.AbstractNode}"><code>Phylo.API._isroot</code></a></li>
+<li><a href="api/#Phylo.API._isunattached-Tuple{Phylo.AbstractNode}"><code>Phylo.API._isunattached</code></a></li>
+<li><a href="api/#Phylo.API._newbranchlabel"><code>Phylo.API._newbranchlabel</code></a></li>
+<li><a href="api/#Phylo.API._newnodelabel"><code>Phylo.API._newnodelabel</code></a></li>
+<li><a href="api/#Phylo.API._outdegree"><code>Phylo.API._outdegree</code></a></li>
+<li><a href="api/#Phylo.API._setheight!-Tuple{Phylo.AbstractTree,Any,Any}"><code>Phylo.API._setheight!</code></a></li>
+<li><a href="api/#Phylo.API._setrootheight!-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.API._setrootheight!</code></a></li>
+<li><a href="api/#Phylo.API._setsource!"><code>Phylo.API._setsource!</code></a></li>
+<li><a href="api/#Phylo.API._settarget!"><code>Phylo.API._settarget!</code></a></li>
+<li><a href="api/#Phylo.API._validate-Tuple{Phylo.AbstractTree}"><code>Phylo.API._validate</code></a></li>
+<li><a href=".#Phylo.addbranch!"><code>Phylo.addbranch!</code></a></li>
+<li><a href=".#Phylo.addnode!"><code>Phylo.addnode!</code></a></li>
+<li><a href=".#Phylo.addnodes!"><code>Phylo.addnodes!</code></a></li>
+<li><a href=".#Phylo.branch!"><code>Phylo.branch!</code></a></li>
+<li><a href=".#Phylo.branchhistory-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL}} where BL where NL"><code>Phylo.branchhistory</code></a></li>
+<li><a href=".#Phylo.branchroute-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL,NL}} where BL where NL"><code>Phylo.branchroute</code></a></li>
+<li><a href=".#Phylo.changesource!-Tuple{Phylo.AbstractTree,Any,Any}"><code>Phylo.changesource!</code></a></li>
+<li><a href=".#Phylo.changetarget!-Tuple{Phylo.AbstractTree,Any,Any}"><code>Phylo.changetarget!</code></a></li>
+<li><a href=".#Phylo.clearrootheight!-Tuple{Phylo.BinaryTree}"><code>Phylo.clearrootheight!</code></a></li>
+<li><a href=".#Phylo.deletebranch!-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.deletebranch!</code></a></li>
+<li><a href=".#Phylo.deletenode!-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.deletenode!</code></a></li>
+<li><a href=".#Phylo.distance-Tuple{Phylo.AbstractTree,Any,Any}"><code>Phylo.distance</code></a></li>
+<li><a href=".#Phylo.distances-Tuple{Phylo.AbstractTree}"><code>Phylo.distances</code></a></li>
+<li><a href=".#Phylo.getancestors-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getancestors</code></a></li>
+<li><a href=".#Phylo.getbranch-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getbranch</code></a></li>
+<li><a href=".#Phylo.getbranchnames-Tuple{Phylo.AbstractTree}"><code>Phylo.getbranchnames</code></a></li>
+<li><a href=".#Phylo.getchildren-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getchildren</code></a></li>
+<li><a href=".#Phylo.getdescendants-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getdescendants</code></a></li>
+<li><a href=".#Phylo.getheight-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getheight</code></a></li>
+<li><a href=".#Phylo.getinbound"><code>Phylo.getinbound</code></a></li>
+<li><a href=".#Phylo.getleafinfo-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getleafinfo</code></a></li>
+<li><a href=".#Phylo.getleafnames-Tuple{Phylo.AbstractTree}"><code>Phylo.getleafnames</code></a></li>
+<li><a href=".#Phylo.getlength"><code>Phylo.getlength</code></a></li>
+<li><a href=".#Phylo.getnode-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getnode</code></a></li>
+<li><a href=".#Phylo.getnodenames-Tuple{Phylo.AbstractTree}"><code>Phylo.getnodenames</code></a></li>
+<li><a href=".#Phylo.getnoderecord-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getnoderecord</code></a></li>
+<li><a href=".#Phylo.getoutbounds"><code>Phylo.getoutbounds</code></a></li>
+<li><a href=".#Phylo.getparent-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.getparent</code></a></li>
+<li><a href=".#Phylo.getrootheight-Tuple{Phylo.AbstractTree}"><code>Phylo.getrootheight</code></a></li>
+<li><a href=".#Phylo.getsource"><code>Phylo.getsource</code></a></li>
+<li><a href=".#Phylo.gettarget"><code>Phylo.gettarget</code></a></li>
+<li><a href=".#Phylo.hasbranch-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.hasbranch</code></a></li>
+<li><a href=".#Phylo.hasheight"><code>Phylo.hasheight</code></a></li>
+<li><a href=".#Phylo.hasinbound"><code>Phylo.hasinbound</code></a></li>
+<li><a href=".#Phylo.hasnode-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.hasnode</code></a></li>
+<li><a href=".#Phylo.hasrootheight-Tuple{Phylo.AbstractTree}"><code>Phylo.hasrootheight</code></a></li>
+<li><a href=".#Phylo.heightstoroot-Tuple{Phylo.AbstractTree}"><code>Phylo.heightstoroot</code></a></li>
+<li><a href=".#Phylo.heighttoroot-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.heighttoroot</code></a></li>
+<li><a href=".#Phylo.indegree"><code>Phylo.indegree</code></a></li>
+<li><a href=".#Phylo.isinternal"><code>Phylo.isinternal</code></a></li>
+<li><a href=".#Phylo.isleaf"><code>Phylo.isleaf</code></a></li>
+<li><a href=".#Phylo.isroot"><code>Phylo.isroot</code></a></li>
+<li><a href=".#Phylo.isunattached"><code>Phylo.isunattached</code></a></li>
+<li><a href=".#Phylo.nodehistory-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL}} where BL where NL"><code>Phylo.nodehistory</code></a></li>
+<li><a href=".#Phylo.noderoute-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL},NL,NL}} where BL where NL"><code>Phylo.noderoute</code></a></li>
+<li><a href=".#Phylo.outdegree"><code>Phylo.outdegree</code></a></li>
+<li><a href=".#Phylo.setheight!-Tuple{Phylo.AbstractTree,Any,Any}"><code>Phylo.setheight!</code></a></li>
+<li><a href=".#Phylo.setleafinfo!-Tuple{Phylo.AbstractTree,Any,Any}"><code>Phylo.setleafinfo!</code></a></li>
+<li><a href=".#Phylo.setnoderecord!-Tuple{Phylo.AbstractTree,Any,Any}"><code>Phylo.setnoderecord!</code></a></li>
+<li><a href=".#Phylo.setrootheight!-Tuple{Phylo.AbstractTree,Any}"><code>Phylo.setrootheight!</code></a></li>
+<li><a href=".#Phylo.validate-Union{Tuple{BL}, Tuple{NL}, Tuple{Phylo.AbstractTree{NL,BL}}} where BL where NL"><code>Phylo.validate</code></a></li>
+</ul>
+                
+                  
+                
+              
+              
+                
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+        
+          <a href="api/" title="API" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                API
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="http://www.mkdocs.org" title="MkDocs">MkDocs</a>
+        and
+        <a href="http://squidfunk.github.io/mkdocs-material/" title="Material for MkDocs">
+          Material for MkDocs</a>
+      </div>
+      
+        
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="./assets/javascripts/application-b30566c560.js"></script>
+      
+      
+      <script>app.initialize({url:{base:"."}})</script>
+      
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="./assets/mathjaxhelper.js"></script>
+      
+    
+    
+      
+    
+  </body>
+</html>

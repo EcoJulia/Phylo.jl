@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Creating phylogenies · Phylo.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Phylo.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../tutorial/">Tutorial / Quick start</a></li><li><span class="tocitem">Manual</span><ul><li><a class="tocitem" href="../treetypes/">Phylogeny data types</a></li><li class="is-active"><a class="tocitem" href>Creating phylogenies</a></li><li><a class="tocitem" href="../manipulating/">Manipulating and building phylogenies</a></li><li><a class="tocitem" href="../traversal/">Traversal and iterators</a></li><li><a class="tocitem" href="../attributes/">Getting phylogeny attributes</a></li><li><a class="tocitem" href="../modelling/">Modelling traits</a></li><li><a class="tocitem" href="../plotting/">Plotting</a></li></ul></li><li><a class="tocitem" href="../../functionlist/">List of functions</a></li><li><a class="tocitem" href="../../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Manual</a></li><li class="is-active"><a href>Creating phylogenies</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Creating phylogenies</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/EcoJulia/Phylo.jl/blob/dev/docs/src/man/input.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Creating-phylogenies"><a class="docs-heading-anchor" href="#Creating-phylogenies">Creating phylogenies</a><a id="Creating-phylogenies-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-phylogenies" title="Permalink"></a></h1><h3 id="Reading-phylogenies-from-disk"><a class="docs-heading-anchor" href="#Reading-phylogenies-from-disk">Reading phylogenies from disk</a><a id="Reading-phylogenies-from-disk-1"></a><a class="docs-heading-anchor-permalink" href="#Reading-phylogenies-from-disk" title="Permalink"></a></h3><p>Phylo can read newick trees either from strings,</p><pre><code class="language-julia hljs">using Phylo
+simpletree = parsenewick(&quot;((,Tip:1.0)Internal,)Root;&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RootedTree with 3 tips, 5 nodes and 4 branches.
+Leaf names are Tip, Node 1 and Node 4
+</code></pre><p>which will result in the following tree:</p><pre><code class="language-julia hljs">getbranches(simpletree)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">skipmissing(Union{Missing, LinkBranch{OneRoot, String, Dict{String, Any}, Float64}}[LinkBranch 1, from node Internal to node Tip (length 1.0).
+, LinkBranch 2, from node Internal to node Node 1.
+, LinkBranch 3, from node Root to node Internal.
+, LinkBranch 4, from node Root to node Node 4.
+])</code></pre><p>or from files</p><pre><code class="language-julia hljs">tree = open(parsenewick, Phylo.path(&quot;H1N1.newick&quot;))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are 227, 294, 295, 110, 390, ... [501 omitted] ... and 418
+</code></pre><p>It can read nexus trees from files too:</p><pre><code class="language-julia hljs">ts = open(parsenexus, Phylo.path(&quot;H1N1.trees&quot;))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">TreeSet with 2 trees, each with 507 tips.
+Tree names are TREE2 and TREE1
+
+TREE1: RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_BRAZIL_11_1978, H1N1_A_TAHITI_8_1998, H1N1_A_TAIWAN_1_1986, H1N1_A_BAYERN_7_1995, H1N1_A_ENGLAND_45_1998, ... [501 omitted] ... and H1N1_A_PUERTORICO_8_1934
+
+TREE2: RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_BRAZIL_11_1978, H1N1_A_TAHITI_8_1998, H1N1_A_TAIWAN_1_1986, H1N1_A_BAYERN_7_1995, H1N1_A_ENGLAND_45_1998, ... [501 omitted] ... and H1N1_A_PUERTORICO_8_1934
+</code></pre><p>Reading multiple trees from a nexus file returns a <code>TreeSet</code> - index to get the individual trees</p><pre><code class="language-julia hljs">gettreeinfo(ts)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Dict{String, Any}} with 2 entries:
+  &quot;TREE2&quot; =&gt; Dict(&quot;lnP&quot;=&gt;-1.0)
+  &quot;TREE1&quot; =&gt; Dict(&quot;lnP&quot;=&gt;1.0)</code></pre><pre><code class="language-julia hljs">ts[&quot;TREE1&quot;]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RootedTree with 507 tips, 1013 nodes and 1012 branches.
+Leaf names are H1N1_A_BRAZIL_11_1978, H1N1_A_TAHITI_8_1998, H1N1_A_TAIWAN_1_1986, H1N1_A_BAYERN_7_1995, H1N1_A_ENGLAND_45_1998, ... [501 omitted] ... and H1N1_A_PUERTORICO_8_1934
+</code></pre><h3 id="Creating-random-phylogenies"><a class="docs-heading-anchor" href="#Creating-random-phylogenies">Creating random phylogenies</a><a id="Creating-random-phylogenies-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-random-phylogenies" title="Permalink"></a></h3><p>The package can be used to generate random trees using the framework from  <code>Distributions</code>. For instance, to construct a sampler for 5 tip non-ultrametric  trees and generate a random tree of that type</p><pre><code class="language-julia hljs">using Phylo
+nu = Nonultrametric(5);
+tree = rand(nu)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RootedTree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 5, tip 1, tip 2, tip 3 and tip 4
+</code></pre><p>Or two trees</p><pre><code class="language-julia hljs">trees = rand(nu, [&quot;Tree 1&quot;, &quot;Tree 2&quot;])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">TreeSet with 2 trees, each with 5 tips.
+Tree names are Tree 2 and Tree 1
+
+Tree 1: RootedTree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 3, tip 5, tip 2, tip 1 and tip 4
+
+Tree 2: RootedTree with 5 tips, 9 nodes and 8 branches.
+Leaf names are tip 4, tip 5, tip 1, tip 3 and tip 2
+</code></pre><h3 id="Importing-phylogenies-from-R"><a class="docs-heading-anchor" href="#Importing-phylogenies-from-R">Importing phylogenies from R</a><a id="Importing-phylogenies-from-R-1"></a><a class="docs-heading-anchor-permalink" href="#Importing-phylogenies-from-R" title="Permalink"></a></h3><p>Phylo allows transferring trees from R&#39;s <code>ape</code> package directly via RCall. This allows any existing R library functions to be carried out on julia trees.  Naturally the medium-term plan is to make this package feature-complete with existing functionality in R, and as a result the R interface is not built  into the package, avoiding having RCall (and R) a dependency. Instead, if you want to use the R interface you need to do it manually, as below:</p><pre><code class="language-julia hljs">julia&gt; using RCall
+
+julia&gt; include(Phylo.path(&quot;rcall.jl&quot;, dir = &quot;src&quot;));
+
+R&gt; library(ape)</code></pre><p>You can then translate back and forth using <code>rcopy</code> on R <code>phylo</code> objects, and <code>RObject</code> constructors on julia <code>NamedTree</code> types to keep them in Julia or <code>@rput</code> to move the object into R:</p><pre><code class="language-julia hljs">julia&gt; rt = rcall(:rtree, 10)
+RCall.RObject{RCall.VecSxp}
+
+Phylogenetic tree with 10 tips and 9 internal nodes.
+
+Tip labels:
+  t10, t8, t1, t2, t6, t5, ...
+
+Rooted; includes branch lengths.
+
+julia&gt; jt = rcopy(NamedTree, rt)
+NamedTree with 10 tips, 19 nodes and 18 branches.
+Leaf names are t8, t3, t7, t9, t6, ... [4 omitted] ... and t1
+
+julia&gt; rjt = RObject(jt); # manually translate it back to R
+
+R&gt; if (all.equal($rjt, $rt)) &quot;no damage in translation&quot;
+[1] &quot;no damage in translation&quot;
+
+julia&gt; @rput rt; # Or use macros to pass R object back to R
+
+julia&gt; @rput jt; # And automatically translate jt back to R
+
+R&gt; jt
+
+Phylogenetic tree with 10 tips and 9 internal nodes.
+
+Tip labels:
+  t10, t8, t1, t2, t6, t5, ...
+
+Rooted; includes branch lengths.
+
+R&gt; if (all.equal(rt, jt)) &quot;no damage in translation&quot;
+[1] &quot;no damage in translation&quot;</code></pre><p>```@docs parsenewick parsenexus Nonultrametric Ultrametric</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../treetypes/">« Phylogeny data types</a><a class="docs-footer-nextpage" href="../manipulating/">Manipulating and building phylogenies »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 26 April 2023 23:32">Wednesday 26 April 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
