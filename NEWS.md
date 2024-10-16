@@ -1,5 +1,9 @@
 # NEWS
 
+- v0.6.0
+  - Add preliminary inference code
+  - Bugfix for dropping no tips
+  - Minor metadata fixes
 - v0.5.4
   - Use ResearchSoftwareMetadata package
 - v0.5.3

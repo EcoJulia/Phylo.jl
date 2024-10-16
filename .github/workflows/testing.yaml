@@ -69,6 +69,7 @@ jobs:
       if: ${{ matrix.r-testing }}
       run: |
         install.packages("ape", repos="http://cran.r-project.org")
+        install.packages("phylolm", repos="http://cran.r-project.org")
       shell: R --vanilla --file={0}
     - name: Cache
       uses: julia-actions/cache@v2

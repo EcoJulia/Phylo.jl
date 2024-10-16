@@ -7,7 +7,11 @@ using RCall
 using DataFrames
 
 global skipR = !rcopy(R"require(ape)")
-
+if skipR
+    @warn "Skipping RCall tests, no ape package found"
+else
+    @info "Running RCall tests"
+end
 # Run tree comparisons on increasing numbers of tips
 @testset "RCall - testing Phylo vs ape" begin
     @testset "For $TreeType" for TreeType in (skipR ? [] :

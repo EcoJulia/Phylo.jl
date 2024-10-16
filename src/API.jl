@@ -922,7 +922,7 @@ function _src end
 _src(::T, ::B) where {T, B} = error("No _src() function for $T, $B")
 
 """
-    _dst(branch::AbstractBranch)
+    _dst(tree::AbstractTree, branch::AbstractBranch)
 
 Return destination node for a branch. Must be implemented for any rooted
 AbstractBranch subtype.

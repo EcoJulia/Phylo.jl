@@ -126,23 +126,23 @@ end
     tree = rand(Nonultrametric(species))
     @test validate!(tree)
 
-    # Missing node input
+    # Missing node input
     tree = rand(Nonultrametric(species))
     getnode(tree, species[1]).in = nothing
     @test !validate!(tree)
 
-    # Missing node exit
+    # Missing node exit
     tree = rand(Nonultrametric(species))
     empty!(getnode(tree, species[1]).in.in.conns)
     @test !validate!(tree)
 
-    # Missing branch input
+    # Missing branch input
     tree = rand(Nonultrametric(species))
     b = getinbound(tree, species[1])
     b.in = nothing
     @test !validate!(tree)
 
-    # Missing branch exit
+    # Missing branch exit
     tree = rand(Nonultrametric(species))
     b = getinbound(tree, species[1])
     empty!(b.conns)

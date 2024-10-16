@@ -600,7 +600,7 @@ _getnodedata(::RecursiveTree, node::RecursiveNode) = node.data
 import Phylo.API: _setnodedata!
 function _setnodedata!(::RecursiveTree{RT, NL, NodeData, BranchData},
                        node::RecursiveNode{RT, NL, NodeData, BranchData},
-                       data::NodeData) where {RT, NL, NodeData, BranchData}
+                       data) where {RT, NL, NodeData, BranchData}
     return (node.data = data)
 end
 

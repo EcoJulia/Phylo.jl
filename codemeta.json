@@ -4,10 +4,10 @@
     "applicationCategory": "ecology",
     "codeRepository": "https://github.com/EcoJulia/Phylo.jl",
     "dateCreated": "2017-04-21",
-    "dateModified": "2024-07-20",
+    "dateModified": "2024-10-14",
     "datePublished": "2018-08-11",
     "description": "Package for creating and manipulating phylogenies in Julia",
-    "downloadUrl": "https://github.com/EcoJulia/Phylo.jl/archive/refs/tags/v0.5.4.tar.gz",
+    "downloadUrl": "https://github.com/EcoJulia/Phylo.jl/archive/refs/tags/v0.6.0.tar.gz",
     "keywords": [
         "EcoJulia",
         "ecology",
@@ -23,7 +23,7 @@
         "macOS"
     ],
     "programmingLanguage": "julia",
-    "version": "v0.5.4",
+    "version": "v0.6.0",
     "codemeta:contIntegration": {
         "id": "https://github.com/EcoJulia/Phylo.jl/actions/workflows/testing.yaml"
     },
@@ -40,6 +40,19 @@
             "familyName": "Reeve",
             "email": "richard.reeve@glasgow.ac.uk",
             "id": "https://orcid.org/0000-0003-2589-8091",
+            "affiliation": [
+                {
+                    "type": "Organization",
+                    "name": "University of Glasgow",
+                    "identifier": "https://ror.org/00vtgdb53"
+                }
+            ]
+        },
+        {
+            "type": "Person",
+            "givenName": "Emily",
+            "familyName": "Davison",
+            "id": "https://orcid.org/0009-0000-3656-8309",
             "affiliation": [
                 {
                     "type": "Organization",
