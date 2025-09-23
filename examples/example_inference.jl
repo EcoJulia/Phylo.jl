@@ -8,6 +8,8 @@ using CSV
 using Profile
 using ProfileView
 using Statistics
+using ForwardDiff
+using DynamicPPL
 
 # needed for phylolm comaparison
 using RCall
@@ -15,6 +17,7 @@ using RCall
 # needed for Phyloetworks comaparison
 using PhyloNetworks
 using StatsModels
+
 
 Random.seed!(1234)
 
@@ -33,7 +36,7 @@ rdat = DataFrame(species = speciesnames, data = data);
 
 # add the data to the tree
 for i in eachrow(rdat)
-    setnodedata!(jtree, i.species, Phylo.traitdata(["trait"], [i.data]))
+    setnodedata!(jtree, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, ["trait"], [i.data]))
 end
 
 # run inference
@@ -123,7 +126,8 @@ rdat = DataFrame(species = leafnames, data = traitvector)
 
 # add data to the tree
 for i in eachrow(rdat)
-    setnodedata!(jtree, i.species, Phylo.traitdata(["trait"], [i.data]))
+    setnodedata!(jtree, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, 
+                    ["trait"], [i.data]))
 end
 
 # run inference
@@ -223,7 +227,7 @@ dat = combine(gdf,
 
 # add the data for tmin to the tree
 for i in eachrow(dat)
-    setnodedata!(bigtree, i.species, Phylo.traitdata(["tmin"], [i.tmin]))
+    setnodedata!(bigtree, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, ["tmin"], [i.tmin]))
 end
 
 # run inference
@@ -312,7 +316,8 @@ rdat = DataFrame(species = speciesnames, data1 = data1, data2 = data2);
 # add the data to the tree
 for i in eachrow(rdat)
     setnodedata!(multtree, i.species,
-                 Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]))
+                 Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, 
+                 ["trait1", "trait2"], [i.data1, i.data2]))
 end
 
 # run inference
@@ -356,7 +361,8 @@ rdat = DataFrame(species = leafnames, data1 = traitvector1,
 # add data to the tree
 for i in eachrow(rdat)
     setnodedata!(multtree2, i.species,
-                 Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]))
+                 Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}},
+                 ["trait1", "trait2"], [i.data1, i.data2]))
 end
 
 # run inference
@@ -370,6 +376,44 @@ estimaterates(multtree2, ["trait1", "trait2"], lambda = 0.1)
 
 # check inference run time
 @benchmark estimaterates(multtree2, ["trait1", "trait2"], lambda = 0.1)
+
+
+
+#multiple traits, one uniform, one BM
+const multtree3::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
+                                    "test/hummingbirds.tree")
+
+# load leafnames and generate uniform random trait values
+species = getleaves(multtree3)
+data1 = 1000 .* rand(length(species))
+
+a = BrownianTrait(multtree3, "BMtrait")
+BMtrait = rand(a)
+
+# get leaf names
+leafnames = getleafnames(multtree3);
+
+# add data to a vector
+data2 = Vector{Float64}();
+for leaf in leafnames
+    push!(data2, BMtrait[leaf])
+end
+
+# create a dataframe
+rdat = DataFrame(species = leafnames, data1 = data1,
+                 data2 = data2)
+
+# add data to the tree
+for i in eachrow(rdat)
+    setnodedata!(multtree3, i.species,
+                 Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}},
+                 ["trait1", "trait2"], [i.data1, i.data2]))
+end
+
+# run inference
+estimaterates(multtree3, ["trait1", "trait2"])
+
+
 
 # Preform inference on multiple traits using real world data
 # load the tree
@@ -412,7 +456,8 @@ dat = combine(gdf,
 # add the data for tmin to the tree
 for i in eachrow(dat)
     setnodedata!(multtree3, i.species,
-                 Phylo.traitdata(["tmin", "tmax"], [i.tmin, i.tmax]))
+                 Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}},
+                 ["tmin", "tmax"], [i.tmin, i.tmax]))
 end
 
 # run inference
