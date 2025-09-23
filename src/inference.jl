@@ -19,7 +19,7 @@ mutable struct TraitData{T <: Number, NTraits} <: AbstractTraitData # had to cha
     xl::T                         # 1' V^(-1) x  (we set x as 1)
     Q::Vector{T}                  # x' V^(-1) y
     xx::T                         # x' V^(-1) x
-    yy::T                         # y' V^(-1) y
+    yy::Matrix{T}                 # y' V^(-1) y
     v::Vector{Float64}            # used for PIC
     xlmult::Vector{Float64}       # 1' W^(-1) x  
     pmult::Matrix{Float64}        # 1' W^(-1) C1      
@@ -44,7 +44,8 @@ function traitdata(::Type{T}, name::Vector{String}, value::Vector{Float64},
     return TraitData{T, length(name)}(name, value, T(t), T(NaN), T(NaN),
                                       fill(T(NaN), length(name)), T(NaN),
                                       fill(T(NaN), length(name)), T(NaN),
-                                      T(NaN), fill(NaN, length(name)),
+                                      fill(NaN, length(name), length(name)), 
+                                      fill(NaN, length(name)),
                                       fill(NaN, length(name)),
                                       fill(NaN, length(name), length(name)),
                                       fill(NaN, length(name), length(name)),
@@ -105,7 +106,7 @@ function threepoint!(tree::T, trait::Vector{String},
             nd.xl = 1.0
             nd.Q = nodetrait / nodet
             nd.xx = inv(nodet)
-            nd.yy = nodetrait' * nodetrait / nodet
+            nd.yy = (nodetrait * nodetrait') / nodet
 
         else
             # need to find direct desendents 
@@ -128,7 +129,7 @@ function threepoint!(tree::T, trait::Vector{String},
             c2 = nodet * pA^2 / calc
             nd.Q = sum(s.Q for s in childdata) - c2 * nd.xl * nd.yl
             nd.xx = sum(s.xx for s in childdata) - c2 * nd.xl * nd.xl
-            nd.yy = sum(s.yy for s in childdata) - c2 * nd.yl' * nd.yl
+            nd.yy = sum(s.yy for s in childdata) - c2 * nd.yl * nd.yl'
         end
         # @assert getnodedata(tree, node) === nd
     end
@@ -184,8 +185,7 @@ function estimaterates!(tree::T, trait::Vector{String},
     nd = getnodedata(tree, nN)
 
     betahat = inv(nd.xx) * nd.Q
-    sigmahat = ((nd.yy .- 2 * betahat .* nd.Q' .+ betahat .* nd.xx .* betahat') ./
-                n)
+    sigmahat = ((nd.yy .- 2 * betahat' * nd.Q .+ betahat' * nd.xx * betahat) ./n)
 
     # NEED TO THINK ABOUT THIS
     while any(i -> i < 0, diag(sigmahat))
@@ -198,7 +198,7 @@ function estimaterates!(tree::T, trait::Vector{String},
         threepoint!(tree, trait, nodes)
         sigmahat = nd.yy / n
     end
-
+    
     k = length(trait)
 
     negloglik = (1.0 / 2.0) *
@@ -258,6 +258,12 @@ function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N},
             if isleaf(tree, node)
                 full = getheight(tree, node)
                 len = len + full * (1 - lambda[1])
+                if len < 0
+                    len = -len
+                end
+            end
+            if len < 0
+                len = -len
             end
             getnodedata(tree, node).t = len
         else
