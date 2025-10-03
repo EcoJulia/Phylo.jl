@@ -21,6 +21,19 @@ Random.seed!(678)
     return β, σ
 end
 
+
+@model function βσ_mult()
+    β_1 ~ Uniform(-100, 1000)
+    β_2 ~ Uniform(-100, 1000)
+    σ_1 ~ Uniform(0, 100)
+    σ_2 ~ Uniform(0, 100)
+    σ_12 ~ Uniform(-100, 100)
+
+    β = [β_1, β_2]
+    σ = [σ_1 σ_12; σ_12 σ_2]
+    return β, σ
+end
+
 @model function βσ_covariance(z, C)
     @submodel β, σ = βσ()
     z ~ MvNormal(β * ones(length(z)), σ * C)
@@ -37,6 +50,12 @@ end
     @submodel β, σ = βσ()
     λ ~ Uniform(0, 1.0)
     z ~ Phylo.MyDist3(σ, β, λ, tree)
+    return nothing
+end
+
+@model function βσ_multthreepoint(tree, z) # z needs to be for leaves in postorder
+    @submodel β, σ = βσ_mult()
+    z ~ Phylo.MyDist4(σ, β, tree) 
     return nothing
 end
 
@@ -250,8 +269,103 @@ spl3 = sample(model3, HMC(0.01, 5), n_samples)
 estimaterates(bigtree, ["tmin"], lambda = 0.5)
 
 
+# Multiple Traits, Real Data
+
+# load the data
+df = DataFrame(CSV.File("Data/Myrtaceae.csv"))
+
+# load the tree
+const bigtree2::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
+                                   "Data/Qian2016.tree")
+
+# remove missing species from dataframe
+dropmissing!(df, :species)
+
+# add underscores to dataframe
+df.species = replace.(df.species, " " => "_")
+
+# filter the tree and dataframe for the species that are in  both
+keep = intersect(getleafnames(bigtree2), df.species)
+keeptips!(bigtree2, keep)
+filter!(:species => x -> x ∈ keep, df)
+
+# use mean data for trait value
+gdf = groupby(df, :species)
+dat = combine(gdf,
+              [
+                  :tmin,
+                  :tmax,
+                  :trng,
+                  :stl1,
+                  :stl2,
+                  :stl3,
+                  :stl4,
+                  :swvl1,
+                  :swvl2,
+                  :swvl3,
+                  :swvl4,
+                  :ssr,
+                  :tp
+              ] .=> mean; renamecols = false)
+
+# add the data for tmin and tmax to the tree
+for i in eachrow(dat)
+    setnodedata!(bigtree2, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, ["tmin", "tmax"], [i.tmin, i.tmax]))
+end
+
+# trait needs to be a vector of trait names, used for functions later
+trait = ["tmin", "tmax"]
+nodes = getnodes(bigtree2, postorder)
+
+# add lengths to tree
+for node in nodes
+    val = getnodedata(bigtree2, node).value
+    if hasinbound(bigtree2, node)
+        len = Phylo.getlength(bigtree2, Phylo.getinbound(bigtree2, node))
+        td = traitdata(eltype(nodedatatype(typeof(bigtree2))), trait, val, len)
+        setnodedata!(bigtree2, node, td)
+    else
+        td = traitdata(eltype(nodedatatype(typeof(bigtree2))), trait, val)
+        setnodedata!(bigtree2, node, td)
+    end
+end
+
+
+leaves = getleafnames(bigtree2)
+z = [getnodedata(bigtree2, leaf).value for leaf in leaves]
+
+#sampling
+n_samples = 1_000
+model = βσ_multthreepoint(bigtree2, z);
+spl1 = sample(model, HMC(0.01, 5), n_samples)
+# 
+estimaterates(bigtree2, ["tmin", "tmax"])
+# nll 2792
+#loglikelihood(model, (β = [290.51874881519905, 294.6417529913535], σ = [7.786062891570292 6.164577138555438; 6.164577138555443 6.127933088653314]))
+a = loglikelihood(model, (β_1 = 290.51874881519905, β_2 = 294.6417529913535, σ_1 = 3.827698519289913, σ_12 = 5.288943783837451, σ_2 = 5.163073233166515))
+
+
+beta = [290, 295]
+sigma = [8 6; 6 6]
+sigma = [-4 -5; -5 -5]
+
+n = nleaves(bigtree2)
+nodes = getnodes(bigtree2, postorder)
+trait = getnodedata(bigtree2, nodes[1]).name
+m = 2
+
+threepoint!(bigtree2, trait, nodes)
+
+nN = last(nodes)
+nd = getnodedata(bigtree2, nN)
+
+-(1.0 / 2.0) * (n * m * log(2π) + m * nd.logV + n * log(abs(det(sigma))) + tr((nd.yy .- 2 * beta' * nd.Q .+ beta' * nd.xx * beta) * inv(sigma)))
+
+
+
 
 #Testing for scaling
+
 n_samples = 10_000
 
 #10 tips
