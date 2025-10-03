@@ -187,6 +187,7 @@ function estimaterates!(tree::T, trait::Vector{String},
     betahat = inv(nd.xx) * nd.Q
     sigmahat = ((nd.yy .- 2 * betahat' * nd.Q .+ betahat' * nd.xx * betahat) ./n)
 
+    
     # NEED TO THINK ABOUT THIS
     while any(i -> i < 0, diag(sigmahat))
         leaves = getleaves(tree)
@@ -202,7 +203,7 @@ function estimaterates!(tree::T, trait::Vector{String},
     k = length(trait)
 
     negloglik = (1.0 / 2.0) *
-                (n * k * log(2π) + nd.logV + n + n * log(abs(det(sigmahat))))
+                (n * k * log(2π) + k * nd.logV + k * n + n * log(abs(det(sigmahat))))
 
     return betahat, sigmahat, negloglik, lambda # only return lambda if used
 end
@@ -502,7 +503,7 @@ eltype(::Type{MD}) where {T, N <: Number, MD <: MyDist2{T, N}} = N
 
 # rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
 function Distributions.rand(rng::AbstractRNG, d::MyDist2)
-    a = BrownianTrait(d.tree, "BMtrait", σ² = d.sigma)
+    a = BrownianTrait(d.tree, "BMtrait", start = d.beta, σ² = d.sigma)
     bm_traits = rand(a)
     z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
     return z
@@ -522,6 +523,131 @@ function Distributions.logpdf(d::MyDist2, z::Vector{Float64})
     nd = getnodedata(d.tree, nN)
 
     return loglik(n, nd, d.sigma, d.beta)
+end
+
+#BrownianTrait that takes lambda into acount
+struct BrownianTraitSignal{T <: AbstractTree, N <: Number} <:
+       Sampleable{Univariate, EvolvedTrait{T}}
+    tree::T
+    trait::String
+    start::N
+    λ::N
+    _rand::Function
+    f::Function
+end
+
+function BrownianTraitSignal(tree::T, trait::String, start::N = 0.0, λ::N = 1.0;
+                       σ² = missing, σ = missing,
+                       f::Function = identity) where
+         {T <: AbstractTree, N <: Number}
+    iscontinuous(N) ||
+        throw(TypeError(:BrownianTrait,
+                        "Type $N must be continuous for a Gaussian Trait",
+                        AbstractFloat, N))
+    if ismissing(σ)
+        σ = sqrt(σ²)
+    end
+
+    f ≢ identity && f(start) ≉ start &&
+        @warn "Note that the third argument (the starting state) for trait '$trait' is untransformed - transformed version is $(f(start))"
+
+    if ismissing(σ)
+        dimension(N) ≡
+        dimension(sqrt(getlength(tree, first(getbranches(tree))))) ||
+            throw(DimensionMismatch("Dimensions of start, σ[²] and branch lengths must combine correctly if using Unitful"))
+        return BrownianTraitSignal{T, N}(tree, trait, start, λ,
+                                   ((rng::AbstractRNG, start::N, length) -> start +
+                                                                            randn(rng,
+                                                                                  typeof(one(start))) *
+                                                                            sqrt(length)),
+                                   f)
+    else
+        dimension(N) ≡
+        dimension(σ * sqrt(getlength(tree,
+                                     first(getbranches(tree))))) ||
+            throw(DimensionMismatch("Dimensions of start, σ[²] and branch lengths must combine correctly if using Unitful"))
+        return BrownianTraitSignal{T, N}(tree, trait, start, λ,
+                                   ((rng::AbstractRNG, start::N, length) -> start +
+                                                                            σ *
+                                                                            randn(rng,
+                                                                                  typeof(one(start))) *
+                                                                            sqrt(length)),
+                                   f)
+    end
+end
+
+function rand!(rng::AbstractRNG,
+               bm::BrownianTraitSignal{TREE, N},
+               tree::TREE) where {TREE <: AbstractTree, N <: Number}
+    trait = Dict{nodetype(TREE), N}()
+    use_dict = (bm.f ≢ identity)
+    for node in traversal(tree, preorder)
+        if isroot(tree, node)
+            if use_dict
+                trait[node] = bm.start
+                setnodedata!(tree, node, bm.trait, bm.f(bm.start))
+            else
+                setnodedata!(tree, node, bm.trait, bm.start)
+            end
+        elseif isleaf(tree, node)
+            inb = getinbound(tree, node)
+            prt = src(tree, inb)
+            previous = use_dict ? trait[prt] :
+                       getnodedata(tree, prt, bm.trait)
+            h = getheight(tree, node)
+            length = λ * N(getlength(tree, inb)) + (1 - λ) * h
+            value = bm._rand(rng, previous, length) 
+            if use_dict
+                trait[node] = value
+                setnodedata!(tree, node, bm.trait, bm.f(value))
+            else
+                setnodedata!(tree, node, bm.trait, value)
+            end
+        else
+            inb = getinbound(tree, node)
+            prt = src(tree, inb)
+            previous = use_dict ? trait[prt] :
+                       getnodedata(tree, prt, bm.trait)
+            value = bm._rand(rng, previous, λ * N(getlength(tree, inb)))
+            if use_dict
+                trait[node] = value
+                setnodedata!(tree, node, bm.trait, bm.f(value))
+            else
+                setnodedata!(tree, node, bm.trait, value)
+            end
+        end
+    end
+    return tree
+end
+
+function rand(rng::AbstractRNG,
+              bm::BrownianTraitSignal{TREE, N}) where {TREE <: AbstractTree,
+                                                 N <: Number}
+    untrait = Dict{nodetype(TREE), N}()
+    traitbyname = Dict{nodenametype(TREE), typeof(bm.f(bm.start))}()
+    for node in traversal(bm.tree, preorder)
+        if isroot(bm.tree, node)
+            untrait[node] = bm.start
+            traitbyname[getnodename(bm.tree, node)] = bm.f(bm.start)
+        elseif isleaf(bm.tree, node)
+            inb = getinbound(bm.tree, node)
+            prt = src(bm.tree, inb)
+            previous = untrait[prt]
+            h = getheight(bm.tree, node)
+            length = bm.λ * N(getlength(bm.tree, inb)) + (1 - bm.λ) * h
+            value = bm._rand(rng, previous, length)
+            untrait[node] = value
+            traitbyname[getnodename(bm.tree, node)] = bm.f(value)
+        else
+            inb = getinbound(bm.tree, node)
+            prt = src(bm.tree, inb)
+            previous = untrait[prt]
+            value = bm._rand(rng, previous, bm.λ * N(getlength(bm.tree, inb)))
+            untrait[node] = value
+            traitbyname[getnodename(bm.tree, node)] = bm.f(value)
+        end
+    end
+    return traitbyname
 end
 
 # Bayes threepoint signal
@@ -545,7 +671,7 @@ end
 
 # rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
 function Distributions.rand(rng::AbstractRNG, d::MyDist3) # incorrect but can fix later
-    a = BrownianTrait(d.tree, "BMtrait", σ² = d.sigma)
+    a = BrownianTraitSignal(d.tree, "BMtrait", start = d.beta, σ² = d.sigma, λ = d.lambda)
     bm_traits = rand(rng, a)
 
     z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
@@ -584,6 +710,154 @@ function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist3}
 
     return loglik(n, nd, d.sigma, d.beta)
 end
+
+# Adapt BrownianTrait for multiple traits
+struct BrownianTraitMult{T <: AbstractTree, N <: Number} <:
+       Sampleable{Multivariate, EvolvedTrait{T}}
+    tree::T
+    trait::Vector{String}
+    start::Vector{N}
+    _rand::Function
+    f::Function
+end
+
+eltype(::MD) where {T, N <: Number, MD <: BrownianTraitMult{T, N}} = N
+eltype(::Type{MD}) where {T, N <: Number, MD <: BrownianTraitMult{T, N}} = N
+
+function BrownianTraitMult(tree::T, trait::Vector{String}, start::Vector{N};
+                       σ = missing,
+                       f::Function = identity) where
+         {T <: AbstractTree, N <: Number}
+    iscontinuous(N) ||
+        throw(TypeError(:BrownianTraitMult,
+                        "Type $N must be continuous for a Gaussian Trait",
+                        AbstractFloat, N))
+
+    ntraits = length(trait)
+    
+    if ismissing(start)
+        start = zeros(ntraits)
+    end
+
+    f ≢ identity && f(start) ≉ start &&
+        @warn "Note that the third argument (the starting state) for trait '$trait' is untransformed - transformed version is $(f(start))"
+
+
+    if ismissing(σ)
+        dimension(N) ≡
+        dimension(sqrt(getlength(tree, first(getbranches(tree))))) ||
+            throw(DimensionMismatch("Dimensions of start, σ[²] and branch lengths must combine correctly if using Unitful"))
+        return BrownianTraitMult{T, N}(tree, trait, start,
+                                   ((rng::AbstractRNG, start::Vector{N}, length) -> start + randn(rng, N, size(start)) * length),
+                                   f)
+    else
+        return BrownianTraitMult{T, N}(tree, trait, start,
+                                   ((rng::AbstractRNG, start::Vector{N}, length) -> start +
+                                                                            σ *
+                                                                            randn(rng, N, size(start)) *
+                                                                            length),
+                                   f)
+    end
+    
+end
+
+function rand!(rng::AbstractRNG,
+               bm::BrownianTraitMult{TREE, N},
+               tree::TREE) where {TREE <: AbstractTree, N <: Number}
+    trait = Dict{nodetype(TREE), N}()
+    use_dict = (bm.f ≢ identity)
+    for node in traversal(tree, preorder)
+        if isroot(tree, node)
+            if use_dict
+                trait[node] = bm.start
+                setnodedata!(tree, node, bm.trait, bm.f(bm.start))
+            else
+                setnodedata!(tree, node, bm.trait, bm.start)
+            end
+        else
+            inb = getinbound(tree, node)
+            prt = src(tree, inb)
+            previous = use_dict ? trait[prt] :
+                       getnodedata(tree, prt, bm.trait)
+            value = bm._rand(rng, previous, N(getlength(tree, inb)))
+            if use_dict
+                trait[node] = value
+                setnodedata!(tree, node, bm.trait, bm.f(value))
+            else
+                setnodedata!(tree, node, bm.trait, value)
+            end
+        end
+    end
+    return tree
+end
+
+function rand(rng::AbstractRNG,
+              bm::BrownianTraitMult{TREE, N}) where {TREE <: AbstractTree,
+                                                 N <: Number}
+    untrait = Dict{nodetype(TREE), Vector{N}}()
+    traitbyname = Dict{nodenametype(TREE), typeof(bm.f(bm.start))}()
+    for node in traversal(bm.tree, preorder)
+        if isroot(bm.tree, node)
+            untrait[node] = bm.start
+            traitbyname[getnodename(bm.tree, node)] = bm.f(bm.start)
+        else
+            inb = getinbound(bm.tree, node)
+            prt = src(bm.tree, inb)
+            previous = untrait[prt]
+            value = bm._rand(rng, previous, N(getlength(bm.tree, inb)))
+            untrait[node] = value
+            traitbyname[getnodename(bm.tree, node)] = bm.f(value)
+        end
+    end
+    return traitbyname
+end
+
+
+
+
+# Distribution for multiple traits
+
+mutable struct MyDist4{T <: AbstractTree, N <: Number} <:
+               ContinuousMultivariateDistribution
+    sigma::Matrix{N}
+    beta::Vector{N}
+    tree::T
+end
+
+
+eltype(::MD) where {T, N <: Number, MD <: MyDist4{T, N}} = N
+eltype(::Type{MD}) where {T, N <: Number, MD <: MyDist4{T, N}} = N
+
+
+
+function Distributions.rand(rng::AbstractRNG, d::MyDist4)
+    traitnames = getnodedata(d.tree, getroot(d.tree)).name
+    a = BrownianTraitMult(d.tree, traitnames, d.beta, σ = d.sigma)
+    bm_traits = rand(a)
+    z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
+    return z
+end
+
+
+# define logpdf for my dist
+function Distributions.logpdf(d::MyDist4, z::Vector{Float64})
+    # add errors for if tree doesnt have right data
+
+    n = nleaves(d.tree)
+    nodes = getnodes(d.tree, postorder)
+    trait = getnodedata(d.tree, nodes[1]).name
+    m = size(trait)[1]
+
+    threepoint!(d.tree, trait, nodes)
+
+    nN = last(nodes)
+    nd = getnodedata(d.tree, nN)
+   
+    
+
+    return -(1.0 / 2.0) * (n * m * log(2π) + m * nd.logV + n * log(abs(det(d.sigma))) + tr((nd.yy .- 2 * d.beta' * nd.Q .+ d.beta' * nd.xx * d.beta) * inv(d.sigma)))
+end
+#-(1.0 / 2.0) * (n * m * log(2π) + m * nd.logV + n * log(abs(det(d.sigma))) + tr(d.sigma * (nd.yy .- 2 * d.beta' * nd.Q .+ d.beta' * nd.xx * d.beta)))
 
 #= Need to use method at then of three point paper
 mutable struct MyDistMult{T <: AbstractTree, M <: Matrix, V <: Vector} <:
