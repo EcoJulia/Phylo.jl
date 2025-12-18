@@ -4,6 +4,10 @@ using LinearAlgebra
 using Distributions
 using ForwardDiff
 using DynamicPPL
+using ReverseDiff
+using Bijectors
+
+import Distributions: _logpdf, loglikelihood
 
 # used for Bayes calculations 
 
@@ -17,7 +21,7 @@ end
 mutable struct MyDist2{T <: AbstractTree, N <: Number} <:
                ContinuousMultivariateDistribution
     sigma::N
-    beta::N
+    beta::Union{N, ReverseDiff.TrackedReal}
     tree::T
 end
 
@@ -26,19 +30,27 @@ eltype(::Type{MD}) where {T, N <: Number, MD <: MyDist2{T, N}} = N
 
 # rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
 function Distributions.rand(rng::AbstractRNG, d::MyDist2)
-    a = BrownianTrait(d.tree, "BMtrait", start = d.beta, σ² = d.sigma)
+    a = BrownianTrait(d.tree, "BMtrait", d.beta; σ² = d.sigma)
     bm_traits = rand(a)
     z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
     return z
 end
 
 # define logpdf for my dist
-function Distributions.logpdf(d::MyDist2, z::Vector{Float64})
+function Distributions.logpdf(d::MyDist2, z::AbstractVector)#z::Vector{Float64})
     # add errors for if tree doesnt have right data
 
-    n = nleaves(d.tree)
     nodes = getnodes(d.tree, postorder)
     trait = getnodedata(d.tree, nodes[1]).name
+    leaves = getleaves(d.tree);
+     # add tipdata to tree
+    for i in 1:length(leaves)
+        len = Phylo.getlength(d.tree, Phylo.getinbound(d.tree, leaves[i]))
+        td = traitdata(eltype(nodedatatype(typeof(d.tree))), trait, [z[i]], len)
+        setnodedata!(d.tree, leaves[i], td)
+    end
+
+    n = nleaves(d.tree)
 
     threepoint!(d.tree, trait, nodes)
 
@@ -47,6 +59,13 @@ function Distributions.logpdf(d::MyDist2, z::Vector{Float64})
 
     return loglik(n, nd, d.sigma, d.beta)
 end
+
+Distributions.length(d::MyDist2) = nleaves(d.tree)
+Distributions.dim(d::MyDist2) = nleaves(d.tree)
+Base.size(d::MyDist2) = (length(d),)
+Base.size(d::MyDist2, i::Integer) = (i == 1 ? length(d) : 1)
+
+Bijectors.bijector(d::MyDist2) = identity
 
 #BrownianTrait that takes lambda into acount
 struct BrownianTraitSignal{T <: AbstractTree, N <: Number} <:
@@ -193,7 +212,7 @@ end
 
 # rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
 function Distributions.rand(rng::AbstractRNG, d::MyDist3) # incorrect but can fix later
-    a = BrownianTraitSignal(d.tree, "BMtrait", start = d.beta, σ² = d.sigma, λ = d.lambda)
+    a = BrownianTraitSignal(d.tree, "BMtrait", start = d.beta, λ = d.lambda, σ² = d.sigma)
     bm_traits = rand(rng, a)
 
     z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
@@ -341,8 +360,8 @@ end
 
 mutable struct MyDist4{T <: AbstractTree, N <: Number} <:
                ContinuousMultivariateDistribution
-    sigma::Matrix{N}
-    beta::Vector{N}
+    sigma::Matrix{N} 
+    beta::AbstractVector #Union{Vector{N}, ReverseDiff.TrackedArray}
     tree::T
 end
 
@@ -363,7 +382,7 @@ end
 
 
 # define logpdf for my dist
-function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist4}
+function Distributions._logpdf(d::MD, z::Vector{<:Number}) where {MD <: MyDist4}
 
     n = nleaves(d.tree)
     nodes = getnodes(d.tree, postorder)
@@ -377,3 +396,15 @@ function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist4}
 
     return -(1.0 / 2.0) * (n * m * log(2π) + m * nd.logV + n * log(abs(det(d.sigma))) + tr((nd.yy .- 2 * nd.Q * d.beta' .+ d.beta * nd.xx * d.beta') * inv(d.sigma)))
 end
+
+loglikelihood(d::MyDist4, z::AbstractVector{<:Number}) = _logpdf(d, z)
+
+Distributions.length(d::MyDist4) = nleaves(d.tree) * length(d.beta)
+
+Distributions.dim(d::MyDist4) = nleaves(d.tree) * length(d.beta)
+
+
+Base.size(d::MyDist4) = (length(d),)
+Base.size(d::MyDist4, i::Integer) = (i == 1 ? length(d) : 1)
+
+Bijectors.bijector(d::MyDist4) = identity
