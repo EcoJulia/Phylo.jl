@@ -224,6 +224,9 @@ include("inference.jl")
 export estimaterates, TraitTree, traitdata, threepoint!
 export BrownianTraitMult, BrownianTraitSignal
 
+include("newinfrand.jl")
+export BrownianTipAnyDist
+
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
