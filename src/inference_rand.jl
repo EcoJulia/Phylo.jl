@@ -12,9 +12,19 @@ import Distributions: _logpdf, loglikelihood
 # used for Bayes calculations 
 
 # define loglikelihood function, used in Bayes methods
+#=
 function loglik(n, nd, sigma, beta)
     return -(1.0 / 2.0) * (n * log(2π) + nd.logV + n * log(abs(sigma)) +
             abs(sigma)^(-1) * (nd.yy[] - 2 * nd.Q[] * beta + nd.xx * beta^2))
+end
+=#
+function loglik(n, nd, sigma2, beta)
+    return -(1/2) * (
+        n * log(2π) +
+        nd.logV +
+        n * log(sigma2) +
+        (1/sigma2) * (nd.yy[] - 2*nd.Q[]*beta + nd.xx * beta^2)
+    )
 end
 
 # Need to create own distribution to use threepoint to calculate likelihood
@@ -380,14 +390,25 @@ function Distributions.rand(rng::AbstractRNG, d::MyDist4)
     return z
 end
 
+idx(tip::Int, trait::Int, n_traits::Int) = ((tip - 1) * n_traits) + trait
 
 # define logpdf for my dist
-function Distributions._logpdf(d::MD, z::Vector{<:Number}) where {MD <: MyDist4}
+function Distributions._logpdf(d::MD, z::AbstractArray) where {MD <: MyDist4}
 
     n = nleaves(d.tree)
     nodes = getnodes(d.tree, postorder)
     trait = getnodedata(d.tree, nodes[1]).name
     m = size(trait)[1]
+
+    leaves = getleaves(d.tree);
+     # add tipdata to tree
+    for i in 1:length(leaves)
+        # get the m means for tip i from vector z
+        idx = (i-1)*m + 1 : i*m
+        len = Phylo.getlength(d.tree, Phylo.getinbound(d.tree, leaves[i]))
+        td = traitdata(eltype(nodedatatype(typeof(d.tree))), trait, z[idx], len)
+        setnodedata!(d.tree, leaves[i], td)
+    end
 
     threepoint!(d.tree, trait, nodes)
 
