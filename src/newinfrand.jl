@@ -110,7 +110,7 @@ function BrownianTipAnyCache(tree::T, traitnames::Vector{String}) where {T<:Abst
     nodeT = nodetype(typeof(tree))
 
     nodes_post = Vector{nodeT}(getnodes(tree, postorder))
-    leaves     = Vector{nodeT}(getleaves(tree))
+    leaves     = Vector{nodeT}(getleaves(tree, postorder))
     m          = length(traitnames)
 
     leaf_len  = Float64[getlength(tree, getinbound(tree, leaf)) for leaf in leaves]
@@ -347,7 +347,18 @@ function logpdf(d::BrownianTipAnyDist, z::AbstractVector{<:Number})
     # -------------------------------------------------------
     # apply λ
     # -------------------------------------------------------
-    if d.λ !== nothing
+
+    if d.λ === nothing
+        @inbounds for k in eachindex(nodes)
+            node = nodes[k]
+            ndn  = getnodedata(tree,node)
+            if isroot(tree,node)
+                ndn.t = 0.0
+            else
+                ndn.t = c.len_by_node[k]
+            end
+        end
+    else
         λ = d.λ
         @inbounds for k in eachindex(nodes)
             node = nodes[k]
@@ -355,9 +366,12 @@ function logpdf(d::BrownianTipAnyDist, z::AbstractVector{<:Number})
             if isroot(tree,node)
                 ndn.t = zero(λ)
             elseif isleaf(tree,node)
-                ndn.t = λ*c.len_by_node[k] + (1-λ)*c.htor_by_node[k]
+                ndn.t =
+                    λ * c.len_by_node[k] +
+                    (1 - λ) * c.htor_by_node[k]
             else
-                ndn.t = λ*c.len_by_node[k]
+                ndn.t =
+                    λ * c.len_by_node[k]
             end
         end
     end
