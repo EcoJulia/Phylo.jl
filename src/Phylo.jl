@@ -215,9 +215,17 @@ include("metrics.jl")
 export mrca, nodeheights
 export distance, distances, heighttoroot, heightstoroot
 
+# Distributions for Bayesian inference
+include("inference_rand.jl")
+export BrownianTraitMult, BrownianTraitSignal
+
 # Inference on tree
 include("inference.jl")
 export estimaterates, TraitTree, traitdata, threepoint!
+export BrownianTraitMult, BrownianTraitSignal
+
+include("newinfrand.jl")
+export BrownianTipAnyDist
 
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)

@@ -8,12 +8,17 @@ using BenchmarkTools
 using DataFrames
 using LinearAlgebra
 using Plots
+using CSV
+using ForwardDiff
+using DynamicPPL
+using PDMats
+
 
 # set seed
 Random.seed!(678)
 
 @model function βσ()
-    β ~ Uniform(-100, 100)
+    β ~ Uniform(-100, 1000)
     σ ~ Uniform(0, 100)
     return β, σ
 end
@@ -24,16 +29,22 @@ end
     return nothing
 end
 
-@model function βσ_threepoint(tree, z) # z needs to be for leaves in postorder
+@model function βσ_threepoint(tree, z) 
     @submodel β, σ = βσ()
-    z ~ Phylo.MyDist2(σ, β, tree) # tree.z ~ (implement later)
+    z ~ Phylo.MyDist2(σ, β, tree) 
     return nothing
 end
 
-@model function βσλ_threepoint(tree, z, upper = 1.0) # z needs to be for leaves in postorder
+@model function βσλ_threepoint(tree, z, upper = 1.0) 
     @submodel β, σ = βσ()
-    λ ~ Uniform(0, 1.0)
+    λ ~ Uniform(0.0, 1.0)
     z ~ Phylo.MyDist3(σ, β, λ, tree)
+    return nothing
+end
+
+@model function βσ_multthreepoint(tree, z) 
+    @submodel β, σ = βσ_mult()
+    z ~ Phylo.MyDist4(σ, β, tree) 
     return nothing
 end
 
@@ -137,29 +148,110 @@ function gen_βσλ_threepoint(::Type{T}, n_tips) where {T}
     return βσλ_threepoint(tree, z)
 end
 
+
+
 # number of tips on the tree
 n_tips = 200
 n_samples = 10_000
 
-model = gen_βσ_covariance(TraitTree{1}, n_tips);
-sample(model, HMC(0.01, 5), 1);
-spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
+basemodel = gen_βσ_covariance(TraitTree{1}, n_tips);
+spl = sample(basemodel, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 
-model = gen_βσ_threepoint(Phylo.TraitTreeNum{1}, n_tips);
-model = gen_βσ_threepoint(TraitTree{1}, n_tips);
-model = gen_βσ_threepoint(Phylo.TraitTreeFloat64{1}, n_tips);
-sample(model, HMC(0.01, 5), 1);
-spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
+tpmodel = gen_βσ_threepoint(Phylo.TraitTreeNum{1}, n_tips);
+tpmodel = gen_βσ_threepoint(TraitTree{1}, n_tips);
+tpmodel = gen_βσ_threepoint(Phylo.TraitTreeFloat64{1}, n_tips);
+spl = sample(tpmodel, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 
-model = gen_βσλ_threepoint(Phylo.TraitTreeNum{1}, n_tips);
-model = gen_βσλ_threepoint(Phylo.TraitTreeDual{1}, n_tips);
-model = gen_βσλ_threepoint(TraitTree{1}, n_tips);
-sample(model, HMC(0.01, 5), 1);
-spl = sample(model, HMC(0.01, 5), n_samples) # add initial_params
+tplmodel = gen_βσλ_threepoint(Phylo.TraitTreeNum{1}, n_tips);
+tplmodel = gen_βσλ_threepoint(Phylo.TraitTreeDual{1}, n_tips);
+tplmodel = gen_βσλ_threepoint(TraitTree{1}, n_tips);
+spl = sample(tplmodel, HMC(0.01, 5), n_samples) # add initial_params
 plot(spl[:β])
 plot(spl[:σ])
 plot(spl[:λ])
+
+
+
+#Testing for scaling
+
+n_samples = 10_000
+
+#10 tips
+tpmodel1 = gen_βσ_threepoint(TraitTree{1}, 10);
+spl1 = sample(tpmodel1, HMC(0.01, 5), n_samples)
+#9.53s
+
+#100 tips
+tpmodel2 = gen_βσ_threepoint(TraitTree{1}, 100);
+spl2 = sample(tpmodel2, HMC(0.01, 5), n_samples)
+#41.94s
+
+#250 tips
+tpmodel3 = gen_βσ_threepoint(TraitTree{1}, 250);
+spl3 = sample(tpmodel3, HMC(0.01, 5), n_samples)
+#104.46s
+
+#500 tips
+tpmodel4 = gen_βσ_threepoint(TraitTree{1}, 500);
+spl4 = sample(tpmodel4, HMC(0.01, 5), n_samples)
+#215.17s
+
+#750 tips
+tpmodel5 = gen_βσ_threepoint(TraitTree{1}, 750);
+spl5 = sample(tpmodel5, HMC(0.01, 5), n_samples)
+#327.25s
+
+#1,000 tips
+tpmodel6 = gen_βσ_threepoint(TraitTree{1}, 1_000);
+spl6 = sample(tpmodel6, HMC(0.01, 5), n_samples)
+#445.84s
+
+#2,000 tips
+tpmodel7 = gen_βσ_threepoint(TraitTree{1}, 2_000);
+spl7 = sample(tpmodel7, HMC(0.01, 5), n_samples)
+#984.99s
+
+#10,000 tips
+tpmodel8 = gen_βσ_threepoint(TraitTree{1}, 10_000);
+spl8 = sample(tpmodel8, HMC(0.01, 5), n_samples)
+#6191.94s
+
+
+
+# with signal 
+
+n_samples = 10_000
+
+#10 tips
+tpmodel1 = gen_βσλ_threepoint(TraitTree{1}, 10);
+spl1 = sample(tpmodel1, HMC(0.01, 5), n_samples)
+# 12.83 seconds
+
+#100 tips
+tpmodel2 = gen_βσλ_threepoint(TraitTree{1}, 100);
+spl2 = sample(tpmodel2, HMC(0.01, 5), n_samples)
+# 50.39 seconds
+
+#250 tips
+tpmodel3 = gen_βσλ_threepoint(TraitTree{1}, 250);
+spl3 = sample(tpmodel3, HMC(0.01, 5), n_samples)
+# 134.47 seconds
+
+#500 tips
+tpmodel4 = gen_βσλ_threepoint(TraitTree{1}, 500);
+spl4 = sample(tpmodel4, HMC(0.01, 5), n_samples)
+# 274.9 seconds
+
+#750 tips
+tpmodel5 = gen_βσλ_threepoint(TraitTree{1}, 750);
+spl5 = sample(tpmodel5, HMC(0.01, 5), n_samples)
+# 438.18 seconds
+
+#1,000 tips
+tpmodel6 = gen_βσλ_threepoint(TraitTree{1}, 1_000);
+spl6 = sample(tpmodel6, HMC(0.01, 5), n_samples)
+# 601.1 seconds

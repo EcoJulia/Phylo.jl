@@ -11,22 +11,15 @@ abstract type AbstractTraitData end
 
 mutable struct TraitData{T <: Number, NTraits} <: AbstractTraitData # had to change types to Number for Bayes to work w/ lambda
     name::Vector{String}          # Name of traits
-    value::Vector{Float64}        # Trait values
-    t::T                          # branch length
-    logV::T
-    p::T                          # 1' V^(-1) 1
-    yl::Vector{T}                 # 1' V^(-1) y  (y is trait values)
-    xl::T                         # 1' V^(-1) x  (we set x as 1)
-    Q::Vector{T}                  # x' V^(-1) y
-    xx::T                         # x' V^(-1) x
-    yy::T                         # y' V^(-1) y
-    v::Vector{Float64}            # used for PIC
-    xlmult::Vector{Float64}       # 1' W^(-1) x  
-    pmult::Matrix{Float64}        # 1' W^(-1) C1      
-    xxmult::Matrix{Float64}       # x' W^(-1) x 
-    yymult::Float64               # y' W^(-1) y
-    Qmult::Float64                # x' W^(-1) y
-    ylmult::Matrix{Float64}       # 1' W^(-1) y
+    value::Vector{Number}        # Trait values
+    t::Number                      # branch length
+    logV::Number
+    p::Number                          # 1' V^(-1) 1
+    yl::Vector{Number}                 # 1' V^(-1) y  (y is trait values)
+    xl::Number                         # 1' V^(-1) x  (we set x as 1)
+    Q::Vector{Number}                  # x' V^(-1) y
+    xx::Number                         # x' V^(-1) x
+    yy::Matrix{Number}                 # y' V^(-1) y
 end
 
 import Base.eltype
@@ -39,17 +32,13 @@ function traitdata(::Type{T}, name::String, value::Float64,
     return traitdata(T, [name], [value], t)
 end
 
-function traitdata(::Type{T}, name::Vector{String}, value::Vector{Float64},
-                   t = 0.0) where {T <: Number}
+function traitdata(::Type{T}, name::Vector{String}, value::AbstractArray,
+                   t = 0.0) where {T}
     return TraitData{T, length(name)}(name, value, T(t), T(NaN), T(NaN),
                                       fill(T(NaN), length(name)), T(NaN),
                                       fill(T(NaN), length(name)), T(NaN),
-                                      T(NaN), fill(NaN, length(name)),
-                                      fill(NaN, length(name)),
-                                      fill(NaN, length(name), length(name)),
-                                      fill(NaN, length(name), length(name)),
-                                      NaN, NaN,
-                                      fill(NaN, length(name), length(name)))
+                                      fill(NaN, length(name), length(name)), 
+                                      )
 end
 
 function TraitData{T, NTraits}() where {T <: Number, NTraits}
@@ -105,7 +94,7 @@ function threepoint!(tree::T, trait::Vector{String},
             nd.xl = 1.0
             nd.Q = nodetrait / nodet
             nd.xx = inv(nodet)
-            nd.yy = nodetrait' * nodetrait / nodet
+            nd.yy = (nodetrait * nodetrait') / nodet
 
         else
             # need to find direct desendents 
@@ -128,7 +117,7 @@ function threepoint!(tree::T, trait::Vector{String},
             c2 = nodet * pA^2 / calc
             nd.Q = sum(s.Q for s in childdata) - c2 * nd.xl * nd.yl
             nd.xx = sum(s.xx for s in childdata) - c2 * nd.xl * nd.xl
-            nd.yy = sum(s.yy for s in childdata) - c2 * nd.yl' * nd.yl
+            nd.yy = sum(s.yy for s in childdata) - c2 * nd.yl * nd.yl'
         end
         # @assert getnodedata(tree, node) === nd
     end
@@ -184,12 +173,13 @@ function estimaterates!(tree::T, trait::Vector{String},
     nd = getnodedata(tree, nN)
 
     betahat = inv(nd.xx) * nd.Q
-    sigmahat = ((nd.yy .- 2 * betahat .* nd.Q' .+ betahat .* nd.xx .* betahat') ./
-                n)
+    sigmahat = ((nd.yy .- 2 * nd.Q * betahat' .+ betahat * nd.xx * betahat') ./n)
 
+    
     # NEED TO THINK ABOUT THIS
+    #=
     while any(i -> i < 0, diag(sigmahat))
-        leaves = getleaves(tree)
+        leaves = getleaves(tree, postorder)
         for leaf in leaves
             ld = getnodedata(tree, leaf)
             ld.value = betahat - ld.value
@@ -198,11 +188,11 @@ function estimaterates!(tree::T, trait::Vector{String},
         threepoint!(tree, trait, nodes)
         sigmahat = nd.yy / n
     end
-
+    =#
     k = length(trait)
 
     negloglik = (1.0 / 2.0) *
-                (n * k * log(2π) + nd.logV + n + n * log(abs(det(sigmahat))))
+                (n * k * log(2π) + k * nd.logV + k * n + n * log(abs(det(sigmahat))))
 
     return betahat, sigmahat, negloglik, lambda # only return lambda if used
 end
@@ -258,6 +248,12 @@ function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N},
             if isleaf(tree, node)
                 full = getheight(tree, node)
                 len = len + full * (1 - lambda[1])
+                if len < 0
+                    len = -len
+                end
+            end
+            if len < 0
+                len = -len
             end
             getnodedata(tree, node).t = len
         else
@@ -272,10 +268,11 @@ function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N},
     nd = getnodedata(tree, nN)
 
     betahat = inv(nd.xx) * nd.Q
-    sigmahat = (nd.yy .- 2 * betahat * nd.Q' .+ betahat * nd.xx * betahat') ./ n
+    sigmahat = ((nd.yy .- 2 * nd.Q * betahat' .+ betahat * nd.xx * betahat') ./n)
 
+    # with small numbers floating point errors may occur, if they do this should fix
     while any(i -> i < 0, sigmahat)
-        leaves = getleaves(tree)
+        leaves = getleaves(tree, postorder)
         for leaf in leaves
             ld = getnodedata(tree, leaf)
             ld.value = betahat - ld.value
@@ -284,6 +281,7 @@ function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N},
         threepoint!(tree, trait, nodes)
         sigmahat = nd.yy / n
     end
+    
 
     negloglik = (1.0 / 2.0) *
                 (n * log(2π) .+ nd.logV + n + n * log(det(sigmahat)))
@@ -474,286 +472,5 @@ function estimaterates!(tree::T, trait::Vector{String},
     return betahat, C, negloglik, lambda
 end
 
-# used for Bayes calculations (may move parts to other places)
 
-# define loglikelihood function, used in Bayes methods
-function loglik(n, nd, sigma, beta)
-    return -(1.0 / 2.0) * (n * log(2π) + nd.logV + n * log(abs(sigma)) +
-            abs(sigma)^(-1) * (nd.yy[] - 2 * nd.Q[] * beta + nd.xx * beta^2))
-end
 
-# Need to create own distribution to use threepoint to calculate likelihood
-# also needs renamed
-mutable struct MyDist2{T <: AbstractTree, N <: Number} <:
-               ContinuousMultivariateDistribution
-    sigma::N
-    beta::N
-    tree::T
-end
-
-eltype(::MD) where {T, N <: Number, MD <: MyDist2{T, N}} = N
-eltype(::Type{MD}) where {T, N <: Number, MD <: MyDist2{T, N}} = N
-
-# rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
-function Distributions.rand(rng::AbstractRNG, d::MyDist2)
-    a = BrownianTrait(d.tree, "BMtrait", σ² = d.sigma)
-    bm_traits = rand(a)
-    z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
-    return z
-end
-
-# define logpdf for my dist
-function Distributions.logpdf(d::MyDist2, z::Vector{Float64})
-    # add errors for if tree doesnt have right data
-
-    n = nleaves(d.tree)
-    nodes = getnodes(d.tree, postorder)
-    trait = getnodedata(d.tree, nodes[1]).name
-
-    threepoint!(d.tree, trait, nodes)
-
-    nN = last(nodes)
-    nd = getnodedata(d.tree, nN)
-
-    return loglik(n, nd, d.sigma, d.beta)
-end
-
-# Bayes threepoint signal
-# needs renamed
-struct MyDist3{T <: AbstractTree, N <: Number} <:
-       ContinuousMultivariateDistribution
-    sigma::N
-    beta::N
-    lambda::N
-    tree::T
-end
-
-function eltype(::MD) where {T <: AbstractTree, N <: Number, MD <:
-                                                             MyDist3{T, N}}
-    return eltype(nodedatatype(T))
-end
-function eltype(::Type{MD}) where {T <: AbstractTree, N <: Number,
-                                   MD <: MyDist3{T, N}}
-    return eltype(nodedatatype(T))
-end
-
-# rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
-function Distributions.rand(rng::AbstractRNG, d::MyDist3) # incorrect but can fix later
-    a = BrownianTrait(d.tree, "BMtrait", σ² = d.sigma)
-    bm_traits = rand(rng, a)
-
-    z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
-    return z
-end
-
-# define logpdf for my dist
-function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist3}
-    # add errors for if tree doesnt have right data
-
-    n = nleaves(d.tree)
-    nodes = getnodes(d.tree, postorder)
-    trait = getnodedata(d.tree, nodes[1]).name
-
-    # multiply internal branches by lambda
-    for node in nodes
-        if isleaf(d.tree, node)
-            getnodedata(d.tree, node).t = d.lambda *
-                                          getlength(d.tree,
-                                                    getinbound(d.tree, node)) +
-                                          (1.0 - d.lambda) *
-                                          heighttoroot(d.tree, node)
-        elseif isroot(d.tree, node)
-            getnodedata(d.tree, node).t = zero(d.lambda)
-        else
-            getnodedata(d.tree, node).t = d.lambda *
-                                          getlength(d.tree,
-                                                    getinbound(d.tree, node))
-        end
-    end
-
-    threepoint!(d.tree, trait, nodes)
-
-    nN = last(nodes)
-    nd = getnodedata(d.tree, nN)
-
-    return loglik(n, nd, d.sigma, d.beta)
-end
-
-#= Need to use method at then of three point paper
-mutable struct MyDistMult{T <: AbstractTree, M <: Matrix, V <: Vector} <:
-        ContinuousMultivariateDistribution
-    sigma::M
-    beta::V
-    tree::T
-end
-
-eltype(::MD) where {T, N <: Number, MD <: MyDistMult{T, N}} = N
-eltype(::Type{MD}) where {T, N <: Number, MD <: MyDistMult{T, N}} = N
-
-# rand creates a vector of tip trait values dependent on the tree, sigma (rate of evolution) and beta (root trait value)
-function Distributions.rand(rng::AbstractRNG, d::MyDistMult) #need to think about will depend on the number of traits
-    a = BrownianTrait(d.tree, "BMtrait", σ² = d.sigma)
-    bm_traits = rand(a)
-    z = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
-    return z
-end
-
-function loglik2(n, nd, sigma, beta)
-    return -(1.0 / 2.0) * (n * log(2π) + nd.logV + n * log(abs(sigma)) +
-            abs(sigma)^(-1) * (nd.yy[] - 2 * nd.Q[] * beta + nd.xx * beta^2))
-end
-
-# define logpdf for my dist
-function Distributions.logpdf(d::MyDistMult, z::Vector{Float64})
-    # add errors for if tree doesnt have right data
-
-    n = nleaves(d.tree)
-    nodes = getnodes(d.tree, postorder)
-    trait = getnodedata(d.tree, nodes[1]).name
-
-    threepoint!(d.tree, trait, nodes)
-
-    nN = last(nodes)
-    nd = getnodedata(d.tree, nN)
-
-    return loglik2(n, nd, d.sigma, d.beta)
-end
-
-=#
-# PIC calculations, ignore for now
-# ## ## ## ## ## ## ## ## ## ## ## ## ## ## #
-#=
-function pic!(tree::T, trait::Vector{String}, nodes::Vector{N}, lambda::Vector{Float64}) where 
-    {TT, RT, NL, N <: AbstractElt{RT, NL}, B <: AbstractElt{RT, NL},
-     T <: AbstractTree{TT, RT, NL, N, B}}
-    # prefrom algortihm in Ho & Ane 2014
-    # function estimaterates gets inputs into right form
-    # nodes - vector of nodes in the traversal order
-
-    # number of internal nodes
-    internal = nleaves(tree)
-
-    # number or traits
-    k = length(trait)
-
-    # get length of whole tree
-    full = getheight(tree, node)
-
-    # create empty vectors, u and V to store things in for later
-    U = fill(fill(NaN, k), internal)
-    V = fill(fill(NaN, k), internal)
-
-    # use i to count which elements of u and V to be updated
-    i=1
-
-    for node in nodes
-        nd = getnodedata(tree, node)
-        nodet = nd.t
-
-        # need to see if node is a tip (leaf)
-        if isleaf(tree, node)
-
-            # for Freckleton likelihood calculations
-            nd.v = nodet * ones(k) .+ full * ones(k) .* (ones(k) .- lambda)
-
-        else
-            # need to find direct desendents 
-            children = getchildren(tree, node)
-
-            # child data
-            childdata = getnodedata.(tree, children)
-
-            # for Freckleton likelihood calculations
-            # assuming two children
-            child1value = childdata[1].value
-            child2value = childdata[2].value
-            child1v = childdata[1].v
-            child2v = childdata[2].v
-
-            U[i] = abs.(child1value - child2value) 
-            V[i] = child1v .+ child2v
-
-            nd.value = ((child1value ./ child1v) .+ (child2value ./ child2v)) ./ ((1 / child1v) .+ (1 / child2v))
-            nd.v = nodet * ones(k) .* lambda .+ (child1v .* child2v) ./ (child1v .+ child2v)
-
-            i=i+1
-        end
-        # @assert getnodedata(tree, node) === nd
-    end
-end
-
-    function estimateratespic!(tree::T, trait::Vector{String}, lambda) where T <: AbstractTree
-
-        # get information from tree in order to preform threepoint
-        nodes = getnodes(tree, postorder)
-        n = nleaves(tree)
-
-        a = threepointflambda!(tree, trait, nodes)
-
-        tree = a[1]
-        U = a[2]
-        V = a[3]
-
-        # information from last node
-        nN = last(nodes)
-        nd = getnodedata(tree, nN)
-
-        # Freckleton calculations
-        k = length(trait)
-
-        UU = fill(fill(NaN, k, k), n)
-
-        for i in 1:n
-            UU[i] = U[i] * U[i]' / V[i]
-        end
-
-        sigma2 = 1/(n) * sum(UU) # I have wrong off diagonals  - try and use R code?
-
-        UCU = fill(NaN, n)
-
-       for i in 1:n
-            UCU[i] = ((V[i] .* U[i])' * sigma2^(-1) * (V[i] .* U[i]))  
-        end
-
-        nll2 = (1.0 / 2.0) * (n * k * log(2π) + n * log(det(sigma2)) + sum(log.(V)) + sum(UCU)) 
-
-        beta = nd.value
-
-        return lambda, beta, sigma2, nll2 # only return lambda if used
-    end
-
-    function estimateratespic(tree::T, trait::Vector{String}; lambda = missing) where T <: AbstractTree
-        # Returns evolution rate, starting value and negative log loglikelihood for traits on tip of tree
-        # INPUTS
-        # tree = tree with lengths, leaves all same length, trait data on leaves
-        # trait = string with name of trait as found on leaves
-        # OUTPUTS
-        # sigmahat - evolution rate
-        # betahat - estimated root trait value
-        # negloglik - negative loglikelihood
-
-        # need to add meaningful error when cant find traits on tree leaves
-
-        nodes = getnodes(tree, anyorder)
-        NTraits = length(trait)
-
-        for node in nodes
-            val = getnodedata(tree, node).value
-            if hasinbound(tree, node)
-                len = _getlength(tree, _getinbound(tree, node))
-                td = traitdata(trait, val, len)
-                setnodedata!(tree, node, td)
-            else
-                td = traitdata(trait, val)
-                setnodedata!(tree, node, td)
-            end
-        end
-
-        if lambda == missing
-            lambda = ones(NTraits)
-        end
-
-        return estimateratesflambda!(tree, trait, lambda)
-    end
-
-=#
