@@ -179,7 +179,7 @@ function estimaterates!(tree::T, trait::Vector{String},
     # NEED TO THINK ABOUT THIS
     #=
     while any(i -> i < 0, diag(sigmahat))
-        leaves = getleaves(tree)
+        leaves = getleaves(tree, postorder)
         for leaf in leaves
             ld = getnodedata(tree, leaf)
             ld.value = betahat - ld.value
@@ -272,7 +272,7 @@ function tooptimise(lambda::Vector{Float64}, tree::T, nodes::Vector{N},
 
     # with small numbers floating point errors may occur, if they do this should fix
     while any(i -> i < 0, sigmahat)
-        leaves = getleaves(tree)
+        leaves = getleaves(tree, postorder)
         for leaf in leaves
             ld = getnodedata(tree, leaf)
             ld.value = betahat - ld.value
