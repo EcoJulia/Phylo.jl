@@ -52,7 +52,21 @@ function Distributions.logpdf(d::MyDist2, z::AbstractVector)#z::Vector{Float64})
 
     nodes = getnodes(d.tree, postorder)
     trait = getnodedata(d.tree, nodes[1]).name
-    leaves = getleaves(d.tree);
+    leaves = getleaves(d.tree, postorder);
+
+    # add lengths to tree
+    for node in nodes
+        val = getnodedata(d.tree, node).value
+        if hasinbound(d.tree, node)
+            len = _getlength(d.tree, _getinbound(d.tree, node))
+            td = traitdata(eltype(nodedatatype(typeof(d.tree))), trait, val, len)
+            setnodedata!(d.tree, node, td)
+        else
+            td = traitdata(eltype(nodedatatype(typeof(d.tree))), trait, val)
+            setnodedata!(d.tree, node, td)
+        end
+    end
+
      # add tipdata to tree
     for i in 1:length(leaves)
         len = Phylo.getlength(d.tree, Phylo.getinbound(d.tree, leaves[i]))
@@ -237,6 +251,19 @@ function Distributions.logpdf(d::MD, z::Vector{Float64}) where {MD <: MyDist3}
     nodes = getnodes(d.tree, postorder)
     trait = getnodedata(d.tree, nodes[1]).name
 
+    # add lengths to tree
+    for node in nodes
+        val = getnodedata(d.tree, node).value
+        if hasinbound(d.tree, node)
+            len = _getlength(d.tree, _getinbound(d.tree, node))
+            td = traitdata(eltype(nodedatatype(typeof(d.tree))), trait, val, len)
+            setnodedata!(d.tree, node, td)
+        else
+            td = traitdata(eltype(nodedatatype(typeof(d.tree))), trait, val)
+            setnodedata!(d.tree, node, td)
+        end
+    end
+
     # multiply internal branches by lambda
     for node in nodes
         if isleaf(d.tree, node)
@@ -295,20 +322,20 @@ function BrownianTraitMult(tree::T, trait::Vector{String}, start::Vector{N};
 
 
     if ismissing(σ)
-        dimension(N) ≡
-        dimension(sqrt(getlength(tree, first(getbranches(tree))))) ||
-            throw(DimensionMismatch("Dimensions of start, σ[²] and branch lengths must combine correctly if using Unitful"))
         return BrownianTraitMult{T, N}(tree, trait, start,
-                                   ((rng::AbstractRNG, start::Vector{N}, length) -> start + randn(rng, N, size(start)) * length),
-                                   f)
+            ((rng::AbstractRNG, start::Vector{N}, length) ->
+                start + randn(rng, N, size(start)) * sqrt(length)),
+            f)
     else
         return BrownianTraitMult{T, N}(tree, trait, start,
-                                   ((rng::AbstractRNG, start::Vector{N}, length) -> start +
-                                                                            σ *
-                                                                            randn(rng, N, size(start)) *
-                                                                            length),
-                                   f)
+            ((rng::AbstractRNG, start::Vector{N}, length) ->
+                start +
+                σ *
+                randn(rng, N, size(start)) *
+                sqrt(length)),
+            f)
     end
+
     
 end
 
@@ -372,6 +399,7 @@ mutable struct MyDist4{T <: AbstractTree, N <: Number} <:
                ContinuousMultivariateDistribution
     sigma::Matrix{N} 
     beta::AbstractVector #Union{Vector{N}, ReverseDiff.TrackedArray}
+    tau::N
     tree::T
 end
 
@@ -387,6 +415,7 @@ function Distributions.rand(rng::AbstractRNG, d::MyDist4)
     bm_traits = rand(a)
     z_vec = [bm_traits[leaf] for leaf in getleafnames(d.tree, postorder)]
     z = reduce(vcat, z_vec)
+    z .= z .+ randn(length(z)) .* d.tau
     return z
 end
 
@@ -400,7 +429,21 @@ function Distributions._logpdf(d::MD, z::AbstractArray) where {MD <: MyDist4}
     trait = getnodedata(d.tree, nodes[1]).name
     m = size(trait)[1]
 
-    leaves = getleaves(d.tree);
+    leaves = getleaves(d.tree, postorder);
+
+    # add lengths to tree
+    for node in nodes
+        val = getnodedata(d.tree, node).value
+        if hasinbound(d.tree, node)
+            len = _getlength(d.tree, _getinbound(d.tree, node))
+            td = traitdata(eltype(nodedatatype(typeof(d.tree))), trait, val, len)
+            setnodedata!(d.tree, node, td)
+        else
+            td = traitdata(eltype(nodedatatype(typeof(d.tree))), trait, val)
+            setnodedata!(d.tree, node, td)
+        end
+    end
+
      # add tipdata to tree
     for i in 1:length(leaves)
         # get the m means for tip i from vector z
@@ -414,9 +457,17 @@ function Distributions._logpdf(d::MD, z::AbstractArray) where {MD <: MyDist4}
 
     nN = last(nodes)
     nd = getnodedata(d.tree, nN)
+    Σ = d.sigma + (d.tau^2 + 1e-6) * I
 
-    return -(1.0 / 2.0) * (n * m * log(2π) + m * nd.logV + n * log(abs(det(d.sigma))) + tr((nd.yy .- 2 * nd.Q * d.beta' .+ d.beta * nd.xx * d.beta') * inv(d.sigma)))
+    return -(1.0 / 2.0) * (
+        n * m * log(2π) +
+        m * nd.logV +
+        n * log(abs(det(Σ))) +
+        tr(Σ \ (nd.yy .- 2 * nd.Q * d.beta' .+ d.beta * nd.xx * d.beta'))
+    )
 end
+
+
 
 loglikelihood(d::MyDist4, z::AbstractVector{<:Number}) = _logpdf(d, z)
 
