@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
+using LinearAlgebra: diag
+
 """
     mrca(tree::AbstractTree, target)
 
@@ -81,13 +83,81 @@ end
 """
     distances(tree::AbstractTree)
 
-Pairwise distances between all leaf nodes on a tree
+Pairwise distances between all leaf nodes on a tree, as an `AxisArray` over the
+leaf names in the order of `getleaves(tree)`.
+
+For a rooted tree whose branches all have lengths, each distance is computed as
+``d_{ij} = h_i + h_j - 2 h_{\\mathrm{mrca}(i, j)}`` from the leaf heights and the
+shared paths of [`vcv`](@ref), in a single pass over the tree. Other trees fall
+back to summing the branches on the route between each pair of leaves.
 """
 function distances(tree::AbstractTree)
     leaves = getleaves(tree)
     names = getnodename.(tree, leaves)
+    if _hasalllengths(tree)
+        shared = _sharedpaths(tree, names)
+        h = diag(shared)
+        return AxisArray(h .+ h' .- 2 .* shared, Axis{:x}(names),
+                         Axis{:y}(names))
+    end
     return AxisArray([distance(tree, li, lj) for li in leaves, lj in leaves],
                      Axis{:x}(names), Axis{:y}(names))
+end
+
+"""
+    vcv(tree::AbstractTree{OneTree, OneRoot})
+
+The phylogenetic variance-covariance matrix of the leaves of a rooted tree: for
+each pair of leaves, the length of the path from the root that they share (the
+height of their most recent common ancestor), with each leaf's height on the
+diagonal. This is the covariance of trait values at the leaves under Brownian
+motion with unit rate. Returns an `AxisArray` over the leaf names in the order
+of `getleaves(tree)`. Every branch must have a length.
+"""
+function vcv(tree::AbstractTree{OneTree, OneRoot})
+    _hasalllengths(tree) ||
+        throw(ArgumentError("vcv needs every branch of the tree to have a length"))
+    names = getnodename.(tree, getleaves(tree))
+    return AxisArray(_sharedpaths(tree, names), Axis{:x}(names),
+                     Axis{:y}(names))
+end
+
+# The fast path needs a single rooted tree with a length on every branch
+_hasalllengths(::AbstractTree) = false
+function _hasalllengths(tree::AbstractTree{OneTree, OneRoot})
+    return all(branch -> haslength(tree, branch), getbranches(tree))
+end
+
+# Shared root-path lengths between the leaves `names` (the height of each pair's
+# most recent common ancestor, and each leaf's own height on the diagonal), filled
+# in one postorder pass: at every internal node, the leaves below different
+# children meet at that node. Each pair is written once, so the cost is
+# proportional to the number of pairs.
+function _sharedpaths(tree::AbstractTree{OneTree, OneRoot}, names)
+    index = Dict(name => i for (i, name) in enumerate(names))
+    height = nodeheights(tree)
+    shared = zeros(Float64, length(names), length(names))
+    below = Dict{eltype(names), Vector{Int}}()
+    for node in traversal(tree, postorder)
+        name = getnodename(tree, node)
+        if isleaf(tree, node)
+            i = index[name]
+            shared[i, i] = height[name]
+            below[name] = [i]
+        else
+            h = height[name]
+            leaves = Int[]
+            for child in getchildren(tree, name)
+                clade = pop!(below, child)
+                for i in leaves, j in clade
+                    shared[i, j] = shared[j, i] = h
+                end
+                append!(leaves, clade)
+            end
+            below[name] = leaves
+        end
+    end
+    return shared
 end
 
 """

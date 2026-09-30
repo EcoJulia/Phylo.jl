@@ -5,6 +5,8 @@
   - Add preliminary inference code
   - Bugfix for dropping no tips
   - Minor metadata fixes
+  - Much faster `distances()` for rooted trees with branch lengths (one pass over the tree instead of a route per pair of leaves)
+  - Add `vcv()`, the phylogenetic variance-covariance matrix of the leaves
 - v0.5.4
   - Use ResearchSoftwareMetadata package
 - v0.5.3
