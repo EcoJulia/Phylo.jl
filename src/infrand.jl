@@ -1,7 +1,5 @@
 
-############################################################
-# BrownianTipAnyDist
-############################################################
+# SPDX-License-Identifier: BSD-2-Clause
 
 using Random
 using Distributions
