@@ -8,6 +8,8 @@ using CSV
 using Profile
 using ProfileView
 using Statistics
+using ForwardDiff
+using DynamicPPL
 
 # needed for phylolm comaparison
 using RCall
@@ -16,12 +18,14 @@ using RCall
 using PhyloNetworks
 using StatsModels
 
+
 Random.seed!(1234)
 
 # Compare Phylo against phylolm and PhyloNetworks on a tree with uniform random tips
 # Load the hummingbirds tree from test
 const jtree::TraitTree{1} = open(f -> parsenewick(f, TraitTree{1}),
                                  "test/hummingbirds.tree")
+
 
 # Create dataframe with leafnames and random trait values
 species = getleaves(jtree)
@@ -33,7 +37,7 @@ rdat = DataFrame(species = speciesnames, data = data);
 
 # add the data to the tree
 for i in eachrow(rdat)
-    setnodedata!(jtree, i.species, Phylo.traitdata(["trait"], [i.data]))
+    setnodedata!(jtree, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, ["trait"], [i.data]))
 end
 
 # run inference
@@ -123,7 +127,8 @@ rdat = DataFrame(species = leafnames, data = traitvector)
 
 # add data to the tree
 for i in eachrow(rdat)
-    setnodedata!(jtree, i.species, Phylo.traitdata(["trait"], [i.data]))
+    setnodedata!(jtree, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, 
+                    ["trait"], [i.data]))
 end
 
 # run inference
@@ -223,7 +228,7 @@ dat = combine(gdf,
 
 # add the data for tmin to the tree
 for i in eachrow(dat)
-    setnodedata!(bigtree, i.species, Phylo.traitdata(["tmin"], [i.tmin]))
+    setnodedata!(bigtree, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, ["tp"], [i.tp]))
 end
 
 # run inference
@@ -234,6 +239,7 @@ estimaterates(bigtree, ["tmin"])
 
 # run inference to calculate signal
 estimaterates(bigtree, ["tmin"], lambda = 0.8)
+# takes really long - check optimiser at one point
 
 # check inference run time
 @benchmark estimaterates(bigtree, ["tmin"], lambda = 0.8)
@@ -304,15 +310,18 @@ const multtree::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
 species = getleaves(multtree)
 data1 = 1000 .* rand(length(species))
 data2 = 1000 .* rand(length(species))
+data3 = 1000 .* rand(length(species))
 
 # create dataframe
 speciesnames = getleafnames(multtree);
 rdat = DataFrame(species = speciesnames, data1 = data1, data2 = data2);
+rdat2 = DataFrame(species = speciesnames, data1 = data1, data2 = data2, data3 = data3);
 
 # add the data to the tree
 for i in eachrow(rdat)
     setnodedata!(multtree, i.species,
-                 Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]))
+                 Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, 
+                 ["trait1", "trait2"], [i.data1, i.data2]))
 end
 
 # run inference
@@ -326,6 +335,38 @@ estimaterates(multtree, ["trait1", "trait2"], lambda = 0.1)
 
 # check inference run time
 @benchmark estimaterates(multtree, ["trait1", "trait2"], lambda = 0.1)
+
+# Compare to Rphylopars
+# load R packages and read tree into R
+R"
+library('ape')
+library('Rphylopars')"
+
+R"rtree = ape::read.tree(file = 'test/hummingbirds.tree')"
+
+# send dataframe into R
+@rput rdat
+
+# species need to be the row names in R
+R"row.names(rdat) <- rdat$species"
+
+# run inference
+rcopy(R"fit_bm <- phylopars(trait_data = rdat, tree = rtree, model = 'BM', REML = FALSE)")
+
+# check inference run time
+@benchmark rcopy(R"fit_bm <- phylopars(trait_data = rdat, tree = rtree, model = 'BM', REML = FALSE)")
+
+# send dataframe into R
+@rput rdat2
+
+# species need to be the row names in R
+R"row.names(rdat2) <- rdat2$species"
+
+# run inference
+rcopy(R"fit_bm <- phylopars(trait_data = rdat2, tree = rtree, model = 'BM', REML = FALSE)")
+
+# check inference run time
+@benchmark rcopy(R"fit_bm <- phylopars(trait_data = rdat2, tree = rtree, model = 'BM', REML = FALSE)")
 
 # Preform inference on multiple traits, both generated through Brownian Motion
 # load a new tree
@@ -356,7 +397,8 @@ rdat = DataFrame(species = leafnames, data1 = traitvector1,
 # add data to the tree
 for i in eachrow(rdat)
     setnodedata!(multtree2, i.species,
-                 Phylo.traitdata(["trait1", "trait2"], [i.data1, i.data2]))
+                 Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}},
+                 ["trait1", "trait2"], [i.data1, i.data2]))
 end
 
 # run inference
@@ -370,6 +412,44 @@ estimaterates(multtree2, ["trait1", "trait2"], lambda = 0.1)
 
 # check inference run time
 @benchmark estimaterates(multtree2, ["trait1", "trait2"], lambda = 0.1)
+
+
+
+#multiple traits, one uniform, one BM
+const multtree3::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
+                                    "test/hummingbirds.tree")
+
+# load leafnames and generate uniform random trait values
+species = getleaves(multtree3)
+data1 = 1000 .* rand(length(species))
+
+a = BrownianTrait(multtree3, "BMtrait")
+BMtrait = rand(a)
+
+# get leaf names
+leafnames = getleafnames(multtree3);
+
+# add data to a vector
+data2 = Vector{Float64}();
+for leaf in leafnames
+    push!(data2, BMtrait[leaf])
+end
+
+# create a dataframe
+rdat = DataFrame(species = leafnames, data1 = data1,
+                 data2 = data2)
+
+# add data to the tree
+for i in eachrow(rdat)
+    setnodedata!(multtree3, i.species,
+                 Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}},
+                 ["trait1", "trait2"], [i.data1, i.data2]))
+end
+
+# run inference
+estimaterates(multtree3, ["trait1", "trait2"])
+
+
 
 # Preform inference on multiple traits using real world data
 # load the tree
@@ -412,7 +492,8 @@ dat = combine(gdf,
 # add the data for tmin to the tree
 for i in eachrow(dat)
     setnodedata!(multtree3, i.species,
-                 Phylo.traitdata(["tmin", "tmax"], [i.tmin, i.tmax]))
+                 Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}},
+                 ["tmin", "tmax"], [i.tmin, i.tmax]))
 end
 
 # run inference

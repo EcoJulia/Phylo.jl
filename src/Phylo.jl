@@ -219,6 +219,9 @@ export distance, distances, heighttoroot, heightstoroot
 include("inference.jl")
 export estimaterates, TraitTree, traitdata, threepoint!
 
+include("infrand.jl")
+export BrownianTipAnyDist
+
 # Path into package
 path(path...; dir::String = "test") = joinpath(@__DIR__, "..", dir, path...)
 
