@@ -26,6 +26,7 @@ Random.seed!(1234)
 const jtree::TraitTree{1} = open(f -> parsenewick(f, TraitTree{1}),
                                  "test/hummingbirds.tree")
 
+
 # Create dataframe with leafnames and random trait values
 species = getleaves(jtree)
 data = 1000 .* rand(length(species))
@@ -227,7 +228,7 @@ dat = combine(gdf,
 
 # add the data for tmin to the tree
 for i in eachrow(dat)
-    setnodedata!(bigtree, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, ["tmin"], [i.tmin]))
+    setnodedata!(bigtree, i.species, Phylo.traitdata(Union{Float64, ForwardDiff.Dual{ForwardDiff.Tag{DynamicPPL.DynamicPPLTag, Float64}, Float64, 3}}, ["tp"], [i.tp]))
 end
 
 # run inference
@@ -238,6 +239,7 @@ estimaterates(bigtree, ["tmin"])
 
 # run inference to calculate signal
 estimaterates(bigtree, ["tmin"], lambda = 0.8)
+# takes really long - check optimiser at one point
 
 # check inference run time
 @benchmark estimaterates(bigtree, ["tmin"], lambda = 0.8)
@@ -308,10 +310,12 @@ const multtree::TraitTree{2} = open(f -> parsenewick(f, TraitTree{2}),
 species = getleaves(multtree)
 data1 = 1000 .* rand(length(species))
 data2 = 1000 .* rand(length(species))
+data3 = 1000 .* rand(length(species))
 
 # create dataframe
 speciesnames = getleafnames(multtree);
 rdat = DataFrame(species = speciesnames, data1 = data1, data2 = data2);
+rdat2 = DataFrame(species = speciesnames, data1 = data1, data2 = data2, data3 = data3);
 
 # add the data to the tree
 for i in eachrow(rdat)
@@ -331,6 +335,38 @@ estimaterates(multtree, ["trait1", "trait2"], lambda = 0.1)
 
 # check inference run time
 @benchmark estimaterates(multtree, ["trait1", "trait2"], lambda = 0.1)
+
+# Compare to Rphylopars
+# load R packages and read tree into R
+R"
+library('ape')
+library('Rphylopars')"
+
+R"rtree = ape::read.tree(file = 'test/hummingbirds.tree')"
+
+# send dataframe into R
+@rput rdat
+
+# species need to be the row names in R
+R"row.names(rdat) <- rdat$species"
+
+# run inference
+rcopy(R"fit_bm <- phylopars(trait_data = rdat, tree = rtree, model = 'BM', REML = FALSE)")
+
+# check inference run time
+@benchmark rcopy(R"fit_bm <- phylopars(trait_data = rdat, tree = rtree, model = 'BM', REML = FALSE)")
+
+# send dataframe into R
+@rput rdat2
+
+# species need to be the row names in R
+R"row.names(rdat2) <- rdat2$species"
+
+# run inference
+rcopy(R"fit_bm <- phylopars(trait_data = rdat2, tree = rtree, model = 'BM', REML = FALSE)")
+
+# check inference run time
+@benchmark rcopy(R"fit_bm <- phylopars(trait_data = rdat2, tree = rtree, model = 'BM', REML = FALSE)")
 
 # Preform inference on multiple traits, both generated through Brownian Motion
 # load a new tree
