@@ -4,7 +4,7 @@
     "applicationCategory": "ecology",
     "codeRepository": "https://github.com/EcoJulia/Phylo.jl",
     "dateCreated": "2017-04-21",
-    "dateModified": "2024-10-23",
+    "dateModified": "2026-11-09",
     "datePublished": "2018-08-11",
     "description": "Package for creating and manipulating phylogenies in Julia",
     "downloadUrl": "https://github.com/EcoJulia/Phylo.jl/archive/refs/tags/v0.6.0.tar.gz",
@@ -31,8 +31,8 @@
     "developmentStatus": "active",
     "issueTracker": "https://github.com/EcoJulia/Phylo.jl/issues",
     "identifier": "10.5281/zenodo.3753580",
-    "readme": "https://github.com/EcoJulia/Phylo.jl/blob/dev/README.md",
-    "buildInstructions": "https://github.com/EcoJulia/Phylo.jl/blob/dev/README.md",
+    "readme": "https://github.com/EcoJulia/Phylo.jl/blob/HEAD/README.md",
+    "buildInstructions": "https://github.com/EcoJulia/Phylo.jl/blob/HEAD/README.md",
     "author": [
         {
             "type": "Person",

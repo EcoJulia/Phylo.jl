@@ -112,7 +112,7 @@ end
     b = IOBuffer()
     show(a, nt3)
     show(b, nt4)
-    @test all(a.data .== b.data)
+    @test String(take!(a)) == String(take!(b))
 
     tdf = BinaryTree(df)
     @test nleaves(tdf) == 3

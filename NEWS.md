@@ -1,6 +1,7 @@
 # NEWS
 
 - v0.6.0
+  - Require Julia v1.10 (the LTS) or later
   - Add preliminary inference code
   - Bugfix for dropping no tips
   - Minor metadata fixes
