@@ -24,6 +24,7 @@ ninternal
 nbranches
 distance
 distances
+vcv
 heighttoroot
 heightstoroot
 getroot

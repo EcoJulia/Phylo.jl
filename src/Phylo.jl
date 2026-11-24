@@ -213,7 +213,7 @@ export map_depthfirst
 # Metrics from the tree
 include("metrics.jl")
 export mrca, nodeheights
-export distance, distances, heighttoroot, heightstoroot
+export distance, distances, vcv, heighttoroot, heightstoroot
 
 # Inference on tree
 include("inference.jl")

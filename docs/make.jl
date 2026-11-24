@@ -4,7 +4,10 @@ using Pkg
 Pkg.update()
 "Phylo" ∈ [p.name for p in values(Pkg.dependencies())] &&
     Pkg.rm("Phylo")
-Pkg.develop("Phylo")
+# This checkout, not whatever `Pkg.develop("Phylo")` finds by name (on a CI
+# runner, a fresh clone of the default branch, so a PR's docs were built
+# without its changes)
+Pkg.develop(path = dirname(@__DIR__))
 
 using Documenter
 using Phylo
